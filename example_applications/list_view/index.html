@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Example Pict-Section-Form List View </title>
+</head>
+<body>
+	<!-- START Header template -->
+	<header id="RSP-Header-Container">
+		<!-- START Header-Title template -->
+		<h1>Title of Entity</h1>
+		<!-- END Header-Title template -->
+		<!-- START Header-Subtitle template -->
+		<h2>Subtitle of Entity</h2>
+		<!-- END Header-Subtitle template -->
+	</header>
+	<!-- END Header template -->
+
+	<!-- START Filter template-->
+	<section id="RSP-Filter-Container">
+		<form id="RSP-Filter-Form">
+			<!-- START Filter-Input-Container template -->
+			<fieldset>
+				<!-- START Filter-Input-Label template -->
+				<label for="filter">Filter:</label>
+				<!-- END Filter-Input-Label template -->
+				<!-- START Filter-Input template -->
+				<input type="text" id="filter" name="filter">
+				<!-- END Filter-Input template -->
+			</fieldset>
+			<!-- END Filter-Input-Container template -->
+			<!-- START Filter-Button-Container template -->
+			<fieldset id="RSP-Filter-Button-Container">
+				<!-- START Filter-Button-Reset template -->
+				<button type="button" id="RSP-Filter-Button-Reset">Reset</button>
+				<!-- END Filter-Button-Reset template -->
+
+				<!-- START Filter-Button-Apply template -->
+				<button type="submit" id="RSP-Filter-Button-Apply">Apply</button>
+				<!-- END Filter-Button-Apply template -->
+			</fieldset>
+			<!-- END Filter-Button-Container template -->
+		</form>
+	</section>
+	<!-- END Filter template-->
+
+	<!-- START Upper Pagination template -->
+	<nav id="RSP-Upper-Pagination-Container">
+		<!-- START Upper Pagination-Description template -->
+		<p>Showing 1-25 of 100</p>
+		<!-- END Upper Pagination-Description template -->
+		<!-- START Upper Pagination-Button-Container template -->
+		<ul>
+			<!-- START Upper Pagination Button Previous template -->
+			<li><a href="#">&laquo; Previous</a></li>
+			<!-- END Upper Pagination Button Previous template -->
+			<!-- START Upper Pagination Button Page template -->
+			<li><a href="#">1</a></li>
+			<!-- END Upper Pagination Button Page template -->
+			<!-- NOTE: more as needed (for examples)-->
+			<li><a href="#">2</a></li>
+			<li><a href="#">3</a></li>
+			<li><a href="#">4</a></li>
+			<!-- START Upper Pagination Button Next template -->
+			<li><a href="#">Next &raquo;</a></li>
+			<!-- END Upper Pagination Button Next template -->
+			<!-- START Upper Pagination Button Page template -->
+		</ul>
+		<!-- END Upper Pagination Button Page template -->
+	</nav>
+	<!-- END Upper Pagination template -->
+
+	<!-- START List template -->
+	<section id="RSP-List-Container">
+		<!-- START List-Title template -->
+		<table id="RSP-List-Table">
+			<!-- START List-Title-Header template -->
+			<thead>
+				<tr>
+					<!-- START List-Title-Header-Cell -->
+					<th>Column 1</th>
+					<!-- END List-Title-Header-Cell -->
+					<!-- NOTE: more cells as needed -->
+					<th>Column 2</th>
+					<th>Column 3</th>
+				</tr>
+			</thead>
+			<!-- END List-Title-Header template -->
+			<!-- START List-Title-Body template -->
+			<tbody>
+				<!-- START List-Title-Body-Row -->
+				<tr>
+					<!-- START List-Title-Body-Cell -->
+					<td>Row 1, Cell 1</td>
+					<!-- END List-Title-Body-Cell -->
+					<!-- NOTE: more cells as needed -->
+					<td>Row 1, Cell 2</td>
+					<td>Row 1, Cell 3</td>
+					<!-- START List-Title-Body-Extra-Cell -->
+					<td><!-- NOTE: slot for extra columns--></td>
+					<!-- END List-Title-Body-Extra-Cell -->
+				</tr>
+				<!-- END List-Title-Body-Row -->
+				<!-- Note: more rows as needed -->
+			</tbody>
+			<!-- END List-Title-Body template -->
+		</table>
+		<!-- END List-Title template -->
+	</section>
+	<!-- END List template -->
+
+	<!-- START Lower Pagination template -->
+	<nav id="RSP-Lower-Pagination-Container">
+		<!-- NOTE: Re-apply "RSP-Upper-Pagination-Container" content here to avoid duplication. -->
+	</nav>
+	<!-- END Lower Pagination template -->
+
+	<!-- Footer template -->
+	<footer id="RSP-Footer-Container">
+		<!-- NOTE: slot for additional set actions -->
+	</footer>
+	<!-- END Footer template -->
+</body>
+</html>
