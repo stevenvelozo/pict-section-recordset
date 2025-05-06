@@ -1,0 +1,16 @@
+{
+  "name": "example_applications",
+  "version": "1.0.0",
+  "description": "Simple static server and API pass-through to Bookstore API.",
+  "main": "ServeExamples.js",
+  "scripts": {
+    "start": "node ServeExamples.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "orator": "^5.0.1",
+    "orator-http-proxy": "^1.0.1",
+    "orator-serviceserver-restify": "^2.0.3"
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "name": "pict-section-recordset",
+  "version": "1.0.0",
+  "description": "Pict dynamic record set management views",
+  "main": "source/Pict-Section-RecordSet.js",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stevenvelozo/pict-section-recordset.git"
+  },
+  "bugs": {
+    "url": "https://github.com/stevenvelozo/pict-section-recordset/issues"
+  },
+  "homepage": "https://github.com/stevenvelozo/pict-section-recordset#readme",
+  "scripts": {
+    "start": "node source/Pict-Section-RecordSet.js",
+    "tests": "npx mocha -u tdd --exit -R spec --grep",
+    "coverage": "npx nyc --reporter=lcov --reporter=text-lcov npx mocha -- -u tdd -R spec",
+    "build": "npx quack build",
+    "test": "npx mocha -u tdd -R spec",
+    "lint": "eslint source/**",
+    "types": "tsc -p ."
+  },
+  "types": "types/source/Pict-Section-RecordSet.d.ts",
+  "author": "steven velozo <steven@velozo.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^9.21.0",
+    "browser-env": "^3.3.0",
+    "eslint": "^9.21.0",
+    "jquery": "^3.7.1",
+    "pict": "^1.0.237",
+    "pict-application": "^1.0.24",
+    "pict-service-commandlineutility": "^1.0.15",
+    "quackage": "^1.0.40",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "fable-serviceproviderbase": "^3.0.15",
+    "pict-provider": "^1.0.3",
+    "pict-template": "^1.0.10",
+    "pict-view": "^1.0.59"
+  },
+  "mocha": {
+    "diff": true,
+    "extension": [
+      "js"
+    ],
+    "package": "./package.json",
+    "reporter": "spec",
+    "slow": "75",
+    "timeout": "5000",
+    "ui": "tdd",
+    "watch-files": [
+      "source/**/*.js",
+      "test/**/*.js"
+    ],
+    "watch-ignore": [
+      "lib/vendor"
+    ]
+  }
+}
