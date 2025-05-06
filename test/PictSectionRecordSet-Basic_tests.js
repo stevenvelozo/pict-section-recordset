@@ -4,7 +4,7 @@
 */
 
 // This is temporary, but enables unit tests
-const libBrowserEnv = require('browser-env')
+const libBrowserEnv = require('browser-env');
 libBrowserEnv();
 
 const libPictView = require('pict-view');

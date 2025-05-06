@@ -21,13 +21,15 @@
     "build": "npx quack build",
     "test": "npx mocha -u tdd -R spec",
     "lint": "eslint source/**",
-    "types": "tsc -p ."
+    "types": "tsc -p tsconfig.build.json"
   },
   "types": "types/source/Pict-Section-RecordSet.d.ts",
   "author": "steven velozo <steven@velozo.com>",
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^9.21.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^16.18.126",
     "browser-env": "^3.3.0",
     "eslint": "^9.21.0",
     "jquery": "^3.7.1",
