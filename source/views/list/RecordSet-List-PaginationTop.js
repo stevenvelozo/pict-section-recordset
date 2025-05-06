@@ -30,8 +30,60 @@ const _DEFAULT_CONFIGURATION_List_PaginationTop = (
           Hash: 'PRSP-List-PaginationTop-Template',
           Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-List-PaginationTop-Template] -->
+  <nav id="RSP_Upper_Pagination_Container">
+    {~T:PRSP-List-Pagination-Template-Description~}
+		{~T:PRSP-List-Pagination-Template-Buttons~}
+	</nav>
 	<!-- DefaultPackage end view template:  [PRSP-List-PaginationTop-Template] -->
 	`
+        },
+        {
+          Hash: 'PRSP-List-Pagination-Template-Description',
+          Template: /*html*/`
+  <!-- DefaultPackage pict view template: [PRSP-List-Pagination-Template-Description] -->
+  <p id="PRSP_Pagination_Description">
+    <span id="PRSP_Pagination_Description_Records_Start">1</span> to
+    <span id="PRSP_Pagination_Description_Records_End">10</span> of
+    <span id="PRSP_Pagination_Description_Records_Total">100</span> records
+  </p>
+  <!-- DefaultPackage end view template:  [PRSP-List-Pagination-Template-Description] -->
+  `
+        },
+        {
+          Hash: 'PRSP-List-Pagination-Template-Buttons',
+          Template: /*html*/`
+  <!-- DefaultPackage pict view template: [PRSP-List-Pagination-Template-Buttons] -->
+  <ul>
+    {~T:PRSP-List-Pagination-Template-Button-Previous~}
+    {~TS:PRSP-List-Pagination-Template-Button-Page~}
+    {~T:PRSP-List-Pagination-Template-Button-Next~}
+  </ul>
+  <!-- DefaultPackage end view template:  [PRSP-List-Pagination-Template-Buttons] -->
+  `
+        },
+        {
+          Hash: 'PRSP-List-Pagination-Template-Button-Previous',
+          Template: /*html*/`
+  <!-- DefaultPackage pict view template: [PRSP-List-Pagination-Template-Button-Previous] -->
+  <li><a href="#">&laquo; Previous</a></li>
+  <!-- DefaultPackage end view template:  [PRSP-List-Pagination-Template-Button-Previous] -->
+  `
+        },
+        {
+          Hash: 'PRSP-List-Pagination-Template-Button-Next',
+          Template: /*html*/`
+  <!-- DefaultPackage pict view template: [PRSP-List-Pagination-Template-Button-Next] -->
+  <li><a href="#">Next &raquo;</a></li>
+  <!-- DefaultPackage end view template:  [PRSP-List-Pagination-Template-Button-Next] -->
+  `
+        },
+        {
+          Hash: 'PRSP-List-Pagination-Template-Button-Page',
+          Template: /*html*/`
+  <!-- DefaultPackage pict view template: [PRSP-List-Pagination-Template-Button-Page] -->
+  <li><a href="#">{~D:Record.Page~}</a></li>
+  <!-- DefaultPackage end view template:  [PRSP-List-Pagination-Template-Button-Page] -->
+  `
         }
       ],
 

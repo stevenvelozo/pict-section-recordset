@@ -30,6 +30,10 @@ const _DEFAULT_CONFIGURATION_List_PaginationBottom = (
           Hash: 'PRSP-List-PaginationBottom-Template',
           Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-List-PaginationBottom-Template] -->
+  <nav id="RSP_Lower_Pagination_Container">
+    {~T:PRSP-List-Pagination-Template-Description~}
+		{~T:PRSP-List-Pagination-Template-Buttons~}
+	</nav>
 	<!-- DefaultPackage end view template:  [PRSP-List-PaginationBottom-Template] -->
 	`
         }

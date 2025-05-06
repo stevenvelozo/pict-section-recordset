@@ -30,9 +30,37 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter = (
           Hash: 'PRSP-SUBSET-Filter-Template',
           Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filter-Template] -->
+	<section id="PRSP_Filter_Container">
+		<form id="PRSP_Filter_Form">
+			{~T:PRSP-SUBSET-Filter-Template-Input-Fieldset~}
+      {~T:PRSP-SUBSET-Filter-Template-Button-Fieldset~}
+		</form>
+	</section>
 	<!-- DefaultPackage end view template:  [PRSP-SUBSET-Filter-Template] -->
 	`
-        }
+        },
+        {
+          Hash: 'PRSP-SUBSET-Filter-Template-Input-Fieldset',
+          Template: /*html*/`
+  <!-- DefaultPackage pict view template: [PRSP-SUBSET-Filter-Template-Input-Fieldset] -->
+  <fieldset>
+    <label for="filter">Filter:</label>
+    <input type="text" name="filter">
+  </fieldset>
+  <!-- DefaultPackage end view template:  [PRSP-SUBSET-Filter-Template-Input-Fieldset] -->
+  `
+        },
+        {
+          Hash: 'PRSP-SUBSET-Filter-Template-Button-Fieldset',
+          Template: /*html*/`
+  <!-- DefaultPackage pict view template: [PRSP-SUBSET-Filter-Template-Button-Fieldset] -->
+  <fieldset>
+    <button type="button" id="PRSP_Filter_Button_Reset">Reset</button>
+    <button type="submit" id="PRSP_Filter_Button_Apply">Apply</button>
+  </fieldset>
+  <!-- DefaultPackage end view template:  [PRSP-SUBSET-Filter-Template-Button-Fieldset] -->
+  `
+        },
       ],
 
     Renderables:

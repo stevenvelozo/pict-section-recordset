@@ -30,6 +30,10 @@ const _DEFAULT_CONFIGURATION_List_Title = (
           Hash: 'PRSP-List-Title-Template',
           Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-List-Title-Template] -->
+  <header id="PRSP_Title_Container">
+    <h1 id="PRSP_Title">{~D:Record.Title~}</h1>
+    <h2 id="PRSP_Subtitle">{~D:Record.Subtitle~}</h2>
+  </header>
 	<!-- DefaultPackage end view template:  [PRSP-List-Title-Template] -->
 	`
         }
