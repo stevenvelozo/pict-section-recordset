@@ -131,6 +131,24 @@ suite
 						Expect(book.ISBN).to.equal('804139024', 'Book should have an ISBN of "804139024".');
 					});
 
+					test('getRecordSetCount', async () =>
+					{
+						const { Count: count } = await _Pict.providers.BooksProvider.getRecordSetCount({ });
+						Expect(count).to.be.greaterThan(0, 'Count should be greater than 0.');
+					});
+
+					test('getRecordSetCount with filter', async () =>
+					{
+						const { Count: count } = await _Pict.providers.BooksProvider.getRecordSetCount({ FilterString: 'FBV~ISBN~GE~804139024~FSF~ISBN~ASC~0' });
+						Expect(count).to.be.greaterThan(0, 'Count should be greater than 0.');
+					});
+
+					test('getRecordSetCount with filter to one record', async () =>
+					{
+						const { Count: count } = await _Pict.providers.BooksProvider.getRecordSetCount({ FilterString: 'FBV~ISBN~EQ~804139024' });
+						Expect(count).to.equal(1, 'Count should be equal to 1.');
+					});
+
 					test('getRecordsInline with no options', async () =>
 					{
 						const { Records: books } = await _Pict.providers.BooksProvider.getRecordsInline();
