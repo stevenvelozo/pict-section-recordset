@@ -6,6 +6,12 @@ module.exports = libPictRecordSet.PictRecordSetApplication;
 module.exports.default_configuration.pict_configuration = (
 	{
 		"Product": "Simple Record Set",
+
+		"PictApplicationConfiguration":
+			{
+				"AutoRenderMainViewportViewAfterInitialize": false
+			},
+
 		"DefaultRecordSetConfigurations":
 			[
 				{
@@ -30,4 +36,4 @@ module.exports.default_configuration.pict_configuration = (
 					"RecordSetType": "Custom" // This means the `PS-RSP-RandomizedValues` provider will be checked for to get records.
 				}
 			]
-	});
+		});

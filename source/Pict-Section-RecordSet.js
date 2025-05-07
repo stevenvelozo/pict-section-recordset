@@ -6,3 +6,7 @@ module.exports = require('./services/RecordsSet-MetaController.js');
 
 // The application container
 module.exports.PictRecordSetApplication = require('./application/Pict-Application-RecordSet.js');
+
+// Export the providers
+module.exports.RecordSetProviderBase = require('./providers/RecordSet-RecordProvider-Base.js');
+module.exports.RecordSetProviderMeadowEndpoints = require('./providers/RecordSet-RecordProvider-MeadowEndpoints.js');

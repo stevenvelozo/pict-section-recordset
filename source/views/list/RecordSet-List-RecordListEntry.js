@@ -39,8 +39,8 @@ const _DEFAULT_CONFIGURATION_List_RecordListEntry = (
           Template: /*html*/`
   <!-- DefaultPackage pict view template: [PRSP-List-RecordListEntry-Template-Entry] -->
   <tr>
-    {~TS:PRSP-List-RecordListEntry-Template-Entry-Cell~}
-    {~TS:PRSP-List-RecordListEntry-Template-Extra-Cell~}
+    {~T:PRSP-List-RecordListEntry-Template-Entry-Cell~}
+    {~T:PRSP-List-RecordListEntry-Template-Extra-Cell~}
   </tr>
   <!-- DefaultPackage end view template:  [PRSP-List-RecordListEntry-Template-Entry] -->
   `
@@ -50,7 +50,7 @@ const _DEFAULT_CONFIGURATION_List_RecordListEntry = (
           Template: /*html*/`
   <!-- DefaultPackage pict view template: [PRSP-List-RecordListEntry-Template-Entry-Cell] -->
   <td>
-    {~D:Record~}
+    {~DJ:Record~}
   </td>
   <!-- DefaultPackage end view template:  [PRSP-List-RecordListEntry-Template-Entry-Cell] -->
   `

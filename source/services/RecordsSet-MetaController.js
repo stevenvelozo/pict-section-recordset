@@ -5,6 +5,14 @@ const viewRecordSetEdit = require('../views/edit/RecordSet-Edit.js');
 const viewRecordSetRead = require('../views/read/RecordSet-Read.js');
 const viewRecordSetDashboard = require('../views/dashboard/RecordSet-Dashboard.js');
 
+//_Pict.addProvider('BooksProvider', { Entity: 'Book', URLPrefix: 'http://www.datadebase.com:8086/1.0/' }, require('../source/providers/RecordSet-RecordProvider-MeadowEndpoints.js'));
+const providerBase = require('../providers/RecordSet-RecordProvider-Base.js');
+const providerMeadowEndpoints = require('../providers/RecordSet-RecordProvider-MeadowEndpoints.js');
+
+const providerPictRouter = require('pict-router');
+
+const { type } = require('os');
+
 class RecordSetMetacontroller extends libFableServiceProviderBase
 {
 	constructor(pFable, pOptions, pServiceHash)
@@ -12,8 +20,6 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		// Intersect default options, parent constructor, service information
 		super(pFable, pOptions, pServiceHash);
 
-		/** @type {import('pict') & { addView: (hash: string, options: any, prototype: any) => any }} */
-		this.pict;
 		/** @type {import('pict') & { addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any }} */
 		this.fable;
 		/** @type {any} */
@@ -30,7 +36,122 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 			dashboard: null
 		};
 
+		this.recordSetProviders = {};
+		this.recordSetProviderConfigurations = {};
+
 		this.has_initialized = false;
+	}
+
+	/*
+		"DefaultRecordSetConfigurations":
+			[
+				{
+					"RecordSet": "Book",
+
+					"RecordSetType": "MeadowEndpoint", // Could be "Custom" which would require a provider to already be created for the record set.
+					"RecordSetMeadowEntity": "Book",   // This leverages the /Schema endpoint to get the record set columns.
+
+					"RecordSetURLPrefix": "http://www.datadebase.com:8086/1.0/"
+				},
+				{
+					"RecordSet": "Author",
+
+					"RecordSetType": "MeadowEndpoint",
+					"RecordSetMeadowEntity": "Author",
+
+					"RecordSetURLPrefix": "http://www.datadebase.com:8086/1.0/"
+				},
+				{
+					"RecordSet": "RandomizedValues",
+
+					"RecordSetType": "Custom" // This means the `PS-RSP-RandomizedValues` provider will be checked for to get records.
+				}
+			]
+	 */
+	loadRecordSetConfiguration(pRecordSetConfiguration)
+	{
+		if (typeof pRecordSetConfiguration !== 'object')
+		{
+			this.fable.log.error(`RecordSetMetacontroller: ${this.UUID} loadRecordSetConfiguration called with invalid configuration.`);
+			return false;
+		}
+		if ((!('RecordSet' in pRecordSetConfiguration)) || (pRecordSetConfiguration.RecordSet === ''))
+		{
+			this.fable.log.error(`RecordSetMetacontroller: ${this.UUID} loadRecordSetConfiguration called with invalid configuration. Missing RecordSet.`);
+			return false;
+		}
+
+		const providerConfiguration = Object.assign({}, {Hash: `RSP-Provider-${pRecordSetConfiguration.RecordSet}`}, pRecordSetConfiguration);
+		this.recordSetProviderConfigurations[providerConfiguration.RecordSet] = providerConfiguration;
+
+		switch (pRecordSetConfiguration.RecordSetType)
+		{
+			case 'MeadowEndpoint':
+				// Create a Meadow Endpoints provider
+				// Allow the Record Set to optionally point to a different entity
+				if (`RecordSetMeadowEntity` in pRecordSetConfiguration)
+				{
+					providerConfiguration.Entity = pRecordSetConfiguration.RecordSetMeadowEntity;
+				}
+				else
+				{
+					providerConfiguration.Entity = pRecordSetConfiguration.RecordSet;
+				}
+				// Default the URLPrefix to the base URLPrefix
+				if (`URLPrefix` in pRecordSetConfiguration)
+				{
+					providerConfiguration.URLPrefix = pRecordSetConfiguration.RecordSetURLPrefix;
+				}
+				else
+				{
+					providerConfiguration.URLPrefix = '/1.0/';
+				}
+				this.recordSetProviders[pRecordSetConfiguration.RecordSet] = this.fable.addProvider(providerConfiguration.Hash, providerConfiguration, providerMeadowEndpoints);
+				break;
+			default:
+			case 'Custom':
+				// Create a custom provider				
+				if (`ProviderHash` in providerConfiguration)
+				{
+					if (!(providerConfiguration.ProviderHash in this.fable.servicesMap))
+					{
+						this.fable.log.error(`RecordSetMetacontroller: ${this.UUID} loadRecordSetConfiguration called with invalid configuration. ProviderHash ${providerConfiguration.ProviderHash} not found.  Falling back to base.`);
+						this.recordSetProviders[providerConfiguration.RecordSet] = this.fable.servicesMap[providerConfiguration.ProviderHash];
+					}
+					else
+					{
+						this.recordSetProviders[providerConfiguration.RecordSet] = this.fable.addProvider(providerConfiguration.Hash, providerConfiguration, providerBase);
+					}
+				}
+				else
+				{
+					this.recordSetProviders[providerConfiguration.RecordSet] = this.fable.addProvider(providerConfiguration.Hash, providerConfiguration, providerBase);
+				}
+				break;
+		}
+
+		return true;
+	}
+
+	loadRecordSetConfigurationArray(pRecordSetConfigurationArray)
+	{
+		if (!Array.isArray(pRecordSetConfigurationArray))
+		{
+			this.fable.log.error(`RecordSetMetacontroller: ${this.UUID} loadRecordSetConfigurationArray called with invalid configuration.`);
+			return false;
+		}
+		if (pRecordSetConfigurationArray.length === 0)
+		{
+			this.fable.log.error(`RecordSetMetacontroller: ${this.UUID} loadRecordSetConfigurationArray called with empty configuration.`);
+			return false;
+		}
+		for (let i = 0; i < pRecordSetConfigurationArray.length; i++)
+		{
+			if (!this.loadRecordSetConfiguration(pRecordSetConfigurationArray[i]))
+			{
+				this.fable.log.error(`RecordSetMetacontroller: ${this.UUID} loadRecordSetConfigurationArray called with invalid configuration:`,pRecordSetConfigurationArray[i]);
+			}
+		}
 	}
 
 	initialize()
@@ -52,6 +173,17 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		this.childViews.edit.initialize();
 		this.childViews.read.initialize();
 		this.childViews.dashboard.initialize();
+
+		if (this.fable.settings.hasOwnProperty('DefaultRecordSetConfigurations'))
+		{
+			this.loadRecordSetConfigurationArray(this.fable.settings.DefaultRecordSetConfigurations);
+		}
+
+		// Load pict-router if it isn't loaded
+		if (!('Pict-Router' in this.fable.providers))
+		{
+			this.fable.addProvider('Pict-Router', {}, providerPictRouter);
+		}
 
 		this.has_initialized = true;
 

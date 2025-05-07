@@ -39,11 +39,11 @@ const _DEFAULT_CONFIGURATION__List = (
 					Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-List-Template] -->
 	<section id="PRSP_List_Container">
-		{~T:PRSP-List-Template-Header-Template~}
-		{~T:PRSP-List-Template-Filter-Template~}
-		{~T:PRSP-List-PaginationTop-Template~}
-		{~T:PRSP-List-Template-RecordList~}
-		{~T:PRSP-List-PaginationBottom-Template~}
+		{~V:PRSP-List-Title~}
+		{~V:PRSP-List-HeaderList~}
+		{~V:PRSP-List-PaginationTop~}
+		{~V:PRSP-List-RecordList~}
+		{~V:PRSP-List-PaginationBottom~}
 	</section>
 	<!-- DefaultPackage end view template:  [PRSP-List-Template] -->
 	`
@@ -87,15 +87,66 @@ class viewRecordSetList extends libPictView
 		};
 	}
 
+	async renderList(pRecordSetConfiguration, pProviderHash, pFilterString, pOffset, pPageSize)
+	{
+		// Get the records
+		if (!(pProviderHash in this.pict.providers))
+		{
+			this.pict.log.error(`RecordSetList: No provider found for ${pProviderHash} in ${pRecordSetConfiguration.RecordSet}.  List Render failed.`);
+			return false;
+		}
+
+		let tmpResponse =
+			{
+				"Title": pRecordSetConfiguration.RecordSet,
+
+				"RecordSet": pRecordSetConfiguration.RecordSet,
+				"RecordSetConfiguration": pRecordSetConfiguration,
+
+				"RenderDestination": this.options.DefaultDestinationAddress,
+
+				"FilterString": pFilterString || '',
+
+				"Records": [],
+				"TotalRecordCount": -1,
+
+				"Offset": pOffset || 0,
+				"PageSize": pPageSize || 100
+			};
+
+		tmpResponse.Records = await this.pict.providers[pProviderHash].getRecords({Offset:tmpResponse.Offset, PageSize:tmpResponse.PageSize});
+		tmpResponse.TotalRecordCount = await this.pict.providers[pProviderHash].getRecordSetCount({Offset:tmpResponse.Offset, PageSize:tmpResponse.PageSize});
+
+		this.renderAsync('PRSP_Renderable_List', tmpResponse.RenderDestination, tmpResponse,
+			function (pError)
+			{
+				if (pError)
+				{
+					this.pict.log.error(`RecordSetList: Error rendering list ${pError}`, tmpResponse);
+					return false;
+				}
+
+				if (this.pict.LogNoisiness > 0)
+				{
+					this.pict.log.info(`RecordSetList: Rendered list ${tmpResponse.RecordSet} with ${tmpResponse.Records.length} records.`, tmpResponse);
+				}
+				else
+				{
+					this.pict.log.info(`RecordSetList: Rendered list ${tmpResponse.RecordSet} with ${tmpResponse.Records.length} records.`);
+				}
+				return true;
+			}.bind(this));
+	}
+
 	onInitialize()
 	{
-		this.childViews.headerList = this.pict.addView('PRSP-List-HeaderList', this.options, viewHeaderList);
-		this.childViews.title = this.pict.addView('PRSP-List-Title', this.options, viewTitle);
-		this.childViews.paginationTop = this.pict.addView('PRSP-List-PaginationTop', this.options, viewPaginationTop);
-		this.childViews.recordList = this.pict.addView('PRSP-List-RecordList', this.options, viewRecordList);
-		this.childViews.recordListHeader = this.pict.addView('PRSP-List-RecordListHeader', this.options, viewRecordListHeader);
-		this.childViews.recordListEntry = this.pict.addView('PRSP-List-RecordListEntry', this.options, viewRecordListEntry);
-		this.childViews.paginationBottom = this.pict.addView('PRSP-List-PaginationBottom', this.options, viewPaginationBottom);
+		this.childViews.headerList = this.pict.addView('PRSP-List-HeaderList', viewHeaderList.default_configuration, viewHeaderList);
+		this.childViews.title = this.pict.addView('PRSP-List-Title', viewTitle.default_configuration, viewTitle);
+		this.childViews.paginationTop = this.pict.addView('PRSP-List-PaginationTop', viewPaginationTop.default_configuration, viewPaginationTop);
+		this.childViews.recordList = this.pict.addView('PRSP-List-RecordList', viewRecordList.default_configuration, viewRecordList);
+		this.childViews.recordListHeader = this.pict.addView('PRSP-List-RecordListHeader', viewRecordListHeader.default_configuration, viewRecordListHeader);
+		this.childViews.recordListEntry = this.pict.addView('PRSP-List-RecordListEntry', viewRecordListEntry.default_configuration, viewRecordListEntry);
+		this.childViews.paginationBottom = this.pict.addView('PRSP-List-PaginationBottom', viewPaginationBottom.default_configuration, viewPaginationBottom);
 
 		// Initialize the subviews
 		this.childViews.headerList.initialize();

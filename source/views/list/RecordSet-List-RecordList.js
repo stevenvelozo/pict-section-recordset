@@ -43,7 +43,7 @@ const _DEFAULT_CONFIGURATION_List_RecordList = (
   <table id="PRSP_List_Table">
     <thead>{~T:PRSP-List-RecordList-Template-Table-Header~}</thead>
     <tbody id="PRSP_RecordList_Container_Entries">
-      {~T:PRSP-List-RecordList-Template-Table-Entry~}
+      {~TS:PRSP-List-RecordListEntry-Template:Record.Records.Records~}
     </tbody>
   </table>
   <!-- DefaultPackage end view template:  [PRSP-List-RecordList-Template-Table] -->
