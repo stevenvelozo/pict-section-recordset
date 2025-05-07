@@ -1,6 +1,15 @@
 export = viewRecordSetList;
 declare class viewRecordSetList extends libPictView {
     constructor(pFable: any, pOptions: any, pServiceHash: any);
+    childViews: {
+        headerList: any;
+        title: any;
+        paginationTop: any;
+        recordList: any;
+        recordListHeader: any;
+        recordListEntry: any;
+        paginationBottom: any;
+    };
 }
 declare namespace viewRecordSetList {
     export { _DEFAULT_CONFIGURATION__List as default_configuration };
