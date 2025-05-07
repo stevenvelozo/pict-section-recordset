@@ -30,8 +30,37 @@ const _DEFAULT_CONFIGURATION_List_RecordListEntry = (
           Hash: 'PRSP-List-RecordListEntry-Template',
           Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-List-RecordListEntry-Template] -->
+  {~T:PRSP-List-RecordListEntry-Template-Entry~}
 	<!-- DefaultPackage end view template:  [PRSP-List-RecordListEntry-Template] -->
 	`
+        },
+        {
+          Hash: 'PRSP-List-RecordListEntry-Template-Entry',
+          Template: /*html*/`
+  <!-- DefaultPackage pict view template: [PRSP-List-RecordListEntry-Template-Entry] -->
+  <tr>
+    {~TS:PRSP-List-RecordListEntry-Template-Entry-Cell~}
+    {~TS:PRSP-List-RecordListEntry-Template-Extra-Cell~}
+  </tr>
+  <!-- DefaultPackage end view template:  [PRSP-List-RecordListEntry-Template-Entry] -->
+  `
+        },
+        {
+          Hash: 'PRSP-List-RecordListEntry-Template-Entry-Cell',
+          Template: /*html*/`
+  <!-- DefaultPackage pict view template: [PRSP-List-RecordListEntry-Template-Entry-Cell] -->
+  <td>
+    {~D:Record~}
+  </td>
+  <!-- DefaultPackage end view template:  [PRSP-List-RecordListEntry-Template-Entry-Cell] -->
+  `
+        },
+        {
+          Hash: 'PRSP-List-RecordListEntry-Template-Extra-Cell',
+          Template: /*html*/`
+  <!-- DefaultPackage pict view template: [PRSP-List-RecordListEntry-Template-Extra-Cell] -->
+  <!-- DefaultPackage end view template:  [PRSP-List-RecordListEntry-Template-Extra-Cell] -->
+  `
         }
       ],
 

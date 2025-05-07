@@ -30,8 +30,32 @@ const _DEFAULT_CONFIGURATION_List_RecordListHeader = (
           Hash: 'PRSP-List-RecordListHeader-Template',
           Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-List-RecordListHeader-Template] -->
+  <tr>
+    {~T:PRSP-List-RecordListHeader-Template-Header~}
+    {~T:PRSP-List-RecordListHeader-Template-Extra-Header~}
+  </tr>
 	<!-- DefaultPackage end view template:  [PRSP-List-RecordListHeader-Template] -->
 	`
+        },
+        {
+          Hash: 'PRSP-List-RecordListHeader-Template-Header',
+          Template: /*html*/`
+  <!-- DefaultPackage pict view template: [PRSP-List-RecordListHeader-Template-Header] -->
+  <th>
+    {~D:Record~}
+  </th>
+  <!-- DefaultPackage end view template:  [PRSP-List-RecordListHeader-Template-Header] -->
+  `
+        },
+        {
+          Hash: 'PRSP-List-RecordListHeader-Template-Extra-Header',
+          Template: /*html*/`
+  <!-- DefaultPackage pict view template: [PRSP-List-RecordListHeader-Template-Extra-Header] -->
+  <th>
+    {~D:Record~}
+  </th>
+  <!-- DefaultPackage end view template:  [PRSP-List-RecordListHeader-Template-Extra-Header] -->
+  `
         }
       ],
 

@@ -30,8 +30,24 @@ const _DEFAULT_CONFIGURATION_List_RecordList = (
           Hash: 'PRSP-List-RecordList-Template',
           Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-List-RecordList-Template] -->
+  <section id="PRSP_List_Container">
+		{~T:PRSP-List-RecordList-Template-Table~}
+	</section>
 	<!-- DefaultPackage end view template:  [PRSP-List-RecordList-Template] -->
 	`
+        },
+        {
+          Hash: 'PRSP-List-RecordList-Template-Table',
+          Template: /*html*/`
+  <!-- DefaultPackage pict view template: [PRSP-List-RecordList-Template-Table] -->
+  <table id="PRSP_List_Table">
+    <thead>{~T:PRSP-List-RecordList-Template-Table-Header~}</thead>
+    <tbody id="PRSP_RecordList_Container_Entries">
+      {~T:PRSP-List-RecordList-Template-Table-Entry~}
+    </tbody>
+  </table>
+  <!-- DefaultPackage end view template:  [PRSP-List-RecordList-Template-Table] -->
+  `
         }
       ],
 

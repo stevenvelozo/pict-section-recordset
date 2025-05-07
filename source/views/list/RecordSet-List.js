@@ -30,6 +30,19 @@ const _DEFAULT_CONFIGURATION__List = (
           Hash: 'PRSP-List-Template',
           Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-List-Template] -->
+  <section id="PRSP_List_Container">
+    {~T:PRSP-List-Template-Header-Template~}
+    {~T:PRSP-List-Template-Filter-Template~}
+    {~T:PRSP-List-PaginationTop-Template~}
+    {~T:PRSP-List-Template-RecordList~}
+    {~T:PRSP-List-PaginationBottom-Template~}
+  </section>
+  <!-- DefaultPackage end view template:  [PRSP-List-Template] -->
+  `
+        },
+        {
+          Hash: 'PRSP-List-Template-Record',
+          Template: /*html*/`
 	<!-- DefaultPackage end view template:  [PRSP-List-Template] -->
 	`
         }
