@@ -116,6 +116,7 @@ class viewRecordSetList extends libPictView
 
 		tmpResponse.Records = await this.pict.providers[pProviderHash].getRecords({Offset:tmpResponse.Offset, PageSize:tmpResponse.PageSize});
 		tmpResponse.TotalRecordCount = await this.pict.providers[pProviderHash].getRecordSetCount({Offset:tmpResponse.Offset, PageSize:tmpResponse.PageSize});
+		tmpResponse.RecordSchema = this.pict.providers[pProviderHash].recordSchema;
 
 		this.renderAsync('PRSP_Renderable_List', tmpResponse.RenderDestination, tmpResponse,
 			function (pError)
