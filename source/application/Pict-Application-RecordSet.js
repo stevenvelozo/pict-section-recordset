@@ -21,6 +21,17 @@ class PictSectionFormApplication extends libPictApplication
 		// Add the pict recordset meta controller service
 		this.pict.addServiceType('PictSectionRecordSet', libPictSectionRecordSet);
 	}
+
+	onInitialize()
+	{
+		// Add the PictSectionRecordSet service
+		this.pict.instantiateServiceProvider('PictSectionRecordSet', this.options);
+		// Initialize the views for the foundation metacontroller service
+		this.pict.PictSectionRecordSet.initialize();
+
+		// Initialize the parent class
+		return super.onInitialize();
+	}
 };
 
 module.exports = PictSectionFormApplication

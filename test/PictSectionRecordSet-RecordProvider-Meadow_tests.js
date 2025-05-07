@@ -25,7 +25,6 @@ class DoNothingApplication extends libPictApplication
 		pOptions.AutoRenderViewsAfterInitialize = false;
 		super(pFable, pOptions, pServiceHash);
 
-		this.restClient = this.fable.serviceManager.instantiateServiceProvider('RestClient');
 		let resolveFunc;
 		/** @type {Promise & { resolve?: () => void }} */
 		this._initialized = new Promise(function (resolve)
