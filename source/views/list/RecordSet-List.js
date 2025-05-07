@@ -87,6 +87,12 @@ class viewRecordSetList extends libPictView
 		};
 	}
 
+	onBeforeRenderList(pRecordListData)
+	{
+		// Put code here to preprocess columns into other data parts.
+		return pRecordListData;
+	}
+
 	async renderList(pRecordSetConfiguration, pProviderHash, pFilterString, pOffset, pPageSize)
 	{
 		// Get the records
@@ -96,7 +102,7 @@ class viewRecordSetList extends libPictView
 			return false;
 		}
 
-		let tmpResponse =
+		let tmpRecordListData =
 			{
 				"Title": pRecordSetConfiguration.RecordSet,
 
@@ -114,26 +120,28 @@ class viewRecordSetList extends libPictView
 				"PageSize": pPageSize || 100
 			};
 
-		tmpResponse.Records = await this.pict.providers[pProviderHash].getRecords({Offset:tmpResponse.Offset, PageSize:tmpResponse.PageSize});
-		tmpResponse.TotalRecordCount = await this.pict.providers[pProviderHash].getRecordSetCount({Offset:tmpResponse.Offset, PageSize:tmpResponse.PageSize});
-		tmpResponse.RecordSchema = this.pict.providers[pProviderHash].recordSchema;
+		tmpRecordListData.Records = await this.pict.providers[pProviderHash].getRecords({Offset:tmpRecordListData.Offset, PageSize:tmpRecordListData.PageSize});
+		tmpRecordListData.TotalRecordCount = await this.pict.providers[pProviderHash].getRecordSetCount({Offset:tmpRecordListData.Offset, PageSize:tmpRecordListData.PageSize});
+		tmpRecordListData.RecordSchema = this.pict.providers[pProviderHash].recordSchema;
 
-		this.renderAsync('PRSP_Renderable_List', tmpResponse.RenderDestination, tmpResponse,
+		tmpRecordListData = this.onBeforeRenderList(tmpRecordListData);
+
+		this.renderAsync('PRSP_Renderable_List', tmpRecordListData.RenderDestination, tmpRecordListData,
 			function (pError)
 			{
 				if (pError)
 				{
-					this.pict.log.error(`RecordSetList: Error rendering list ${pError}`, tmpResponse);
+					this.pict.log.error(`RecordSetList: Error rendering list ${pError}`, tmpRecordListData);
 					return false;
 				}
 
 				if (this.pict.LogNoisiness > 0)
 				{
-					this.pict.log.info(`RecordSetList: Rendered list ${tmpResponse.RecordSet} with ${tmpResponse.Records.length} records.`, tmpResponse);
+					this.pict.log.info(`RecordSetList: Rendered list ${tmpRecordListData.RecordSet} with ${tmpRecordListData.Records.length} records.`, tmpRecordListData);
 				}
 				else
 				{
-					this.pict.log.info(`RecordSetList: Rendered list ${tmpResponse.RecordSet} with ${tmpResponse.Records.length} records.`);
+					this.pict.log.info(`RecordSetList: Rendered list ${tmpRecordListData.RecordSet} with ${tmpRecordListData.Records.length} records.`);
 				}
 				return true;
 			}.bind(this));
