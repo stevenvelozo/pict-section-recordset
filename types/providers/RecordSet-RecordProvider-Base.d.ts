@@ -25,7 +25,6 @@ export = RecordSetProviderBase;
  * @property {string} [FilterString] - A meadow endpoint style filter to apply.
  * @property {number} [Offset] - The starting record number for pagination.
  * @property {number} [PageSize] - The starting record number for pagination.
- * @property {string} [Operation] - The operation to perform (e.g., 'Count').
  * @property {RecordSetSearchFacetPayload} [Facets] - The faceting config for the search.
  */
 /**
@@ -201,10 +200,6 @@ type RecordSetFilter = {
      * - The starting record number for pagination.
      */
     PageSize?: number;
-    /**
-     * - The operation to perform (e.g., 'Count').
-     */
-    Operation?: string;
     /**
      * - The faceting config for the search.
      */
