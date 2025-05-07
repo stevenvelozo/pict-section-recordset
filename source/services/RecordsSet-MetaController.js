@@ -98,7 +98,7 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 					providerConfiguration.Entity = pRecordSetConfiguration.RecordSet;
 				}
 				// Default the URLPrefix to the base URLPrefix
-				if (`URLPrefix` in pRecordSetConfiguration)
+				if (`RecordSetURLPrefix` in pRecordSetConfiguration)
 				{
 					providerConfiguration.URLPrefix = pRecordSetConfiguration.RecordSetURLPrefix;
 				}
