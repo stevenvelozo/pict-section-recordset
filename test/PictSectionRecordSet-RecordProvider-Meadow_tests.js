@@ -106,14 +106,14 @@ suite
 
 					test('getRecords with no options', async () =>
 					{
-						const books = await _Pict.providers.BooksProvider.getRecords({ });
+						const { Records: books } = await _Pict.providers.BooksProvider.getRecords({ });
 						Expect(books).to.be.an('array', 'Books should be an array.');
 						Expect(books.length).to.equal(250, 'Books should have one record.');
 					});
 
 					test('getRecords with pagination', async () =>
 					{
-						const books = await _Pict.providers.BooksProvider.getRecords({ Offset: 1, PageSize: 1 });
+						const { Records: books } = await _Pict.providers.BooksProvider.getRecords({ Offset: 1, PageSize: 1 });
 						Expect(books).to.be.an('array', 'Books should be an array.');
 						Expect(books.length).to.equal(1, 'Books should have one record.');
 						const book = books[0];
@@ -125,7 +125,7 @@ suite
 
 					test('getRecords with filter', async () =>
 					{
-						const books = await _Pict.providers.BooksProvider.getRecords({ FilterString: 'FBV~ISBN~GE~804139024~FSF~ISBN~ASC~0' });
+						const { Records: books } = await _Pict.providers.BooksProvider.getRecords({ FilterString: 'FBV~ISBN~GE~804139024~FSF~ISBN~ASC~0' });
 						Expect(books).to.be.an('array', 'Books should be an array.');
 						const book = books[0];
 						Expect(book).to.be.an('object', 'Book should be an object.');

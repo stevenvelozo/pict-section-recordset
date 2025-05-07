@@ -3,6 +3,7 @@ export = RecordSetProvider;
  * @typedef {(error?: Error, result?: any) => void} RestClientCallback
  *
  * @typedef {import('./RecordSet-RecordProvider-Base.js').RecordSetFilter} RecordSetFilter
+ * @typedef {import('./RecordSet-RecordProvider-Base.js').RecordSetResult} RecordSetResult
  *
  * @typedef {{
  *  getJSON(pOptionsOrURL: string | Record<string, any>, fCallback: RestClientCallback): void,
@@ -44,12 +45,6 @@ declare class RecordSetProvider extends libRecordSetProviderBase {
      *
      * @param {RecordSetFilter} pOptions - Options for the read operation.
      */
-    getRecords(pOptions: RecordSetFilter): Promise<any>;
-    /**
-     * Read records from the provider.
-     *
-     * @param {RecordSetFilter} pOptions - Options for the read operation.
-     */
     getRecordSetCount(pOptions: RecordSetFilter): Promise<any>;
     /**
      * Create a new record.
@@ -76,12 +71,6 @@ declare class RecordSetProvider extends libRecordSetProviderBase {
      */
     readRecord(pIDOrGuid: string | number): Promise<any>;
     /**
-     * Read records from the provider.
-     *
-     * @param {RecordSetFilter} pOptions - Options for the read operation.
-     */
-    readRecords(pOptions: RecordSetFilter): Promise<any>;
-    /**
      * Clone a record.
      *
      * @param {Record<string, any>} pRecord - The record to clone.
@@ -93,11 +82,12 @@ declare class RecordSetProvider extends libRecordSetProviderBase {
     onInitializeAsync(fCallback: (error?: Error) => void): void;
 }
 declare namespace RecordSetProvider {
-    export { RestClientCallback, RecordSetFilter, RestClient };
+    export { RestClientCallback, RecordSetFilter, RecordSetResult, RestClient };
 }
 import libRecordSetProviderBase = require("./RecordSet-RecordProvider-Base.js");
 type RestClientCallback = (error?: Error, result?: any) => void;
 type RecordSetFilter = import("./RecordSet-RecordProvider-Base.js").RecordSetFilter;
+type RecordSetResult = import("./RecordSet-RecordProvider-Base.js").RecordSetResult;
 type RestClient = {
     getJSON(pOptionsOrURL: string | Record<string, any>, fCallback: RestClientCallback): void;
     putJSON(pOptions: Record<string, any>, fCallback: RestClientCallback): void;

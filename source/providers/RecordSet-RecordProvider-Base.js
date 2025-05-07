@@ -13,12 +13,36 @@ const _DefaultProviderConfiguration = {
 };
 
 /**
+ * @typedef {Object} RecordSetSearchRangeFacet
+ * @property {string} Field - The field to facet on. Only indexed fields can be faceted.
+ * @property {any} Start - The start of the range. (ex. 1900)
+ * @property {any} End - The end of the range. (ex. 2025)
+ * @property {any} Gap - The gap between range values. (ex. 25)
+ * TODO: Support auto-generating ranges based on the data at rest?
+ */
+
+/**
+ * @typedef {Object} RecordSetSearchFacetPayload
+ * @property {boolean} [ReturnRecords] - If false, search will return facets only, not records.
+ * @property {Array<string>} Fields - Requests to facet on all unique values of the given fields.
+ * @property {Array<RecordSetSearchRangeFacet>} Ranges - Requests to facet on given ranges of field values.
+ * TODO: support facet on custom query?
+ */
+
+/**
+ * @typedef {Object} RecordSetResult
+ * @property {Array<Record<string, any>>} Records - The records returned from the provider.
+ * @property {Record<string, Record<string, number>> & { ByRange?: Record<string, number> }} Facets - The facets returned from the provider.
+ */
+
+/**
  * @typedef {Object} RecordSetFilter
  * @property {string} [Entity] - The entity name. Can be used as an override to achieve LiteExtended, etc.
  * @property {string} [FilterString] - A meadow endpoint style filter to apply.
  * @property {number} [Offset] - The starting record number for pagination.
  * @property {number} [PageSize] - The starting record number for pagination.
  * @property {string} [Operation] - The operation to perform (e.g., 'Count').
+ * @property {RecordSetSearchFacetPayload} [Facets] - The faceting config for the search.
  */
 
 /**
@@ -73,11 +97,12 @@ class RecordSetProviderBase extends libPictProvider
 	 * Read records from the provider.
 	 *
 	 * @param {RecordSetFilter} pOptions - Options for the read operation.
+	 * @return {Promise<RecordSetResult>} - The result of the read operation.
 	 */
 	async getRecords(pOptions)
 	{
 		this.pict.log.info(`RecordSetProviderBase.getRecords(${JSON.stringify(pOptions)})`);
-		return [];
+		return { Records: [], Facets: { } };
 	}
 
 	/**
@@ -138,11 +163,12 @@ class RecordSetProviderBase extends libPictProvider
 	 * Read records from the provider.
 	 *
 	 * @param {RecordSetFilter} pOptions - Options for the read operation.
+	 * @return {Promise<RecordSetResult>} - The result of the read operation.
 	 */
 	async readRecords(pOptions)
 	{
 		this.pict.log.info(`RecordSetProviderBase.readRecords(${JSON.stringify(pOptions)})`);
-		return [];
+		return { Records: [], Facets: { } };
 	}
 
 	/**

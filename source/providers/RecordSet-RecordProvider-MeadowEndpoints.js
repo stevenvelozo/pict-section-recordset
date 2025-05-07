@@ -5,6 +5,7 @@ const libRecordSetProviderBase = require('./RecordSet-RecordProvider-Base.js');
  * @typedef {(error?: Error, result?: any) => void} RestClientCallback
  *
  * @typedef {import('./RecordSet-RecordProvider-Base.js').RecordSetFilter} RecordSetFilter
+ * @typedef {import('./RecordSet-RecordProvider-Base.js').RecordSetResult} RecordSetResult
  *
  * @typedef {{
  *  getJSON(pOptionsOrURL: string | Record<string, any>, fCallback: RestClientCallback): void,
@@ -115,6 +116,7 @@ class RecordSetProvider extends libRecordSetProviderBase
 	 * Read records from the provider.
 	 *
 	 * @param {RecordSetFilter} pOptions - Options for the read operation.
+	 * @return {Promise<RecordSetResult>} - The result of the read operation.
 	 */
 	async getRecords(pOptions)
 	{
@@ -137,7 +139,7 @@ class RecordSetProvider extends libRecordSetProviderBase
 				{
 					return reject(error);
 				}
-				resolve(result);
+				resolve({ Records: result, Facets: { } });
 			});
 		});
 	}
@@ -267,6 +269,7 @@ class RecordSetProvider extends libRecordSetProviderBase
 	 * Read records from the provider.
 	 *
 	 * @param {RecordSetFilter} pOptions - Options for the read operation.
+	 * @return {Promise<RecordSetResult>} - The result of the read operation.
 	 */
 	async readRecords(pOptions)
 	{
