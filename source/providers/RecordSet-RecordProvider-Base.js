@@ -108,6 +108,20 @@ class RecordSetProviderBase extends libPictProvider
 	/**
 	 * Read records from the provider.
 	 *
+	 * @param {string} [pFilterString] - The filter string to apply.
+	 * @param {number} [pOffset] - The starting record number for pagination.
+	 * @param {number} [pPageSize] - The number of records to return.
+	 * @return {Promise<RecordSetResult>} - The result of the read operation.
+	 */
+	async getRecordsInline(pFilterString = '', pOffset = 0, pPageSize = 250)
+	{
+		this.pict.log.info(`RecordSetProviderBase.getRecordsInline(${pFilterString}, ${pOffset}, ${pPageSize})`);
+		return { Records: [], Facets: { } };
+	}
+
+	/**
+	 * Read records from the provider.
+	 *
 	 * @param {RecordSetFilter} pOptions - Options for the read operation.
 	 */
 	async getRecordSetCount(pOptions)

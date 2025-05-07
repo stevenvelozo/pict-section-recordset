@@ -131,6 +131,34 @@ suite
 						Expect(book.ISBN).to.equal('804139024', 'Book should have an ISBN of "804139024".');
 					});
 
+					test('getRecordsInline with no options', async () =>
+					{
+						const { Records: books } = await _Pict.providers.BooksProvider.getRecordsInline();
+						Expect(books).to.be.an('array', 'Books should be an array.');
+						Expect(books.length).to.equal(250, 'Books should have one record.');
+					});
+
+					test('getRecordsInline with pagination', async () =>
+					{
+						const { Records: books } = await _Pict.providers.BooksProvider.getRecordsInline('', 1, 1);
+						Expect(books).to.be.an('array', 'Books should be an array.');
+						Expect(books.length).to.equal(1, 'Books should have one record.');
+						const book = books[0];
+						Expect(book).to.be.an('object', 'Book should be an object.');
+						Expect(book).to.have.property('IDBook', 2, 'Book should have an id of 2.');
+						Expect(book).to.have.property('GUIDBook', 'c854b3f1-539a-47fa-acca-c1b90629c220', 'Book should have a guid of "c854b3f1-539a-47fa-acca-c1b90629c220".');
+						Expect(book.Title).to.equal(`Harry Potter and the Philosopher's Stone`, `Book should have a title of "Harry Potter and the Philosopher's Stone".`);
+					});
+
+					test('getRecordsInline with filter', async () =>
+					{
+						const { Records: books } = await _Pict.providers.BooksProvider.getRecordsInline('FBV~ISBN~GE~804139024~FSF~ISBN~ASC~0');
+						Expect(books).to.be.an('array', 'Books should be an array.');
+						const book = books[0];
+						Expect(book).to.be.an('object', 'Book should be an object.');
+						Expect(book.ISBN).to.equal('804139024', 'Book should have an ISBN of "804139024".');
+					});
+
 					test('createRecord and deleteRecord', async () =>
 					{
 						const book = await _Pict.providers.BooksProvider.createRecord({ Title: 'Test Book', ISBN: '1234567890' });

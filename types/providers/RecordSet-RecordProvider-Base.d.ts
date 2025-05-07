@@ -68,6 +68,15 @@ declare class RecordSetProviderBase {
     /**
      * Read records from the provider.
      *
+     * @param {string} [pFilterString] - The filter string to apply.
+     * @param {number} [pOffset] - The starting record number for pagination.
+     * @param {number} [pPageSize] - The number of records to return.
+     * @return {Promise<RecordSetResult>} - The result of the read operation.
+     */
+    getRecordsInline(pFilterString?: string, pOffset?: number, pPageSize?: number): Promise<RecordSetResult>;
+    /**
+     * Read records from the provider.
+     *
      * @param {RecordSetFilter} pOptions - Options for the read operation.
      */
     getRecordSetCount(pOptions: RecordSetFilter): Promise<{
