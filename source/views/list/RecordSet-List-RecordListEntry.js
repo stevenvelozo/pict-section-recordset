@@ -29,31 +29,31 @@ const _DEFAULT_CONFIGURATION_List_RecordListEntry = (
         {
           Hash: 'PRSP-List-RecordListEntry-Template',
           Template: /*html*/`
-	<!-- DefaultPackage pict view template: [PRSP-List-RecordListEntry-Template] -->
-  {~TSWP:PRSP-List-RecordListEntry-Template-Row:Record.Records.Records:Record.TableCells~}
-	<!-- DefaultPackage end view template:  [PRSP-List-RecordListEntry-Template] -->
+  		{~TSWP:PRSP-List-RecordListEntry-Template-Row:Record.Records.Records:Record~}
 	`
         },
         {
           Hash: 'PRSP-List-RecordListEntry-Template-Row',
           Template: /*html*/`
-  <tr>
-    {~T:PRSP-List-RecordListEntry-Template-Row-Cell~}
-  </tr>
-  `
+	<!-- DefaultPackage pict view template: [PRSP-List-RecordListEntry-Template] -->
+	<tr>
+		{~TSWP:PRSP-List-RecordListEntry-Template-Row-Cell:Record.Data:Record.Payload~}
+	</tr>
+	<!-- DefaultPackage end view template:  [PRSP-List-RecordListEntry-Template] -->
+	`
         },
         {
           Hash: 'PRSP-List-RecordListEntry-Template-Row-Cell',
           Template: /*html*/`
-  <td>
-    {~DJ:Record~}
-  </td>
-  `
+	<td style="border: 1px solid red;">
+		{~D:Record.Data~}
+	</td>
+	`
         },
         {
           Hash: 'PRSP-List-RecordListEntry-Template-Entry-Cell-Datum',
           Template: /*html*/`
-  {~DJ:Record~}
+  {~D:Record~}
   `
         }
       ],
