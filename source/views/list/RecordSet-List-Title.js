@@ -64,4 +64,3 @@ class viewRecordSetListTitle extends libPictView
 module.exports = viewRecordSetListTitle;
 
 module.exports.default_configuration = _DEFAULT_CONFIGURATION_List_Title;
-

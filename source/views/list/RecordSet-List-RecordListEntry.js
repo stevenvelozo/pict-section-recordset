@@ -47,10 +47,16 @@ const _DEFAULT_CONFIGURATION_List_RecordListEntry = (
           Template: /*html*/`
   <td>
     <!--{DVBK:Record.Payload:WatValHere?~}-->
-    {~D:Record~}
+    {~D:PRSP-List-RecordListEntry-Template-Entry-Cell-Datum:Record.Key:Record.Payload~}
   </td>
   `
         },
+        {
+          Hash: 'PRSP-List-RecordListEntry-Template-Entry-Cell-Datum',
+          Template: /*html*/`
+  {~D:Record.DisplayName~}
+  `
+        }
       ],
 
     Renderables:
