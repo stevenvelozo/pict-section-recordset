@@ -31,7 +31,7 @@ const _DEFAULT_CONFIGURATION_List_RecordListHeader = (
           Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-List-RecordListHeader-Template] -->
   <tr>
-    {~T:PRSP-List-RecordListHeader-Template-Header~}
+    {~TS:PRSP-List-RecordListHeader-Template-Header:Record.TableCells~}
     {~T:PRSP-List-RecordListHeader-Template-Extra-Header~}
   </tr>
 	<!-- DefaultPackage end view template:  [PRSP-List-RecordListHeader-Template] -->
@@ -42,21 +42,11 @@ const _DEFAULT_CONFIGURATION_List_RecordListHeader = (
           Template: /*html*/`
   <!-- DefaultPackage pict view template: [PRSP-List-RecordListHeader-Template-Header] -->
   <th>
-    {~D:Record~}
+    {~D:Record.DisplayName~}
   </th>
   <!-- DefaultPackage end view template:  [PRSP-List-RecordListHeader-Template-Header] -->
   `
         },
-        {
-          Hash: 'PRSP-List-RecordListHeader-Template-Extra-Header',
-          Template: /*html*/`
-  <!-- DefaultPackage pict view template: [PRSP-List-RecordListHeader-Template-Extra-Header] -->
-  <th>
-    {~D:Record~}
-  </th>
-  <!-- DefaultPackage end view template:  [PRSP-List-RecordListHeader-Template-Extra-Header] -->
-  `
-        }
       ],
 
     Renderables:

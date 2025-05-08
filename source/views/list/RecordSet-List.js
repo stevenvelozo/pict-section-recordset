@@ -85,13 +85,55 @@ class viewRecordSetList extends libPictView
 			recordListEntry: null,
 			paginationBottom: null
 		};
+
+    this.displayData = {
+      tableCells: [],
+    }
 	}
 
 	onBeforeRenderList(pRecordListData)
 	{
 		// Put code here to preprocess columns into other data parts.
+    this.formatDisplayData(pRecordListData);
+
 		return pRecordListData;
 	}
+
+  formatDisplayData(pRecordListData)
+  {
+    pRecordListData.TableCells = [];
+    const tmpEntity = pRecordListData.RecordSetConfiguration.Entity;
+    this.excludedByDefaultCells = [
+      'ID' + tmpEntity,
+      'GUID' + tmpEntity,
+      'CreateDate',
+      'CreatingIDUser',
+      'DeleteDate',
+      'Deleted',
+      'DeletingIDUser',
+      'UpdateDate',
+      'UpdatingIDUser',
+    ];
+
+    const tmpSchema = pRecordListData.RecordSchema;
+    const tmpProperties = tmpSchema?.properties;
+    // loop throught the schema and add the columns to the tableCells
+    for (const tmpColumn in tmpProperties)
+    {
+      if (tmpProperties.hasOwnProperty(tmpColumn))
+      {
+        // Check if the column is excluded by the default list of columns (or is not a GUID/ID)
+        if (this.excludedByDefaultCells.includes(tmpColumn) === false)
+        {
+          pRecordListData.TableCells.push({
+            'Key': tmpColumn,
+            'DisplayName': tmpProperties?.[tmpColumn].title || tmpColumn,
+           });
+        }
+      }
+    }
+    return pRecordListData;
+  }
 
 	async renderList(pRecordSetConfiguration, pProviderHash, pFilterString, pOffset, pPageSize)
 	{
@@ -117,7 +159,7 @@ class viewRecordSetList extends libPictView
 				"TotalRecordCount": -1,
 
 				"Offset": pOffset || 0,
-				"PageSize": pPageSize || 100
+				"PageSize": pPageSize || 100,
 			};
 
 		tmpRecordListData.Records = await this.pict.providers[pProviderHash].getRecords({Offset:tmpRecordListData.Offset, PageSize:tmpRecordListData.PageSize});

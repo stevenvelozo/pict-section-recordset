@@ -30,7 +30,7 @@ const _DEFAULT_CONFIGURATION_List_PaginationTop = (
           Hash: 'PRSP-List-PaginationTop-Template',
           Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-List-PaginationTop-Template] -->
-  <nav id="RSP_Upper_Pagination_Container">
+  <nav id="RSP_Upper_Pagination_Container" role="navigation" aria-label="pagination">
     {~T:PRSP-List-Pagination-Template-Description~}
 		{~T:PRSP-List-Pagination-Template-Buttons~}
 	</nav>
@@ -41,11 +41,11 @@ const _DEFAULT_CONFIGURATION_List_PaginationTop = (
           Hash: 'PRSP-List-Pagination-Template-Description',
           Template: /*html*/`
   <!-- DefaultPackage pict view template: [PRSP-List-Pagination-Template-Description] -->
-  <p id="PRSP_Pagination_Description">
+  <div>
     <span id="PRSP_Pagination_Description_Records_Start">1</span> to
-    <span id="PRSP_Pagination_Description_Records_End">10</span> of
-    <span id="PRSP_Pagination_Description_Records_Total">100</span> records
-  </p>
+    <span id="PRSP_Pagination_Description_Records_End">{~D:Record.Records.Records.length~}</span> of
+    <span id="PRSP_Pagination_Description_Records_Total">{~D:Record.Records.Records.length~}</span> records
+  </div>
   <!-- DefaultPackage end view template:  [PRSP-List-Pagination-Template-Description] -->
   `
         },
@@ -65,7 +65,7 @@ const _DEFAULT_CONFIGURATION_List_PaginationTop = (
           Hash: 'PRSP-List-Pagination-Template-Button-Previous',
           Template: /*html*/`
   <!-- DefaultPackage pict view template: [PRSP-List-Pagination-Template-Button-Previous] -->
-  <li><a href="#">&laquo; Previous</a></li>
+  <li><a href="#" aria-label="Previous page">&laquo; Previous</a></li>
   <!-- DefaultPackage end view template:  [PRSP-List-Pagination-Template-Button-Previous] -->
   `
         },
@@ -73,7 +73,7 @@ const _DEFAULT_CONFIGURATION_List_PaginationTop = (
           Hash: 'PRSP-List-Pagination-Template-Button-Next',
           Template: /*html*/`
   <!-- DefaultPackage pict view template: [PRSP-List-Pagination-Template-Button-Next] -->
-  <li><a href="#">Next &raquo;</a></li>
+  <li><a href="#" aria-label="Next page">Next &raquo;</a></li>
   <!-- DefaultPackage end view template:  [PRSP-List-Pagination-Template-Button-Next] -->
   `
         },
@@ -81,7 +81,7 @@ const _DEFAULT_CONFIGURATION_List_PaginationTop = (
           Hash: 'PRSP-List-Pagination-Template-Button-Page',
           Template: /*html*/`
   <!-- DefaultPackage pict view template: [PRSP-List-Pagination-Template-Button-Page] -->
-  <li><a href="#">{~D:Record.Page~}</a></li>
+  <li><a href="#" aria-label="Go to page {~D:Record.Page~}">{~D:Record.Page~}</a></li>
   <!-- DefaultPackage end view template:  [PRSP-List-Pagination-Template-Button-Page] -->
   `
         }

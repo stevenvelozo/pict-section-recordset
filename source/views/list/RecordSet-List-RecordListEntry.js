@@ -37,31 +37,20 @@ const _DEFAULT_CONFIGURATION_List_RecordListEntry = (
         {
           Hash: 'PRSP-List-RecordListEntry-Template-Entry',
           Template: /*html*/`
-  <!-- DefaultPackage pict view template: [PRSP-List-RecordListEntry-Template-Entry] -->
   <tr>
-    {~T:PRSP-List-RecordListEntry-Template-Entry-Cell~}
-    {~T:PRSP-List-RecordListEntry-Template-Extra-Cell~}
+    {~TSWP:PRSP-List-RecordListEntry-Template-Entry-Cell:Context[0].Record.TableCells:Record~}
   </tr>
-  <!-- DefaultPackage end view template:  [PRSP-List-RecordListEntry-Template-Entry] -->
   `
         },
         {
           Hash: 'PRSP-List-RecordListEntry-Template-Entry-Cell',
           Template: /*html*/`
-  <!-- DefaultPackage pict view template: [PRSP-List-RecordListEntry-Template-Entry-Cell] -->
   <td>
-    {~DJ:Record~}
+    <!--{DVBK:Record.Payload:WatValHere?~}-->
+    {~D:Record~}
   </td>
-  <!-- DefaultPackage end view template:  [PRSP-List-RecordListEntry-Template-Entry-Cell] -->
   `
         },
-        {
-          Hash: 'PRSP-List-RecordListEntry-Template-Extra-Cell',
-          Template: /*html*/`
-  <!-- DefaultPackage pict view template: [PRSP-List-RecordListEntry-Template-Extra-Cell] -->
-  <!-- DefaultPackage end view template:  [PRSP-List-RecordListEntry-Template-Extra-Cell] -->
-  `
-        }
       ],
 
     Renderables:
