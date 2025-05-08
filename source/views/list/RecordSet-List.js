@@ -85,16 +85,12 @@ class viewRecordSetList extends libPictView
 			recordListEntry: null,
 			paginationBottom: null
 		};
-
-    this.displayData = {
-      tableCells: [],
-    }
 	}
 
 	onBeforeRenderList(pRecordListData)
 	{
 		// Put code here to preprocess columns into other data parts.
-    this.formatDisplayData(pRecordListData);
+    	this.formatDisplayData(pRecordListData);
 
 		return pRecordListData;
 	}

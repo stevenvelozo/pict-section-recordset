@@ -30,31 +30,30 @@ const _DEFAULT_CONFIGURATION_List_RecordListEntry = (
           Hash: 'PRSP-List-RecordListEntry-Template',
           Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-List-RecordListEntry-Template] -->
-  {~T:PRSP-List-RecordListEntry-Template-Entry~}
+  {~TSWP:PRSP-List-RecordListEntry-Template-Row:Record.Records.Records:Record.TableCells~}
 	<!-- DefaultPackage end view template:  [PRSP-List-RecordListEntry-Template] -->
 	`
         },
         {
-          Hash: 'PRSP-List-RecordListEntry-Template-Entry',
+          Hash: 'PRSP-List-RecordListEntry-Template-Row',
           Template: /*html*/`
   <tr>
-    {~TSWP:PRSP-List-RecordListEntry-Template-Entry-Cell:Context[0].Record.TableCells:Record~}
+    {~T:PRSP-List-RecordListEntry-Template-Row-Cell~}
   </tr>
   `
         },
         {
-          Hash: 'PRSP-List-RecordListEntry-Template-Entry-Cell',
+          Hash: 'PRSP-List-RecordListEntry-Template-Row-Cell',
           Template: /*html*/`
   <td>
-    <!--{DVBK:Record.Payload:WatValHere?~}-->
-    {~D:PRSP-List-RecordListEntry-Template-Entry-Cell-Datum:Record.Key:Record.Payload~}
+    {~DJ:Record~}
   </td>
   `
         },
         {
           Hash: 'PRSP-List-RecordListEntry-Template-Entry-Cell-Datum',
           Template: /*html*/`
-  {~D:Record.DisplayName~}
+  {~DJ:Record~}
   `
         }
       ],
