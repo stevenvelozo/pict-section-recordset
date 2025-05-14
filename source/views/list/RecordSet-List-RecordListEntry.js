@@ -37,7 +37,7 @@ const _DEFAULT_CONFIGURATION_List_RecordListEntry = (
           Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-List-RecordListEntry-Template] -->
 	<tr>
-		{~TSWP:PRSP-List-RecordListEntry-Template-Row-Cell:Record.Data:Record.Payload~}
+		{~TSWP:PRSP-List-RecordListEntry-Template-Row-Cell:Record.Payload.TableCells:Record.Data~}
 	</tr>
 	<!-- DefaultPackage end view template:  [PRSP-List-RecordListEntry-Template] -->
 	`
@@ -46,14 +46,14 @@ const _DEFAULT_CONFIGURATION_List_RecordListEntry = (
           Hash: 'PRSP-List-RecordListEntry-Template-Row-Cell',
           Template: /*html*/`
 	<td style="border: 1px solid red;">
-		{~D:Record.Data~}
+		  {~DVBK:Record.Payload:Record.Data.Key~}
 	</td>
 	`
         },
         {
           Hash: 'PRSP-List-RecordListEntry-Template-Entry-Cell-Datum',
           Template: /*html*/`
-  {~D:Record~}
+	<!-- DefaultPackage pict view template: [PRSP-List-RecordListEntry-Template-Entry-Cell-Datum] -->
   `
         }
       ],
