@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Example Pict-Section-Form List View </title>
+	<style>
+		.grid-container {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+			gap: 10px;
+		}
+		.grid-item{
+			background-color: #f0f0f0;
+			padding: 10px;
+			text-align: center;
+			border: 1px solid #ccc;
+			list-style-type: none;
+		}
+		.grid-item.active {
+			background-color: aliceblue
+		}
+		article {
+			padding: 20px;
+			border: 1px solid #ccc;
+			margin: 10px 0;
+		}
+	</style>
+</head>
+<body>
+	<!-- START Header template -->
+	<header id="RSP-Header-Container">
+		<!-- START Header-Title template -->
+		<h1>Book Title</h1>
+		<!-- END Header-Title template -->
+		<!-- START Header-Nav template -->
+		<nav id="RSP-Header-Nav">
+			<ul class="grid-container">
+				<li class="grid-item active"><a href="javascript:void(0);" onclick="toggleTabContent(event, 'RSP-Record-Toggleable-Content-1')">Details</a></li>
+				<li class="grid-item"><a href="javascript:void(0);" onclick="toggleTabContent(event, 'RSP-Record-Toggleable-Content-2')">Author</a></li>
+				<li class="grid-item"><a href="javascript:void(0);" onclick="toggleTabContent(event, 'RSP-Record-Toggleable-Content-3')">Series</a></li>
+			</ul>
+		</nav>
+		<!-- END Header-Nav template -->
+	</header>
+	<!-- END Header template -->
+
+	<!-- START Record template -->
+	<section id="RSP-Record-Container">
+		<!-- START Record Content -->
+		<article id="RSP-Record-Toggleable-Content-1">
+			<!-- START Record Content-Description template -->
+			<p>Book Description</p>
+			<!-- END Record Content-Description template -->
+			<!-- START Record Content-Image template -->
+			<img src="image.jpg" alt="Book Image">
+			<!-- END Record Content-Image template -->
+			<!-- START Record Content-Details template -->
+			<h4>Book Metadata:</h4>
+			<ul>
+				<li>Info 1</li>
+				<li>Info 2</li>
+				<li>Info 3</li>
+			</ul>
+			<!-- END Record Content-Details template -->
+		</article>
+		<!-- END Record Content -->
+
+		<!-- START Record Content -->
+		<article id="RSP-Record-Toggleable-Content-2" style="display:none;">
+			<!-- START Record Content-Title template -->
+			<h3>Joined Entity 1 Title</h3>
+			<!-- END Record Content-Title template -->
+			<!-- START Record Content-Description template -->
+			<p>Joined Entity 1 Description</p>
+			<!-- END Record Content-Description template -->
+			<!-- START Record Content-Details template -->
+			<ul>
+				<li>Detail A</li>
+				<li>Detail B</li>
+				<li>Detail C</li>
+			</ul>
+			<!-- END Record Content-Details template -->
+		</article>
+		<!-- END Record Content -->
+
+		<!-- START Record Content -->
+		<article id="RSP-Record-Toggleable-Content-3" style="display:none;">
+			<!-- START Record Content-Title template -->
+			<h3>Joined Entity 2 Title</h3>
+			<!-- END Record Content-Title template -->
+			<!-- START Record Content-Description template -->
+			<p>Joined Entity 2 Description</p>
+			<!-- END Record Content-Description template -->
+			<!-- START Record Content-Details template -->
+			<ul>
+				<li>Detail X</li>
+				<li>Detail Y</li>
+				<li>Detail Z</li>
+			</ul>
+			<!-- END Record Content-Details template -->
+		</article>
+		<!-- END Record Content -->
+
+	</section>
+	<!-- END Record template -->
+
+	<!-- Footer template -->
+	<footer id="RSP-Footer-Container">
+		<!-- NOTE: slot for additional set actions -->
+		<!-- START Record Content-Button template -->
+		<button type="button" id="RSP-Record-Button" onclick="window.location='./book-edit-view.html'">Edit Record</button>
+		<!-- END Record Content-Button template -->
+	</footer>
+	<!-- END Footer template -->
+
+
+	<script>
+		function toggleTabContent(event, contentId) {
+			// Remove 'active' class from all tabs
+			const tabs = document.querySelectorAll('#RSP-Header-Nav .grid-item');
+			tabs.forEach(tab => {
+				tab.classList.remove('active');
+			});
+			// Add 'active' class to the clicked tab
+			event.currentTarget.parentElement.classList.add('active');
+			// Hide all content sections
+			const contents = document.querySelectorAll('article[id^="RSP-Record-Toggleable-Content-"]');
+			contents.forEach(content => {
+				if (content.id === contentId) {
+					content.style.display = 'block';
+				} else {
+					content.style.display = 'none';
+				}
+			});
+		}
+	</script>
+</body>
+</html>
