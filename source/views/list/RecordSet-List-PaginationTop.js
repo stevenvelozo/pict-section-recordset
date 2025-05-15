@@ -53,7 +53,7 @@ const _DEFAULT_CONFIGURATION_List_PaginationTop = (
 					Hash: 'PRSP-List-Pagination-Template-Buttons',
 					Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-List-Pagination-Template-Buttons] -->
-	<ul>
+	<ul style="list-style-type: none; padding: 0; display: flex; justify-content: center;">
 		{~T:PRSP-List-Pagination-Template-Button-Previous~}
 		{~TS:PRSP-List-Pagination-Template-Button-Page~}
 		{~T:PRSP-List-Pagination-Template-Button-Next~}
@@ -73,7 +73,7 @@ const _DEFAULT_CONFIGURATION_List_PaginationTop = (
 					Hash: 'PRSP-List-Pagination-Template-Button-Next',
 					Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-List-Pagination-Template-Button-Next] -->
-	<li><a href="#" aria-label="Next page">Next &raquo;</a></li>
+	<li style="margin-left: 15px;"><a href="#" aria-label="Next page">Next &raquo;</a></li>
 	<!-- DefaultPackage end view template:  [PRSP-List-Pagination-Template-Button-Next] -->
 	`
 				},

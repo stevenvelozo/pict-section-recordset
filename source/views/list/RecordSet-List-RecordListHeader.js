@@ -41,7 +41,7 @@ const _DEFAULT_CONFIGURATION_List_RecordListHeader = (
           Hash: 'PRSP-List-RecordListHeader-Template-Header',
           Template: /*html*/`
   <!-- DefaultPackage pict view template: [PRSP-List-RecordListHeader-Template-Header] -->
-  <th>
+  <th style="border-bottom: 1px solid #ccc; padding: 5px; background-color: #f2f2f2; color: #333;">
     {~D:Record.DisplayName~}
   </th>
   <!-- DefaultPackage end view template:  [PRSP-List-RecordListHeader-Template-Header] -->

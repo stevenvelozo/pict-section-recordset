@@ -40,7 +40,7 @@ const _DEFAULT_CONFIGURATION_List_RecordList = (
           Hash: 'PRSP-List-RecordList-Template-Table',
           Template: /*html*/`
   <!-- DefaultPackage pict view template: [PRSP-List-RecordList-Template-Table] -->
-  <table id="PRSP_List_Table">
+  <table id="PRSP_List_Table" tablespacing="0" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
     <thead>{~T:PRSP-List-RecordListHeader-Template~}</thead>
     <tbody id="PRSP_RecordList_Container_Entries">
       {~T:PRSP-List-RecordListEntry-Template~}
