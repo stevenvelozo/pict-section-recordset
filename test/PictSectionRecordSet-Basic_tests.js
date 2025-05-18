@@ -74,6 +74,10 @@ suite
 								Expect(_Application).to.be.an('object', 'Application should be an object.');
 								Expect(_Application).to.be.an.instanceof(libPictSectionRecordSet.PictRecordSetApplication, 'Application should be an instance of PictRecordSetApplication.');
 
+								_Application.testDone = fDone;
+
+								_Application.initialize();
+
 
 								// let _PictSectionRecordSet = _Pict.addView(tmpViewHash, tmpViewConfiguration, libPictSectionRecordSet);
 
@@ -87,7 +91,7 @@ suite
 								// Expect(_PictSectionRecordSet._Package).to.be.an('object', 'Should have a _Package object.');
 								// Expect(_PictSectionRecordSet._Package.name).to.equal('pict-section-recordset', '_Package.package.name should be set.');
 
-								return fDone();
+								// return fDone();
 							}
 						);
 					});

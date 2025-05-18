@@ -1,4 +1,4 @@
-const libPictView = require('pict-view');
+const libPictRecordSetRecordView = require('../RecordSet-RecordBaseView.js');
 
 const _DEFAULT_CONFIGURATION__Edit = (
   {
@@ -48,7 +48,7 @@ const _DEFAULT_CONFIGURATION__Edit = (
     Manifests: {}
   });
 
-class viewRecordSetEdit extends libPictView
+class viewRecordSetEdit extends libPictRecordSetRecordView
 {
   constructor(pFable, pOptions, pServiceHash)
   {

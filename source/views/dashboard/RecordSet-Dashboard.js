@@ -1,4 +1,4 @@
-const libPictView = require('pict-view');
+const libPictRecordSetRecordView = require('../RecordSet-RecordBaseView.js');
 
 const _DEFAULT_CONFIGURATION__Dashboard = (
   {
@@ -48,7 +48,7 @@ const _DEFAULT_CONFIGURATION__Dashboard = (
     Manifests: {}
   });
 
-class viewRecordSetDashboard extends libPictView
+class viewRecordSetDashboard extends libPictRecordSetRecordView
 {
   constructor(pFable, pOptions, pServiceHash)
   {

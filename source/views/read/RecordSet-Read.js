@@ -1,4 +1,5 @@
-const libPictView = require('pict-view');
+const libPictRecordSetRecordView = require('../RecordSet-RecordBaseView.js');
+
 
 const viewHeaderRead = require('./RecordSet-Read-HeaderRead.js');
 const viewRecordRead = require('./RecordSet-Read-RecordRead.js');
@@ -53,7 +54,7 @@ const _DEFAULT_CONFIGURATION__Read = (
 		Manifests: {}
 	});
 
-class viewRecordSetRead extends libPictView
+class viewRecordSetRead extends libPictRecordSetRecordView
 {
 	constructor(pFable, pOptions, pServiceHash)
 	{
@@ -76,24 +77,80 @@ class viewRecordSetRead extends libPictView
 		return pRecordReadData;
 	}
 
+	async renderRead(pRecordConfiguration, pProviderHash, pFilterString, pOffset, pPageSize)
+	{
+		// Get the records
+		if (!(pProviderHash in this.pict.providers))
+		{
+			this.pict.log.error(`RecordSetRead: No provider found for ${pProviderHash} in ${pRecordConfiguration.RecordSet}.  Read Render failed.`);
+			return false;
+		}
+
+		let tmpRecordReadData =
+			{
+				"RecordSet": pRecordConfiguration.RecordSet,
+
+				"RecordConfiguration": pRecordConfiguration,
+
+				"RenderDestination": this.options.DefaultDestinationAddress,
+
+				"Record": false,
+			};
+
+		// If the record configuration does not have a GUID, try to infer one from the RecordSet name
+		if (!tmpRecordReadData.RecordConfiguration.GUIDAddress)
+		{
+			// So this will be something like "GUIDBook" or "GUIDAuthor"
+			tmpRecordReadData.RecordConfiguration.GUIDAddress = `GUID${pRecordConfiguration.RecordSet}`;
+		}
+
+		tmpRecordReadData.Records = await this.pict.providers[pProviderHash].getRecords({Offset:tmpRecordReadData.Offset, PageSize:tmpRecordReadData.PageSize});
+		tmpRecordReadData.TotalRecordCount = await this.pict.providers[pProviderHash].getRecordSetCount({Offset:tmpRecordReadData.Offset, PageSize:tmpRecordReadData.PageSize});
+		tmpRecordReadData.RecordSchema = this.pict.providers[pProviderHash].recordSchema;
+
+		tmpRecordReadData = this.onBeforeRenderRead(tmpRecordReadData);
+
+		// If there isn't a title template passed in as part of the configuration,, create one.
+		if (!tmpRecordReadData.RecordConfiguration.TitleTemplate)
+		{
+			// This dynamically grabs the guid address and tries to pull it from the record
+			tmpRecordReadData.RecordConfiguration.TitleTemplate = `{~D:Record.RecordSet~} GUID [{~D:Record.Record.${tmpRecordReadData.RecordConfiguration.GUIDAddress}}] `;
+		}
+
+
+		this.renderAsync('PRSP_Renderable_Read', tmpRecordReadData.RenderDestination, tmpRecordReadData,
+			function (pError)
+			{
+				if (pError)
+				{
+					this.pict.log.error(`RecordSetRead: Error rendering read ${pError}`, tmpRecordReadData);
+					return false;
+				}
+
+				if (this.pict.LogNoisiness > 0)
+				{
+					this.pict.log.info(`RecordSetRead: Rendered read ${tmpRecordReadData.RecordSet} with ${tmpRecordReadData.RecordConfiguration.GUIDAddress} []`, tmpRecordReadData);
+				}
+				else
+				{
+					this.pict.log.info(`RecordSetRead: Rendered read ${tmpRecordReadData.RecordSet} with ${tmpRecordReadData.RecordConfiguration.GUIDAddress} []`);
+				}
+				return true;
+			}.bind(this));
+	}
+
 	onInitialize()
 	{
-		// this.childViews.headerList = this.pict.addView('PRSP-List-HeaderList', viewHeaderList.default_configuration, viewHeaderList);
-		// this.childViews.title = this.pict.addView('PRSP-List-Title', viewTitle.default_configuration, viewTitle);
-		// this.childViews.paginationTop = this.pict.addView('PRSP-List-PaginationTop', viewPaginationTop.default_configuration, viewPaginationTop);
-		// this.childViews.recordList = this.pict.addView('PRSP-List-RecordList', viewRecordList.default_configuration, viewRecordList);
-		// this.childViews.recordListHeader = this.pict.addView('PRSP-List-RecordListHeader', viewRecordListHeader.default_configuration, viewRecordListHeader);
-		// this.childViews.recordListEntry = this.pict.addView('PRSP-List-RecordListEntry', viewRecordListEntry.default_configuration, viewRecordListEntry);
-		// this.childViews.paginationBottom = this.pict.addView('PRSP-List-PaginationBottom', viewPaginationBottom.default_configuration, viewPaginationBottom);
+		this.childViews.headerRead = this.pict.addView('PRSP-Read-HeaderRead', viewHeaderRead.default_configuration, viewHeaderRead);
+		this.childViews.recordRead = this.pict.addView('PRSP-Read-RecordRead', viewRecordRead.default_configuration, viewRecordRead);
+		this.childViews.recordReadExtra = this.pict.addView('PRSP-Read-RecordReadExtra', viewRecordReadExtra.default_configuration, viewRecordReadExtra);
+		this.childViews.tabBarRead = this.pict.addView('PRSP-Read-TabBarRead', viewTabBarRead.default_configuration, viewTabBarRead);
 
 		// // Initialize the subviews
-		// this.childViews.headerList.initialize();
-		// this.childViews.title.initialize();
-		// this.childViews.paginationTop.initialize();
-		// this.childViews.recordList.initialize();
-		// this.childViews.recordListHeader.initialize();
-		// this.childViews.recordListEntry.initialize();
-		// this.childViews.paginationBottom.initialize();
+		this.childViews.headerRead.initialize();
+		this.childViews.recordRead.initialize();
+		this.childViews.recordReadExtra.initialize();
+		this.childViews.tabBarRead.initialize();
 
 		return super.onInitialize();
 	}

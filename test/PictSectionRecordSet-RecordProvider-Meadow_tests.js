@@ -74,7 +74,7 @@ suite
 						let _PictEnvironment = new libPict.EnvironmentObject(_Pict);
 
 						let _Application = new DoNothingApplication(_Pict, {});
-						_Pict.addProvider('BooksProvider', { Entity: 'Book', URLPrefix: 'http://www.datadebase.com:8086/1.0/' }, require('../source/providers/RecordSet-RecordProvider-MeadowEndpoints.js'));
+						_Pict.addProvider('BooksProvider', { Entity: 'Book', URLPrefix: 'http://localhost:8086/1.0/' }, require('../source/providers/RecordSet-RecordProvider-MeadowEndpoints.js'));
 						await new Promise((resolve, reject) => _Application.initializeAsync((error) =>
 						{
 							if (error)

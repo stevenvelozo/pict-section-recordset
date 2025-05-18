@@ -1,4 +1,4 @@
-const libPictView = require('pict-view');
+const libPictRecordSetRecordView = require('../RecordSet-RecordBaseView.js');
 
 const viewHeaderList = require('./RecordSet-List-HeaderList.js');
 const viewTitle = require('./RecordSet-List-Title.js');
@@ -69,7 +69,7 @@ const _DEFAULT_CONFIGURATION__List = (
 		Manifests: {}
 	});
 
-class viewRecordSetList extends libPictView
+class viewRecordSetList extends libPictRecordSetRecordView
 {
 	constructor(pFable, pOptions, pServiceHash)
 	{
@@ -87,49 +87,83 @@ class viewRecordSetList extends libPictView
 		};
 	}
 
+	handleRecordSetListRoute(pRoutePayload)
+	{
+		if (typeof(pRoutePayload) != 'object')
+		{
+			throw new Error(`Pict RecordSet List view route handler called with invalid route payload.`);
+		}
+
+		//_Pict.PictSectionRecordSet.recordSetProviderConfigurations['Book'], 'RSP-Provider-Book'
+		// FIXME: Not in love with this but good enough to start.
+		// FIXME: Typescript mumbo jumbo
+		// if (!('PictSectionRecordSet' in this.pict))
+		// {
+		// 	return false;
+		// }
+		const tmpProviderConfiguration = this.pict.PictSectionRecordSet.recordSetProviderConfigurations[pRoutePayload.data.RecordSet];
+		const tmpProviderHash = `RSP-Provider-${pRoutePayload.data.RecordSet}`;
+
+		const tmpFilterString = pRoutePayload.data.FilterString ? pRoutePayload.data.FilterString : '';
+
+		const tmpOffset = pRoutePayload.data.Offset ? pRoutePayload.data.Offset : 0;
+		const tmpPageSize = pRoutePayload.data.PageSize ? pRoutePayload.data.PageSize : 100;
+
+		return this.renderList(tmpProviderConfiguration, tmpProviderHash, tmpFilterString, tmpOffset, tmpPageSize);
+	}
+
+	addRoutes(pPictRouter)
+	{
+		pPictRouter.addRoute('/PSRS/:RecordSet/List/FilteredTo/:FilterString/:Offset/:PageSize', this.handleRecordSetListRoute.bind(this));
+		pPictRouter.addRoute('/PSRS/:RecordSet/List/:Offset/:PageSize', this.handleRecordSetListRoute.bind(this));
+		pPictRouter.addRoute('/PSRS/:RecordSet/List/:Offset', this.handleRecordSetListRoute.bind(this));
+		pPictRouter.addRoute('/PSRS/:RecordSet/List', this.handleRecordSetListRoute.bind(this));
+		return true;
+	}
+
 	onBeforeRenderList(pRecordListData)
 	{
 		// Put code here to preprocess columns into other data parts.
-    	this.formatDisplayData(pRecordListData);
+		this.formatDisplayData(pRecordListData);
 
 		return pRecordListData;
 	}
 
-  formatDisplayData(pRecordListData)
-  {
-    pRecordListData.TableCells = [];
-    const tmpEntity = pRecordListData.RecordSetConfiguration.Entity;
-    this.excludedByDefaultCells = [
-      'ID' + tmpEntity,
-      'GUID' + tmpEntity,
-      'CreateDate',
-      'CreatingIDUser',
-      'DeleteDate',
-      'Deleted',
-      'DeletingIDUser',
-      'UpdateDate',
-      'UpdatingIDUser',
-    ];
+	formatDisplayData(pRecordListData)
+	{
+		pRecordListData.TableCells = [];
+		const tmpEntity = pRecordListData.RecordSetConfiguration.Entity;
+		this.excludedByDefaultCells = [
+			'ID' + tmpEntity,
+			'GUID' + tmpEntity,
+			'CreateDate',
+			'CreatingIDUser',
+			'DeleteDate',
+			'Deleted',
+			'DeletingIDUser',
+			'UpdateDate',
+			'UpdatingIDUser',
+		];
 
-    const tmpSchema = pRecordListData.RecordSchema;
-    const tmpProperties = tmpSchema?.properties;
-    // loop throught the schema and add the columns to the tableCells
-    for (const tmpColumn in tmpProperties)
-    {
-      if (tmpProperties.hasOwnProperty(tmpColumn))
-      {
-        // Check if the column is excluded by the default list of columns (or is not a GUID/ID)
-        if (this.excludedByDefaultCells.includes(tmpColumn) === false)
-        {
-          pRecordListData.TableCells.push({
-            'Key': tmpColumn,
-            'DisplayName': tmpProperties?.[tmpColumn].title || tmpColumn,
-           });
-        }
-      }
-    }
-    return pRecordListData;
-  }
+		const tmpSchema = pRecordListData.RecordSchema;
+		const tmpProperties = tmpSchema?.properties;
+		// loop throught the schema and add the columns to the tableCells
+		for (const tmpColumn in tmpProperties)
+		{
+			if (tmpProperties.hasOwnProperty(tmpColumn))
+			{
+				// Check if the column is excluded by the default list of columns (or is not a GUID/ID)
+				if (this.excludedByDefaultCells.includes(tmpColumn) === false)
+				{
+					pRecordListData.TableCells.push({
+						'Key': tmpColumn,
+						'DisplayName': tmpProperties?.[tmpColumn].title || tmpColumn,
+					});
+				}
+			}
+		}
+		return pRecordListData;
+	}
 
 	async renderList(pRecordSetConfiguration, pProviderHash, pFilterString, pOffset, pPageSize)
 	{
@@ -141,26 +175,83 @@ class viewRecordSetList extends libPictView
 		}
 
 		let tmpRecordListData =
-			{
-				"Title": pRecordSetConfiguration.RecordSet,
+		{
+			"Title": pRecordSetConfiguration.RecordSet,
 
-				"RecordSet": pRecordSetConfiguration.RecordSet,
-				"RecordSetConfiguration": pRecordSetConfiguration,
+			"RecordSet": pRecordSetConfiguration.RecordSet,
+			"RecordSetConfiguration": pRecordSetConfiguration,
 
-				"RenderDestination": this.options.DefaultDestinationAddress,
+			"RenderDestination": this.options.DefaultDestinationAddress,
 
-				"FilterString": pFilterString || '',
+			"FilterString": pFilterString || false,
 
-				"Records": [],
-				"TotalRecordCount": -1,
+			"Records": [],
+			"TotalRecordCount": -1,
 
-				"Offset": pOffset || 0,
-				"PageSize": pPageSize || 100,
-			};
+			"Offset": pOffset || 0,
+			"PageSize": pPageSize || 100,
+		};
 
-		tmpRecordListData.Records = await this.pict.providers[pProviderHash].getRecords({Offset:tmpRecordListData.Offset, PageSize:tmpRecordListData.PageSize});
-		tmpRecordListData.TotalRecordCount = await this.pict.providers[pProviderHash].getRecordSetCount({Offset:tmpRecordListData.Offset, PageSize:tmpRecordListData.PageSize});
+		// TODO: There are still problems with the way these have nested data.  Discuss how we might move that around
+		// Fetch the records
+		tmpRecordListData.Records = await this.pict.providers[pProviderHash].getRecords(tmpRecordListData);
+		// Get the total record count
+		tmpRecordListData.TotalRecordCount = await this.pict.providers[pProviderHash].getRecordSetCount(tmpRecordListData);
+		// Get the record schema
 		tmpRecordListData.RecordSchema = this.pict.providers[pProviderHash].recordSchema;
+
+		// Get the "page end record number" for the current page (e.g. for messaging like Record 700 to 800 of 75,000)
+		tmpRecordListData.PageEnd = parseInt(tmpRecordListData.Offset) + parseInt(tmpRecordListData.Records.Records.length);
+
+		// Compute the number of pages total
+		tmpRecordListData.PageCount = Math.ceil(tmpRecordListData.TotalRecordCount.Count / tmpRecordListData.PageSize);
+
+		// Generate each page's links.
+		// TODO: This is fast and cool; any reason not to?
+		tmpRecordListData.PageLinks = [];
+		for (let i = 0; i < tmpRecordListData.PageCount; i++)
+		{
+			if (tmpRecordListData.FilterString)
+			{
+				tmpRecordListData.PageLinks.push(
+					{
+						Page: i+1,
+						URL:`#/PSRS/${tmpRecordListData.RecordSet}/List/FilteredTo/${tmpRecordListData.FilterString}/${i * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+					});
+			}
+			else
+			{
+				tmpRecordListData.PageLinks.push(
+					{
+						Page: i+1,
+						URL:`#/PSRS/${tmpRecordListData.RecordSet}/List/${i * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+					});
+			}
+		}
+
+		// Get "bookmarks" as references to the array of page links.
+		tmpRecordListData.PageLinkBookmarks = (
+			{
+				Current: Math.floor(tmpRecordListData.Offset / tmpRecordListData.PageSize)
+			});
+		tmpRecordListData.PageLinkBookmarks.Previous = tmpRecordListData.PageLinkBookmarks.Current - 1;
+		tmpRecordListData.PageLinkBookmarks.Next = tmpRecordListData.PageLinkBookmarks.Current + 1;
+		if (tmpRecordListData.PageLinkBookmarks.Previous < 0)
+		{
+			tmpRecordListData.PageLinkBookmarks.Previous = false;
+		}
+		else
+		{
+			tmpRecordListData.PageLinkBookmarks.PreviousLink = tmpRecordListData.PageLinks[tmpRecordListData.PageLinkBookmarks.Previous];
+		}
+		if (tmpRecordListData.PageLinkBookmarks.Next >= tmpRecordListData.PageLinks.length)
+		{
+			tmpRecordListData.PageLinkBookmarks.Next = false;
+		}
+		else
+		{
+			tmpRecordListData.PageLinkBookmarks.NextLink = tmpRecordListData.PageLinks[tmpRecordListData.PageLinkBookmarks.Next];
+		}
 
 		tmpRecordListData = this.onBeforeRenderList(tmpRecordListData);
 
@@ -175,11 +266,11 @@ class viewRecordSetList extends libPictView
 
 				if (this.pict.LogNoisiness > 0)
 				{
-					this.pict.log.info(`RecordSetList: Rendered list ${tmpRecordListData.RecordSet} with ${tmpRecordListData.Records.length} records.`, tmpRecordListData);
+					this.pict.log.info(`RecordSetList: Rendered list ${tmpRecordListData.RecordSet} with ${tmpRecordListData.Records.Records.length} records.`, tmpRecordListData);
 				}
 				else
 				{
-					this.pict.log.info(`RecordSetList: Rendered list ${tmpRecordListData.RecordSet} with ${tmpRecordListData.Records.length} records.`);
+					this.pict.log.info(`RecordSetList: Rendered list ${tmpRecordListData.RecordSet} with ${tmpRecordListData.Records.Records.length} records.`);
 				}
 				return true;
 			}.bind(this));

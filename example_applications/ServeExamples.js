@@ -6,7 +6,7 @@ const defaultFableSettings = (
 		ProductVersion: '1.0.0',
 		APIServerPort: 9090,
 
-		OratorHTTPProxyDestinationURL: 'http://www.datadebase.com:8086/',
+		OratorHTTPProxyDestinationURL: 'http://localhost:8086/',
 	});
 
 // Initialize Fable

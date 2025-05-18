@@ -9,16 +9,19 @@ const viewRecordSetDashboard = require('../views/dashboard/RecordSet-Dashboard.j
 const providerBase = require('../providers/RecordSet-RecordProvider-Base.js');
 const providerMeadowEndpoints = require('../providers/RecordSet-RecordProvider-MeadowEndpoints.js');
 
-const providerPictRouter = require('pict-router');
+const providerRouter = require('../providers/RecordSet-Router.js');
 
-const { type } = require('os');
+const _DEFAULT_CONFIGURATION =
+	{
+		DefaultMeadowURLPrefix: '/1.0/'
+	};
 
 class RecordSetMetacontroller extends libFableServiceProviderBase
 {
 	constructor(pFable, pOptions, pServiceHash)
 	{
-		// Intersect default options, parent constructor, service information
-		super(pFable, pOptions, pServiceHash);
+		let tmpOptions = Object.assign({}, _DEFAULT_CONFIGURATION, pOptions);
+		super(pFable, tmpOptions, pServiceHash);
 
 		/** @type {import('pict') & { addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any }} */
 		this.fable;
@@ -81,6 +84,8 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 			return false;
 		}
 
+		let tmpProvider = false;
+
 		const providerConfiguration = Object.assign({}, {Hash: `RSP-Provider-${pRecordSetConfiguration.RecordSet}`}, pRecordSetConfiguration);
 		this.recordSetProviderConfigurations[providerConfiguration.RecordSet] = providerConfiguration;
 
@@ -106,7 +111,7 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 				{
 					providerConfiguration.URLPrefix = '/1.0/';
 				}
-				this.recordSetProviders[pRecordSetConfiguration.RecordSet] = this.fable.addProvider(providerConfiguration.Hash, providerConfiguration, providerMeadowEndpoints);
+				tmpProvider = this.recordSetProviders[pRecordSetConfiguration.RecordSet] = this.fable.addProvider(providerConfiguration.Hash, providerConfiguration, providerMeadowEndpoints);
 				break;
 			default:
 			case 'Custom':
@@ -116,21 +121,21 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 					if (!(providerConfiguration.ProviderHash in this.fable.servicesMap))
 					{
 						this.fable.log.error(`RecordSetMetacontroller: ${this.UUID} loadRecordSetConfiguration called with invalid configuration. ProviderHash ${providerConfiguration.ProviderHash} not found.  Falling back to base.`);
-						this.recordSetProviders[providerConfiguration.RecordSet] = this.fable.servicesMap[providerConfiguration.ProviderHash];
+						tmpProvider = this.recordSetProviders[providerConfiguration.RecordSet] = this.fable.servicesMap[providerConfiguration.ProviderHash];
 					}
 					else
 					{
-						this.recordSetProviders[providerConfiguration.RecordSet] = this.fable.addProvider(providerConfiguration.Hash, providerConfiguration, providerBase);
+						tmpProvider = this.recordSetProviders[providerConfiguration.RecordSet] = this.fable.addProvider(providerConfiguration.Hash, providerConfiguration, providerBase);
 					}
 				}
 				else
 				{
-					this.recordSetProviders[providerConfiguration.RecordSet] = this.fable.addProvider(providerConfiguration.Hash, providerConfiguration, providerBase);
+					tmpProvider = this.recordSetProviders[providerConfiguration.RecordSet] = this.fable.addProvider(providerConfiguration.Hash, providerConfiguration, providerBase);
 				}
 				break;
 		}
 
-		return true;
+		return tmpProvider;
 	}
 
 	loadRecordSetConfigurationArray(pRecordSetConfigurationArray)
@@ -154,6 +159,72 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		}
 	}
 
+	loadRecordSetDynamcally(pRecordSet, pEntity, pDefaultFilter)
+	{
+		if (typeof(pRecordSet) === 'object')
+		{
+			const tmpRecordSetProviderHash = `RSP-Provider-${pRecordSet.RecordSet}`;
+			this.loadRecordSetConfiguration(pRecordSet);
+
+			return this.fable.providers[tmpRecordSetProviderHash].initializeAsync((pError) =>
+				{
+					this.log.trace(`RecordSet [${pRecordSet.RecordSet} dynamically loaded.`);
+				})
+		}
+
+		if (typeof(pRecordSet) === 'string')
+		{
+			const tmpRecordSet = pRecordSet;
+			const tmpRecordSetProviderHash = `RSP-Provider-${tmpRecordSet}`;
+
+			const tmpEntity = (typeof(pEntity) === 'string') ? pEntity : tmpRecordSet;
+			const tmpDefaultFilter = (typeof(pDefaultFilter) === 'string') ? pDefaultFilter : '';
+			const tmpRecordSetConfiguration = {
+				"RecordSet": tmpRecordSet,
+
+
+				"RecordSetType": "MeadowEndpoint",
+				"RecordSetMeadowEntity": tmpEntity,
+				"RecordSetDefaultFilter": tmpDefaultFilter,
+
+				"RecordSetURLPrefix": "/1.0/"
+			};
+
+			this.loadRecordSetConfiguration(tmpRecordSetConfiguration);
+			return this.fable.providers[tmpRecordSetProviderHash].initializeAsync(
+				(pError) =>
+				{
+					this.log.trace(`RecordSet [${tmpRecordSetConfiguration.RecordSet} dynamically loaded.`);
+				});
+		}
+
+		this.log.error(`RecordSet MetaController loadRecordSetDynamically called with invalid parameter (expected an Object or String - parameter was ${typeof(pRecordSet)}.`);
+		return false;
+	}
+
+	handleLoadDynamicRecordSetRoute(pRoutePayload)
+	{
+		if (typeof(pRoutePayload) != 'object')
+		{
+			throw new Error(`Pict RecordSet List view route handler called with invalid route payload.`);
+		}
+
+		const tmpRecordSet = pRoutePayload.data.RecordSet;
+
+		const tmpEntity = pRoutePayload.data.Entity ? pRoutePayload.data.Entity : tmpRecordSet;
+		const tmpDefaultFilter = pRoutePayload.data.DefaultFilter ? pRoutePayload.data.DefaultFilter : '';
+
+		return this.loadRecordSetDynamcally(tmpRecordSet, tmpEntity, tmpDefaultFilter);
+	}
+
+	addRoutes(pPictRouter)
+	{
+		pPictRouter.addRoute('/PSRS/:RecordSet/LoadDynamic', this.handleLoadDynamicRecordSetRoute.bind(this));
+		pPictRouter.addRoute('/PSRS/:RecordSet/LoadDynamic/:Entity', this.handleLoadDynamicRecordSetRoute.bind(this));
+		pPictRouter.addRoute('/PSRS/:RecordSet/LoadDynamic/:Entity/:DefaultFilter', this.handleLoadDynamicRecordSetRoute.bind(this));
+		return true;
+	}
+
 	initialize()
 	{
 		if (this.has_initialized)
@@ -174,23 +245,24 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		this.childViews.read.initialize();
 		this.childViews.dashboard.initialize();
 
+		// Now initialize the router
+
 		if (this.fable.settings.hasOwnProperty('DefaultRecordSetConfigurations'))
 		{
 			this.loadRecordSetConfigurationArray(this.fable.settings.DefaultRecordSetConfigurations);
 		}
 
-		// Load pict-router if it isn't loaded
-		if (!('Pict-Router' in this.fable.providers))
+		this.has_initialized = true;		// Load pict-router if it isn't loaded
+		if (!('RecordSetRouter' in this.fable.providers))
 		{
-			this.fable.addProvider('Pict-Router', {}, providerPictRouter);
+			this.fable.addProvider('RecordSetRouter', {}, providerRouter);
+			this.fable.providers.RecordSetRouter.initialize();
 		}
 
-		this.has_initialized = true;
-
-		return this;
+		return true;
 	}
 }
 
 module.exports = RecordSetMetacontroller;
 
-RecordSetMetacontroller.default_configuration = { };
+RecordSetMetacontroller.default_configuration = _DEFAULT_CONFIGURATION;

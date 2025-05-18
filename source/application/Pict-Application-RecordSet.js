@@ -3,14 +3,14 @@ const libPictApplication = require('pict-application');
 const libPictSectionRecordSet = require('../Pict-Section-RecordSet.js');
 
 /**
- * Represents a PictSectionFormApplication.
+ * Represents a PictSectionRecordSetApplication.
  *
- * This is the automagic controller for a dyncamic form application.
+ * This is the automagic controller for a dynamic record set application.
  *
  * @class
  * @extends libPictApplication
  */
-class PictSectionFormApplication extends libPictApplication
+class PictSectionRecordSetApplication extends libPictApplication
 {
 	constructor(pFable, pOptions, pServiceHash)
 	{
@@ -32,9 +32,17 @@ class PictSectionFormApplication extends libPictApplication
 		// Initialize the parent class
 		return super.onInitialize();
 	}
+
+	onAfterInitialize()
+	{
+		// Now add the routes
+		this.pict.providers.RecordSetRouter.addRoutes(this.fable.providers.RecordSetRouter.pictRouter);
+
+		return super.onAfterInitialize();
+	}
 };
 
-module.exports = PictSectionFormApplication
+module.exports = PictSectionRecordSetApplication
 
 module.exports.default_configuration = (
 {
