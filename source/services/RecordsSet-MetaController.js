@@ -44,6 +44,8 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		this.recordSetProviders = {};
 		this.recordSetProviderConfigurations = {};
 
+		this.recordSetListConfigurations = {};
+
 		this.has_initialized = false;
 	}
 

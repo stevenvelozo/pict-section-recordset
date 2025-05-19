@@ -20,6 +20,21 @@ module.exports.default_configuration.pict_configuration = (
 					"RecordSetType": "MeadowEndpoint", // Could be "Custom" which would require a provider to already be created for the record set.
 					"RecordSetMeadowEntity": "Book",   // This leverages the /Schema endpoint to get the record set columns.
 
+					"RecordSetListColumns": [
+						{
+							"Key": "Title",
+							"DisplayName": "Title"
+						},
+						{
+							"Key": "Genre",
+							"DisplayName": "Genre"
+						},
+						{
+							"Key": "ISBN",
+							"DisplayName": "Int'l SBN"
+						}
+					],
+
 					"RecordSetURLPrefix": "/1.0/"
 				},
 				{

@@ -123,13 +123,10 @@ class viewRecordSetList extends libPictRecordSetRecordView
 
 	onBeforeRenderList(pRecordListData)
 	{
-		// Put code here to preprocess columns into other data parts.
-		this.formatDisplayData(pRecordListData);
-
 		return pRecordListData;
 	}
 
-	formatDisplayData(pRecordListData)
+	dynamicallyGenerateColumns(pRecordListData)
 	{
 		pRecordListData.TableCells = [];
 		const tmpEntity = pRecordListData.RecordSetConfiguration.Entity;
@@ -259,6 +256,16 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		else
 		{
 			tmpRecordListData.PageLinkBookmarks.NextLink = tmpRecordListData.PageLinks[tmpRecordListData.PageLinkBookmarks.Next];
+		}
+
+		// Put code here to preprocess columns into other data parts.
+		if (tmpRecordListData.RecordSetConfiguration.hasOwnProperty('RecordSetListColumns'))
+		{
+			tmpRecordListData.TableCells = tmpRecordListData.RecordSetConfiguration.RecordSetListColumns;
+		}
+		else
+		{
+			this.dynamicallyGenerateColumns(tmpRecordListData);
 		}
 
 		tmpRecordListData = this.onBeforeRenderList(tmpRecordListData);
