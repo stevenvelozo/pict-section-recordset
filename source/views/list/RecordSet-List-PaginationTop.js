@@ -58,9 +58,9 @@ const _DEFAULT_CONFIGURATION_List_PaginationTop = (
 					Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-List-Pagination-Template-Buttons] -->
 	<ul style="list-style-type: none; padding: 0; display: flex; justify-content: center;">
-		{~T:PRSP-List-Pagination-Template-Button-Previous~}
+		{~TIfAbs:PRSP-List-Pagination-Template-Button-Previous:Record:Record.PageLinkBookmarks.ShowPreviousLink^TRUE^true~}
 		{~TS:PRSP-List-Pagination-Template-Button-Page~}
-		{~T:PRSP-List-Pagination-Template-Button-Next~}
+		{~TIfAbs:PRSP-List-Pagination-Template-Button-Next:Record:Record.PageLinkBookmarks.ShowNextLink^TRUE^true~}
 	</ul>
 	<!-- DefaultPackage end view template:  [PRSP-List-Pagination-Template-Buttons] -->
 	`

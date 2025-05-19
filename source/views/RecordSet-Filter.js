@@ -86,8 +86,8 @@ class viewRecordSetSUBSETFilter extends libPictView
 
 	handleSearch(event)
 	{
+		event.preventDefault(); // don't submit the form
 		event.stopPropagation();
-		event.preventDefault();
 		this.pict.views['RSP-RecordSet-List']?.handleSearch?.(this.pict.ContentAssignment.readContent('input[name="filter"]'));
 	}
 
@@ -95,6 +95,7 @@ class viewRecordSetSUBSETFilter extends libPictView
 	{
 		event.stopPropagation();
 		this.pict.ContentAssignment.assignContent('input[name="filter"]', '');
+		this.pict.views['RSP-RecordSet-List']?.handleSearch?.('');
 	}
 }
 

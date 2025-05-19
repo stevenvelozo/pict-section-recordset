@@ -268,9 +268,12 @@ class viewRecordSetList extends libPictRecordSetRecordView
 
 		tmpRecordListData.PageLinkBookmarks.Previous = tmpRecordListData.PageLinkBookmarks.Current - 1;
 		tmpRecordListData.PageLinkBookmarks.Next = tmpRecordListData.PageLinkBookmarks.Current + 1;
+		tmpRecordListData.PageLinkBookmarks.ShowPreviousLink = true;
+		tmpRecordListData.PageLinkBookmarks.ShowNextLink = true;
 		if (tmpRecordListData.PageLinkBookmarks.Previous < 0)
 		{
-			tmpRecordListData.PageLinkBookmarks.Previous = false;
+			tmpRecordListData.PageLinkBookmarks.PreviousLink = false;
+			tmpRecordListData.PageLinkBookmarks.ShowPreviousLink = false;
 		}
 		else
 		{
@@ -278,7 +281,8 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		}
 		if (tmpRecordListData.PageLinkBookmarks.Next >= tmpRecordListData.PageLinks.length)
 		{
-			tmpRecordListData.PageLinkBookmarks.Next = false;
+			tmpRecordListData.PageLinkBookmarks.NextLink = false;
+			tmpRecordListData.PageLinkBookmarks.ShowNextLink = false;
 		}
 		else
 		{

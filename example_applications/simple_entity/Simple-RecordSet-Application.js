@@ -38,6 +38,7 @@ module.exports.default_configuration.pict_configuration = (
 					"RecordSetListHasExtraColumns": true,
 					"RecordSetListExtraColumnsHeaderTemplate": "<th style=\"border-bottom: 1px solid #ccc; padding: 5px; background-color: #f2f2f2; color: #333;\">Cover</th>",
 					"RecordSetListExtraColumnRowTemplate": "<td><img src=\"{~D:Record.Data.ImageURL~}\"></td>",
+					"SearchFields": [ "Title" ],
 
 					"RecordSetURLPrefix": "/1.0/"
 				},
