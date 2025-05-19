@@ -1,11 +1,10 @@
 export = viewRecordSetEdit;
-declare class viewRecordSetEdit extends libPictView {
-    constructor(pFable: any, pOptions: any, pServiceHash: any);
+declare class viewRecordSetEdit extends libPictRecordSetRecordView {
 }
 declare namespace viewRecordSetEdit {
     export { _DEFAULT_CONFIGURATION__Edit as default_configuration };
 }
-import libPictView = require("pict-view");
+import libPictRecordSetRecordView = require("../RecordSet-RecordBaseView.js");
 declare namespace _DEFAULT_CONFIGURATION__Edit {
     let ViewIdentifier: string;
     let DefaultRenderable: string;

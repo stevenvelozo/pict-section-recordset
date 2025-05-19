@@ -1,10 +1,6 @@
 export = RecordSetMetacontroller;
 declare class RecordSetMetacontroller {
     constructor(pFable: any, pOptions: any, pServiceHash: any);
-    /** @type {import('pict') & { addView: (hash: string, options: any, prototype: any) => any }} */
-    pict: import("pict") & {
-        addView: (hash: string, options: any, prototype: any) => any;
-    };
     /** @type {import('pict') & { addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any }} */
     fable: import("pict") & {
         addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any;
@@ -21,10 +17,20 @@ declare class RecordSetMetacontroller {
         read: any;
         dashboard: any;
     };
+    recordSetProviders: {};
+    recordSetProviderConfigurations: {};
     has_initialized: boolean;
-    initialize(): this;
+    loadRecordSetConfiguration(pRecordSetConfiguration: any): boolean;
+    loadRecordSetConfigurationArray(pRecordSetConfigurationArray: any): boolean;
+    loadRecordSetDynamcally(pRecordSet: any, pEntity: any, pDefaultFilter: any): any;
+    handleLoadDynamicRecordSetRoute(pRoutePayload: any): any;
+    addRoutes(pPictRouter: any): boolean;
+    initialize(): true | this;
 }
 declare namespace RecordSetMetacontroller {
-    let default_configuration: {};
+    export { _DEFAULT_CONFIGURATION as default_configuration };
+}
+declare namespace _DEFAULT_CONFIGURATION {
+    let DefaultMeadowURLPrefix: string;
 }
 //# sourceMappingURL=RecordsSet-MetaController.d.ts.map

@@ -1,16 +1,16 @@
-export = PictSectionFormApplication;
+export = PictSectionRecordSetApplication;
 /**
- * Represents a PictSectionFormApplication.
+ * Represents a PictSectionRecordSetApplication.
  *
- * This is the automagic controller for a dyncamic form application.
+ * This is the automagic controller for a dynamic record set application.
  *
  * @class
  * @extends libPictApplication
  */
-declare class PictSectionFormApplication extends libPictApplication {
+declare class PictSectionRecordSetApplication extends libPictApplication {
     constructor(pFable: any, pOptions: any, pServiceHash: any);
 }
-declare namespace PictSectionFormApplication {
+declare namespace PictSectionRecordSetApplication {
     export { default_configuration };
 }
 import libPictApplication = require("pict-application");

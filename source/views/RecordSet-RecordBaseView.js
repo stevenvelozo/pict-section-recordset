@@ -64,6 +64,12 @@ class viewPictSectionRecordSetViewBase extends libPictView
 	{
 		let tmpOptions = Object.assign({}, _DEFAULT_CONFIGURATION_Base_View, pOptions);
 		super(pFable, tmpOptions, pServiceHash);
+		/** @type {import('pict') & {
+		 *      log: any,
+		 *      instantiateServiceProviderWithoutRegistration: (hash: String) => any,
+		 *      PictSectionRecordSet: InstanceType<import('../Pict-Section-RecordSet.js')> }
+		 *  } */
+		this.pict;
 	}
 
 	addRoutes(pPictRouter)

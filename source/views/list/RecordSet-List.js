@@ -185,8 +185,8 @@ class viewRecordSetList extends libPictRecordSetRecordView
 
 			"FilterString": pFilterString || false,
 
-			"Records": [],
-			"TotalRecordCount": -1,
+			"Records": { "Records": [] },
+			"TotalRecordCount": { "Count": -1 },
 
 			"Offset": pOffset || 0,
 			"PageSize": pPageSize || 100,
@@ -201,7 +201,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		tmpRecordListData.RecordSchema = this.pict.providers[pProviderHash].recordSchema;
 
 		// Get the "page end record number" for the current page (e.g. for messaging like Record 700 to 800 of 75,000)
-		tmpRecordListData.PageEnd = parseInt(tmpRecordListData.Offset) + parseInt(tmpRecordListData.Records.Records.length);
+		tmpRecordListData.PageEnd = parseInt(tmpRecordListData.Offset) + tmpRecordListData.Records.Records.length;
 
 		// Compute the number of pages total
 		tmpRecordListData.PageCount = Math.ceil(tmpRecordListData.TotalRecordCount.Count / tmpRecordListData.PageSize);
@@ -228,12 +228,17 @@ class viewRecordSetList extends libPictRecordSetRecordView
 					});
 			}
 		}
-
 		// Get "bookmarks" as references to the array of page links.
 		tmpRecordListData.PageLinkBookmarks = (
 			{
 				Current: Math.floor(tmpRecordListData.Offset / tmpRecordListData.PageSize)
 			});
+
+		//FIXME: short-term workaround to not blow up the tempplate rendering with way too many links
+		const linkRangeStart = Math.max(0, tmpRecordListData.PageLinkBookmarks.Current - 10);
+		const linkRangeEnd = Math.min(tmpRecordListData.PageLinks.length - 1, tmpRecordListData.PageLinkBookmarks.Current + 10);
+		tmpRecordListData.PageLinksLimited = tmpRecordListData.PageLinks.slice(linkRangeStart, linkRangeEnd);
+
 		tmpRecordListData.PageLinkBookmarks.Previous = tmpRecordListData.PageLinkBookmarks.Current - 1;
 		tmpRecordListData.PageLinkBookmarks.Next = tmpRecordListData.PageLinkBookmarks.Current + 1;
 		if (tmpRecordListData.PageLinkBookmarks.Previous < 0)

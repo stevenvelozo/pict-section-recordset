@@ -35,7 +35,7 @@ const _DEFAULT_CONFIGURATION_List_PaginationTop = (
 		{~T:PRSP-List-Pagination-Template-Buttons~}
 	</nav>
 	<div>
-		{~TS:PRSP-List-Pagination-Template-Pages:Record.PageLinks~}
+		{~TS:PRSP-List-Pagination-Template-Pages:Record.PageLinksLimited~}
 	</div>
 	<!-- DefaultPackage end view template:  [PRSP-List-PaginationTop-Template] -->
 	`

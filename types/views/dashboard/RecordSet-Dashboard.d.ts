@@ -1,11 +1,10 @@
 export = viewRecordSetDashboard;
-declare class viewRecordSetDashboard extends libPictView {
-    constructor(pFable: any, pOptions: any, pServiceHash: any);
+declare class viewRecordSetDashboard extends libPictRecordSetRecordView {
 }
 declare namespace viewRecordSetDashboard {
     export { _DEFAULT_CONFIGURATION__Dashboard as default_configuration };
 }
-import libPictView = require("pict-view");
+import libPictRecordSetRecordView = require("../RecordSet-RecordBaseView.js");
 declare namespace _DEFAULT_CONFIGURATION__Dashboard {
     let ViewIdentifier: string;
     let DefaultRenderable: string;

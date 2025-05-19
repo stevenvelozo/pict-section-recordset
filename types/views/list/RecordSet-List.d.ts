@@ -1,6 +1,5 @@
 export = viewRecordSetList;
-declare class viewRecordSetList extends libPictView {
-    constructor(pFable: any, pOptions: any, pServiceHash: any);
+declare class viewRecordSetList extends libPictRecordSetRecordView {
     childViews: {
         headerList: any;
         title: any;
@@ -10,11 +9,16 @@ declare class viewRecordSetList extends libPictView {
         recordListEntry: any;
         paginationBottom: any;
     };
+    handleRecordSetListRoute(pRoutePayload: any): Promise<boolean>;
+    onBeforeRenderList(pRecordListData: any): any;
+    formatDisplayData(pRecordListData: any): any;
+    excludedByDefaultCells: string[];
+    renderList(pRecordSetConfiguration: any, pProviderHash: any, pFilterString: any, pOffset: any, pPageSize: any): Promise<boolean>;
 }
 declare namespace viewRecordSetList {
     export { _DEFAULT_CONFIGURATION__List as default_configuration };
 }
-import libPictView = require("pict-view");
+import libPictRecordSetRecordView = require("../RecordSet-RecordBaseView.js");
 declare namespace _DEFAULT_CONFIGURATION__List {
     let ViewIdentifier: string;
     let DefaultRenderable: string;

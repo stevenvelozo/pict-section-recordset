@@ -18,7 +18,7 @@ class PictRecordSetRouter extends libPictProvider
 
 		/** @type {Record<string, any>} */
 		this.options;
-		/** @type {import('pict')} */
+		/** @type {import('pict') & { PictSectionRecordSet: InstanceType<import('../Pict-Section-RecordSet.js')> }} */
 		this.pict;
 
 		this.pictRouter = null;
