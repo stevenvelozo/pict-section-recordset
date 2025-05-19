@@ -93,7 +93,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 	{
 		const pictRouter = this.pict.providers.PictRouter;
 		const recordSet = pictRouter.router.current[0]?.data?.RecordSet;
-		const offset = pictRouter.router.current[0]?.data?.Offset || '0';
+		const offset = '0'; // since we are searching, we reset to page 1
 		const pageSize = pictRouter.router.current[0]?.data?.PageSize || '100';
 		if (!recordSet)
 		{
