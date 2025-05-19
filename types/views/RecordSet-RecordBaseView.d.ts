@@ -1,7 +1,11 @@
 export = viewPictSectionRecordSetViewBase;
 declare class viewPictSectionRecordSetViewBase extends libPictView {
     constructor(pFable: any, pOptions: any, pServiceHash: any);
-    /** @type {import('pict') & { log: any, instantiateServiceProviderWithoutRegistration: (hash: String) => any, PictSectionRecordSet: InstanceType<import('../Pict-Section-RecordSet.js') }} */
+    /** @type {import('pict') & {
+     *      log: any,
+     *      instantiateServiceProviderWithoutRegistration: (hash: String) => any,
+     *      PictSectionRecordSet: InstanceType<import('../Pict-Section-RecordSet.js')> }
+     *  } */
     pict: import("pict") & {
         log: any;
         instantiateServiceProviderWithoutRegistration: (hash: string) => any;

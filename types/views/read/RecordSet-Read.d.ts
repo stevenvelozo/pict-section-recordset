@@ -1,16 +1,15 @@
 export = viewRecordSetRead;
 declare class viewRecordSetRead extends libPictRecordSetRecordView {
     childViews: {
-        headerList: any;
-        title: any;
-        paginationTop: any;
-        recordList: any;
-        recordListHeader: any;
-        recordListEntry: any;
-        paginationBottom: any;
+        viewHeaderRead: any;
+        viewTabBarRead: any;
+        viewRecordRead: any;
+        viewRecordReadExtra: any;
     };
+    handleRecordSetReadRoute(pRoutePayload: any): Promise<boolean>;
     onBeforeRenderRead(pRecordReadData: any): any;
-    renderRead(pRecordConfiguration: any, pProviderHash: any, pFilterString: any, pOffset: any, pPageSize: any): Promise<boolean>;
+    formatDisplayData(pRecordListData: any): any;
+    renderRead(pRecordConfiguration: any, pProviderHash: any, pRecordGUID: any): Promise<boolean>;
 }
 declare namespace viewRecordSetRead {
     export { _DEFAULT_CONFIGURATION__Read as default_configuration };

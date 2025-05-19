@@ -25,6 +25,7 @@ declare class RecordSetMetacontroller {
     loadRecordSetDynamcally(pRecordSet: any, pEntity: any, pDefaultFilter: any): any;
     handleLoadDynamicRecordSetRoute(pRoutePayload: any): any;
     addRoutes(pPictRouter: any): boolean;
+    addRecordLinkTemplate(pNameTemplate: any, pURLTemplate: any, pDefault: any): any;
     initialize(): true | this;
 }
 declare namespace RecordSetMetacontroller {

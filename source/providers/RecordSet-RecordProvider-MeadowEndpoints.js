@@ -63,6 +63,7 @@ class RecordSetProvider extends libRecordSetProviderBase
 		{
 			throw new Error('Entity is not defined in the provider options.');
 		}
+		// FIXME: The GUIDS are returning false to isNaN so this doesn't work
 		if (typeof pIDOrGuid === 'string' && isNaN(parseInt(pIDOrGuid)))
 		{
 			return this.getRecordByGUID(pIDOrGuid);

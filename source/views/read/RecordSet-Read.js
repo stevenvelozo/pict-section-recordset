@@ -11,7 +11,7 @@ const _DEFAULT_CONFIGURATION__Read = (
 		ViewIdentifier: 'PRSP-Read',
 
 		DefaultRenderable: 'PRSP_Renderable_Read',
-		DefaultDestinationAddress: '#PRSP_Read_Container',
+		DefaultDestinationAddress: '#PRSP_Container',
 		DefaultTemplateRecordAddress: false,
 
 		// If this is set to true, when the App initializes this will.
@@ -36,9 +36,23 @@ const _DEFAULT_CONFIGURATION__Read = (
 					Hash: 'PRSP-Read-Template',
 					Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Read-Template] -->
+	<h1>{~D:Record.RecordSet~} {~D:Record.GUIDAddress~} [{~D:Record.RecordConfiguration.GUIDRecord~}]</h1>
+	<!--
+	{~DJ:Record~}
+	-->
+	{~T:PRSP-Read-RecordRead-Template~}
 	<!-- DefaultPackage end view template:  [PRSP-Read-Template] -->
 	`
-				}
+				},
+				{
+					Hash: 'PRSP-Read-Link-Name-Template',
+					Template: `View`
+				},
+				{
+					Hash: 'PRSP-Read-Link-URL-Template',
+					// TODO: Double payload pattern...
+					Template: `#/PSRS/{~D:Record.Payload.Payload.RecordSet~}/Read/{~DVBK:Record.Payload.Data:Record.Payload.Payload.GUIDAddress~}`
+				},
 			],
 
 		Renderables:
@@ -46,7 +60,7 @@ const _DEFAULT_CONFIGURATION__Read = (
 				{
 					RenderableHash: 'PRSP_Renderable_Read',
 					TemplateHash: 'PRSP-Read-Template',
-					DestinationAddress: '#PRSP_Read_Container',
+					DestinationAddress: '#PRSP_Container',
 					RenderMethod: 'replace'
 				}
 			],
@@ -62,22 +76,60 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 		super(pFable, tmpOptions, pServiceHash);
 
 		this.childViews = {
-			headerList: null,
-			title: null,
-			paginationTop: null,
-			recordList: null,
-			recordListHeader: null,
-			recordListEntry: null,
-			paginationBottom: null
+			viewHeaderRead: null,
+			viewTabBarRead: null,
+			viewRecordRead: null,
+			viewRecordReadExtra: null
 		};
+	}
+
+
+	handleRecordSetReadRoute(pRoutePayload)
+	{
+		if (typeof(pRoutePayload) != 'object')
+		{
+			throw new Error(`Pict RecordSet Read view route handler called with invalid route payload.`);
+		}
+
+		const tmpProviderConfiguration = this.pict.PictSectionRecordSet.recordSetProviderConfigurations[pRoutePayload.data.RecordSet];
+		const tmpProviderHash = `RSP-Provider-${pRoutePayload.data.RecordSet}`;
+
+		tmpProviderConfiguration.RoutePayload = pRoutePayload;
+		tmpProviderConfiguration.RecordSet = pRoutePayload.data.RecordSet;
+		tmpProviderConfiguration.GUIDRecord = pRoutePayload.data.GUIDRecord;
+
+		return this.renderRead(tmpProviderConfiguration, tmpProviderHash, pRoutePayload.data.GUIDRecord);
+	}
+
+	addRoutes(pPictRouter)
+	{
+		pPictRouter.addRoute('/PSRS/:RecordSet/Read/:GUIDRecord', this.handleRecordSetReadRoute.bind(this));
+		return true;
 	}
 
 	onBeforeRenderRead(pRecordReadData)
 	{
+		this.formatDisplayData(pRecordReadData);
 		return pRecordReadData;
 	}
 
-	async renderRead(pRecordConfiguration, pProviderHash, pFilterString, pOffset, pPageSize)
+	formatDisplayData(pRecordListData)
+	{
+		pRecordListData.DisplayFields = [];
+		const tmpSchema = pRecordListData.RecordSchema;
+		const tmpProperties = tmpSchema?.properties;
+		// loop throught the schema and add the columns to the tableCells -- just show all for now.
+		for (const tmpColumn in tmpProperties)
+		{
+			pRecordListData.DisplayFields.push({
+				'Key': tmpColumn,
+				'DisplayName': tmpProperties?.[tmpColumn].title || tmpColumn,
+			});
+		}
+		return pRecordListData;
+	}
+
+	async renderRead(pRecordConfiguration, pProviderHash, pRecordGUID)
 	{
 		// Get the records
 		if (!(pProviderHash in this.pict.providers))
@@ -98,25 +150,13 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 			};
 
 		// If the record configuration does not have a GUID, try to infer one from the RecordSet name
-		if (!tmpRecordReadData.RecordConfiguration.GUIDAddress)
-		{
-			// So this will be something like "GUIDBook" or "GUIDAuthor"
-			tmpRecordReadData.RecordConfiguration.GUIDAddress = `GUID${pRecordConfiguration.RecordSet}`;
-		}
+		// TODO: This should be coming from the schema but that can come after we discuss how we deal with default routing
+		tmpRecordReadData.GUIDAddress = `GUID${this.pict.providers[pProviderHash].options.Entity}`;
 
-		tmpRecordReadData.Records = await this.pict.providers[pProviderHash].getRecords({Offset:tmpRecordReadData.Offset, PageSize:tmpRecordReadData.PageSize});
-		tmpRecordReadData.TotalRecordCount = await this.pict.providers[pProviderHash].getRecordSetCount({Offset:tmpRecordReadData.Offset, PageSize:tmpRecordReadData.PageSize});
+		tmpRecordReadData.Record = await this.pict.providers[pProviderHash].getRecordByGUID(pRecordGUID);
 		tmpRecordReadData.RecordSchema = this.pict.providers[pProviderHash].recordSchema;
 
 		tmpRecordReadData = this.onBeforeRenderRead(tmpRecordReadData);
-
-		// If there isn't a title template passed in as part of the configuration,, create one.
-		if (!tmpRecordReadData.RecordConfiguration.TitleTemplate)
-		{
-			// This dynamically grabs the guid address and tries to pull it from the record
-			tmpRecordReadData.RecordConfiguration.TitleTemplate = `{~D:Record.RecordSet~} GUID [{~D:Record.Record.${tmpRecordReadData.RecordConfiguration.GUIDAddress}}] `;
-		}
-
 
 		this.renderAsync('PRSP_Renderable_Read', tmpRecordReadData.RenderDestination, tmpRecordReadData,
 			function (pError)
@@ -129,11 +169,11 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 
 				if (this.pict.LogNoisiness > 0)
 				{
-					this.pict.log.info(`RecordSetRead: Rendered read ${tmpRecordReadData.RecordSet} with ${tmpRecordReadData.RecordConfiguration.GUIDAddress} []`, tmpRecordReadData);
+					this.pict.log.info(`RecordSetRead: Rendered read ${tmpRecordReadData.RecordSet} with ${tmpRecordReadData.RecordConfiguration.GUIDRecord} []`, tmpRecordReadData);
 				}
 				else
 				{
-					this.pict.log.info(`RecordSetRead: Rendered read ${tmpRecordReadData.RecordSet} with ${tmpRecordReadData.RecordConfiguration.GUIDAddress} []`);
+					this.pict.log.info(`RecordSetRead: Rendered read ${tmpRecordReadData.RecordSet} with ${tmpRecordReadData.RecordConfiguration.GUIDRecord} []`);
 				}
 				return true;
 			}.bind(this));
@@ -151,6 +191,9 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 		this.childViews.recordRead.initialize();
 		this.childViews.recordReadExtra.initialize();
 		this.childViews.tabBarRead.initialize();
+
+		// Add the route templates for the read view
+		this.pict.PictSectionRecordSet.addRecordLinkTemplate('PRSP-Read-Link-Name-Template', 'PRSP-Read-Link-URL-Template', true);
 
 		return super.onInitialize();
 	}

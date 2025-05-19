@@ -13,7 +13,7 @@ const _DEFAULT_CONFIGURATION__List = (
 		ViewIdentifier: 'PRSP-List',
 
 		DefaultRenderable: 'PRSP_Renderable_List',
-		DefaultDestinationAddress: '#PRSP_List_Container',
+		DefaultDestinationAddress: '#PRSP_Container',
 		DefaultTemplateRecordAddress: false,
 
 		// If this is set to true, when the App initializes this will.
@@ -61,7 +61,7 @@ const _DEFAULT_CONFIGURATION__List = (
 				{
 					RenderableHash: 'PRSP_Renderable_List',
 					TemplateHash: 'PRSP-List-Template',
-					DestinationAddress: '#PRSP_List_Container',
+					DestinationAddress: '#PRSP_Container',
 					RenderMethod: 'replace'
 				}
 			],
@@ -199,6 +199,9 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		tmpRecordListData.TotalRecordCount = await this.pict.providers[pProviderHash].getRecordSetCount(tmpRecordListData);
 		// Get the record schema
 		tmpRecordListData.RecordSchema = this.pict.providers[pProviderHash].recordSchema;
+
+		// TODO: This should be coming from the schema but that can come after we discuss how we deal with default routing
+		tmpRecordListData.GUIDAddress = `GUID${this.pict.providers[pProviderHash].options.Entity}`;
 
 		// Get the "page end record number" for the current page (e.g. for messaging like Record 700 to 800 of 75,000)
 		tmpRecordListData.PageEnd = parseInt(tmpRecordListData.Offset) + tmpRecordListData.Records.Records.length;

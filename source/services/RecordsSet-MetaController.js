@@ -9,6 +9,8 @@ const viewRecordSetDashboard = require('../views/dashboard/RecordSet-Dashboard.j
 const providerBase = require('../providers/RecordSet-RecordProvider-Base.js');
 const providerMeadowEndpoints = require('../providers/RecordSet-RecordProvider-MeadowEndpoints.js');
 
+const providerLinkManager = require('../providers/RecordSet-Link-Manager.js');
+
 const providerRouter = require('../providers/RecordSet-Router.js');
 
 const _DEFAULT_CONFIGURATION =
@@ -225,6 +227,11 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		return true;
 	}
 
+	addRecordLinkTemplate(pNameTemplate, pURLTemplate, pDefault)
+	{
+		return this.fable.providers.RecordSetLinkManager.addRecordLinkTemplate(pNameTemplate, pURLTemplate, pDefault);
+	}
+
 	initialize()
 	{
 		if (this.has_initialized)
@@ -232,6 +239,8 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 			this.fable.log.warn(`RecordSetMetacontroller: ${this.UUID} already initialized and initialized was called a second time.`);
 			return this;
 		}
+
+		this.fable.addProvider('RecordSetLinkManager', {}, providerLinkManager);
 
 		// Add the subviews internally and externally
 		this.childViews.list = this.fable.addView('RSP-RecordSet-List', this.options, viewRecordSetList);
@@ -252,7 +261,9 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 			this.loadRecordSetConfigurationArray(this.fable.settings.DefaultRecordSetConfigurations);
 		}
 
-		this.has_initialized = true;		// Load pict-router if it isn't loaded
+		this.has_initialized = true;
+
+		// Load pict-router if it isn't loaded
 		if (!('RecordSetRouter' in this.fable.providers))
 		{
 			this.fable.addProvider('RecordSetRouter', {}, providerRouter);
