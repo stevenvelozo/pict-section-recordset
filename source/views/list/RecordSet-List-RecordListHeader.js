@@ -49,13 +49,23 @@ const _DEFAULT_CONFIGURATION_List_RecordListHeader = (
 	`
 				},
 				{
+					Hash: 'PRSP-List-RecordListHeader-Template-Extra-Header',
+					Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-List-RecordListHeader-Template-Extra-Header] -->
+{~TBR:Record.RecordSetConfiguration.RecordSetListExtraColumnsHeaderTemplateHash~}
+	<!-- DefaultPackage end view template:  [PRSP-List-RecordListHeader-Extra-Header] -->
+	`
+//	{~TBR:Record.RecordSetConfiguration.RecordSetListExtraColumnsHeaderTemplateHash~}
+
+				},
+				{
 					Hash: 'PRSP-List-RecordListActions-Template-Header',
 					Template: /*html*/`
-	<!-- DefaultPackage pict view template: [PRSP-List-RecordListHeader-Template-Header] -->
+	<!-- DefaultPackage pict view template: [PRSP-List-RecordListActions-Template-Header] -->
 	<th style="border-bottom: 1px solid #ccc; padding: 5px; background-color: #f2f2f2; color: #333;">
 		Actions
 	</th>
-	<!-- DefaultPackage end view template:  [PRSP-List-RecordListHeader-Template-Header] -->
+	<!-- DefaultPackage end view template:  [PRSP-List-RecordListActions-Template-Header] -->
 	`
 				},
 			],

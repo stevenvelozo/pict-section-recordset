@@ -88,6 +88,31 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 			return false;
 		}
 
+		let tmpExtraColumnHeaderTemplateHash = `RecordSet-List-ExtraColumnHeader-${pRecordSetConfiguration.RecordSet}`;
+		pRecordSetConfiguration.RecordSetListExtraColumnsHeaderTemplateHash = tmpExtraColumnHeaderTemplateHash;
+		let tmpExtraColumnRowTemplateHash = `RecordSet-List-ExtraColumnRow-${pRecordSetConfiguration.RecordSet}`;
+		pRecordSetConfiguration.RecordSetListExtraColumnRowTemplateHash = tmpExtraColumnRowTemplateHash;
+		if (pRecordSetConfiguration.RecordSetListHasExtraColumns)
+		{
+			let tmpRecordSetExtraColumnHeaderTemplate = pRecordSetConfiguration.RecordSetListExtraColumnsHeaderTemplate;
+			if (tmpRecordSetExtraColumnHeaderTemplate === undefined)
+			{
+				tmpRecordSetExtraColumnHeaderTemplate = '';
+			}
+			let tmpRecordSetExtraColumnRowTemplate = pRecordSetConfiguration.RecordSetListExtraColumnRowTemplate;
+			if (tmpRecordSetExtraColumnRowTemplate === undefined)
+			{
+				tmpRecordSetExtraColumnRowTemplate = '';
+			}
+			this.fable.TemplateProvider.addTemplate(tmpExtraColumnHeaderTemplateHash, tmpRecordSetExtraColumnHeaderTemplate);
+			this.fable.TemplateProvider.addTemplate(tmpExtraColumnRowTemplateHash, tmpRecordSetExtraColumnRowTemplate);
+		}
+		else
+		{
+			this.fable.TemplateProvider.addTemplate(tmpExtraColumnHeaderTemplateHash, '');
+			this.fable.TemplateProvider.addTemplate(tmpExtraColumnRowTemplateHash, '');
+		}
+
 		let tmpProvider = false;
 
 		const providerConfiguration = Object.assign({}, {Hash: `RSP-Provider-${pRecordSetConfiguration.RecordSet}`}, pRecordSetConfiguration);

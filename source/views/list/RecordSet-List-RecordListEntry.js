@@ -39,10 +39,23 @@ const _DEFAULT_CONFIGURATION_List_RecordListEntry = (
 	<!-- DefaultPackage pict view template: [PRSP-List-RecordListEntry-Template] -->
 	<tr>
 		{~TSWP:PRSP-List-RecordListEntry-Template-Row-Cell:Record.Payload.TableCells:Record.Data~}
+		{~T:PRSP-List-RecordListHeader-Template-Extra-Row~}
 		{~T:PRSP-List-RecordListAction-Template-Cell~}
 	</tr>
 	<!-- DefaultPackage end view template:  [PRSP-List-RecordListEntry-Template] -->
 	`
+//		
+
+				},
+				{
+					Hash: 'PRSP-List-RecordListHeader-Template-Extra-Row',
+					Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-List-RecordListHeader-Template-Extra-Row] -->
+	{~TBR:Record.Payload.RecordSetConfiguration.RecordSetListExtraColumnRowTemplateHash~}
+	<!-- DefaultPackage end view template:  [PRSP-List-RecordListHeader-Extra-Row] -->
+	`
+//	{~TBR:Record.Payload.RecordSetConfiguration.RecordSetListExtraColumnRowTemplateHash~}
+
 				},
 				{
 					Hash: 'PRSP-List-RecordListEntry-Template-Row-Cell',
