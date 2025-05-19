@@ -2,6 +2,7 @@ const libPictRecordSetRecordView = require('../RecordSet-RecordBaseView.js');
 
 const viewHeaderList = require('./RecordSet-List-HeaderList.js');
 const viewTitle = require('./RecordSet-List-Title.js');
+const viewFilters = require('../RecordSet-Filter.js');
 const viewPaginationTop = require('./RecordSet-List-PaginationTop.js');
 const viewRecordList = require('./RecordSet-List-RecordList.js');
 const viewRecordListHeader = require('./RecordSet-List-RecordListHeader.js');
@@ -41,6 +42,7 @@ const _DEFAULT_CONFIGURATION__List = (
 	<section id="PRSP_List_Container">
 		{~V:PRSP-List-Title~}
 		{~V:PRSP-List-HeaderList~}
+		{~V:PRSP-Filters~}
 		{~V:PRSP-List-PaginationTop~}
 		{~V:PRSP-List-RecordList~}
 		{~V:PRSP-List-PaginationBottom~}
@@ -87,6 +89,31 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		};
 	}
 
+	handleSearch(pSearchString)
+	{
+		const pictRouter = this.pict.providers.PictRouter;
+		const recordSet = pictRouter.router.current[0]?.data?.RecordSet;
+		const offset = pictRouter.router.current[0]?.data?.Offset || '0';
+		const pageSize = pictRouter.router.current[0]?.data?.PageSize || '100';
+		if (!recordSet)
+		{
+			this.pict.log.error('PictRecordSetRouter.handleSearch: No record set found in the current route: ', { routes: pictRouter.router.current });
+			return;
+		}
+		const tmpProviderConfiguration = this.pict.PictSectionRecordSet.recordSetProviderConfigurations[recordSet];
+		if (pSearchString)
+		{
+			//FIXME: figure this out based on the record set; or defer to another provider?
+			const searchFields = tmpProviderConfiguration?.SearchFields ?? [ 'Name' ];
+			const filterExpr = searchFields.map((filterField) => `FBVOR~${filterField}~LK~${encodeURIComponent(`%${pSearchString}%`)}`).join('~');
+			pictRouter.navigate(`/PSRS/${recordSet}/List/FilteredTo/${filterExpr}/${offset}/${pageSize}`);
+		}
+		else
+		{
+			pictRouter.navigate(`/PSRS/${recordSet}/List`);
+		}
+	}
+
 	handleRecordSetListRoute(pRoutePayload)
 	{
 		if (typeof(pRoutePayload) != 'object')
@@ -104,7 +131,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		const tmpProviderConfiguration = this.pict.PictSectionRecordSet.recordSetProviderConfigurations[pRoutePayload.data.RecordSet];
 		const tmpProviderHash = `RSP-Provider-${pRoutePayload.data.RecordSet}`;
 
-		const tmpFilterString = pRoutePayload.data.FilterString ? pRoutePayload.data.FilterString : '';
+		const tmpFilterString = pRoutePayload.data.FilterString || '';
 
 		const tmpOffset = pRoutePayload.data.Offset ? pRoutePayload.data.Offset : 0;
 		const tmpPageSize = pRoutePayload.data.PageSize ? pRoutePayload.data.PageSize : 100;
@@ -180,7 +207,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 
 			"RenderDestination": this.options.DefaultDestinationAddress,
 
-			"FilterString": pFilterString || false,
+			"FilterString": pFilterString ? encodeURIComponent(pFilterString) : undefined,
 
 			"Records": { "Records": [] },
 			"TotalRecordCount": { "Count": -1 },
@@ -295,6 +322,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 	{
 		this.childViews.headerList = this.pict.addView('PRSP-List-HeaderList', viewHeaderList.default_configuration, viewHeaderList);
 		this.childViews.title = this.pict.addView('PRSP-List-Title', viewTitle.default_configuration, viewTitle);
+		this.childViews.filters = this.pict.addView('PRSP-Filters', viewFilters.default_configuration, viewFilters);
 		this.childViews.paginationTop = this.pict.addView('PRSP-List-PaginationTop', viewPaginationTop.default_configuration, viewPaginationTop);
 		this.childViews.recordList = this.pict.addView('PRSP-List-RecordList', viewRecordList.default_configuration, viewRecordList);
 		this.childViews.recordListHeader = this.pict.addView('PRSP-List-RecordListHeader', viewRecordListHeader.default_configuration, viewRecordListHeader);

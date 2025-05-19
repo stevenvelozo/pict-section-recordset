@@ -9,9 +9,10 @@ declare class viewRecordSetList extends libPictRecordSetRecordView {
         recordListEntry: any;
         paginationBottom: any;
     };
+    handleSearch(pSearchString: any): void;
     handleRecordSetListRoute(pRoutePayload: any): Promise<boolean>;
     onBeforeRenderList(pRecordListData: any): any;
-    formatDisplayData(pRecordListData: any): any;
+    dynamicallyGenerateColumns(pRecordListData: any): any;
     excludedByDefaultCells: string[];
     renderList(pRecordSetConfiguration: any, pProviderHash: any, pFilterString: any, pOffset: any, pPageSize: any): Promise<boolean>;
 }

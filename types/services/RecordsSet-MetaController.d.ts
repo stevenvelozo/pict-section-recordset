@@ -19,6 +19,7 @@ declare class RecordSetMetacontroller {
     };
     recordSetProviders: {};
     recordSetProviderConfigurations: {};
+    recordSetListConfigurations: {};
     has_initialized: boolean;
     loadRecordSetConfiguration(pRecordSetConfiguration: any): boolean;
     loadRecordSetConfigurationArray(pRecordSetConfigurationArray: any): boolean;

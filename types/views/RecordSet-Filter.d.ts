@@ -1,6 +1,8 @@
 export = viewRecordSetSUBSETFilter;
 declare class viewRecordSetSUBSETFilter extends libPictView {
     constructor(pFable: any, pOptions: any, pServiceHash: any);
+    handleSearch(event: any): void;
+    handleReset(event: any): void;
 }
 declare namespace viewRecordSetSUBSETFilter {
     export { _DEFAULT_CONFIGURATION_SUBSET_Filter as default_configuration };
