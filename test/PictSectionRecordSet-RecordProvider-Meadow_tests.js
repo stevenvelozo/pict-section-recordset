@@ -194,7 +194,7 @@ suite
 
 					test('recordSchema', async () =>
 					{
-						const schema = await _Pict.providers.BooksProvider.recordSchema;
+						const schema = await _Pict.providers.BooksProvider.getRecordSchema();
 						Expect(schema).to.be.an('object', 'Schema should be an object.');
 						Expect(Object.keys(schema).length).to.be.greaterThan(0, 'Schema should have properties.');
 					});

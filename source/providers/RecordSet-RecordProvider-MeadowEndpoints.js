@@ -40,7 +40,7 @@ class RecordSetProvider extends libRecordSetProviderBase
 		this.options;
 		/** @type {import('fable')} */
 		this.fable;
-		/** @type {import('pict')} */
+		/** @type {import('fable') & import('pict')} */
 		this.pict;
 		//TODO: make this typedef better
 		/** @type {Record<string, any>} */
@@ -319,20 +319,43 @@ class RecordSetProvider extends libRecordSetProviderBase
 	{
 		this.fable.log.info('Initializing RecordSetProvider-MeadowEndpoints');
 		this.restClient = this.fable.RestClient;
-		this.restClient.getJSON(`${this.options.URLPrefix}${this.options.Entity}/Schema`, (error, response, result) =>
+		const checkSession = this.pict.services.PictSectionRecordSet ? this.pict.services.PictSectionRecordSet.checkSession.bind(this.pict.services.PictSectionRecordSet) : async () => true;
+		checkSession('Schema').then(async (supported) =>
 		{
-			if (error)
+			if (!supported)
 			{
-				this._Schema = { };
-				return fCallback(error);
+				return fCallback();
 			}
-			this._Schema = result;
-			return fCallback(null);
+			this.restClient.getJSON(`${this.options.URLPrefix}${this.options.Entity}/Schema`, (error, response, result) =>
+			{
+				if (error)
+				{
+					throw error;
+				}
+				this._Schema = result;
+				return fCallback(null);
+			});
+		}).catch((error) =>
+		{
+			this._Schema = null;
+			this.fable.log.error('Error checking session for schema', error);
+			return fCallback(error);
 		});
 	}
 
-	get recordSchema()
+	async getRecordSchema()
 	{
+		if (!this._Schema)
+		{
+			await new Promise((resolve, reject) => this.onInitializeAsync((pError) =>
+			{
+				if (pError)
+				{
+					return reject(pError);
+				}
+				resolve();
+			}));
+		}
 		return this._Schema;
 	}
 }

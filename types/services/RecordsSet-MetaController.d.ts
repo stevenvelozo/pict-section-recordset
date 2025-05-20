@@ -20,12 +20,14 @@ declare class RecordSetMetacontroller {
     recordSetProviders: {};
     recordSetProviderConfigurations: {};
     recordSetListConfigurations: {};
+    sessionProviders: any[];
     has_initialized: boolean;
     loadRecordSetConfiguration(pRecordSetConfiguration: any): boolean;
     loadRecordSetConfigurationArray(pRecordSetConfigurationArray: any): boolean;
     loadRecordSetDynamcally(pRecordSet: any, pEntity: any, pDefaultFilter: any): any;
     handleLoadDynamicRecordSetRoute(pRoutePayload: any): any;
     addRoutes(pPictRouter: any): boolean;
+    checkSession(pCapability: any): Promise<boolean>;
     addRecordLinkTemplate(pNameTemplate: any, pURLTemplate: any, pDefault: any): any;
     initialize(): true | this;
 }

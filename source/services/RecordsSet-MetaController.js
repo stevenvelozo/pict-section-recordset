@@ -45,6 +45,7 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		this.recordSetProviderConfigurations = {};
 
 		this.recordSetListConfigurations = {};
+		this.sessionProviders = [];
 
 		this.has_initialized = false;
 	}
@@ -251,6 +252,18 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		pPictRouter.addRoute('/PSRS/:RecordSet/LoadDynamic', this.handleLoadDynamicRecordSetRoute.bind(this));
 		pPictRouter.addRoute('/PSRS/:RecordSet/LoadDynamic/:Entity', this.handleLoadDynamicRecordSetRoute.bind(this));
 		pPictRouter.addRoute('/PSRS/:RecordSet/LoadDynamic/:Entity/:DefaultFilter', this.handleLoadDynamicRecordSetRoute.bind(this));
+		return true;
+	}
+
+	async checkSession(pCapability)
+	{
+		for (const sessionProvider of this.sessionProviders)
+		{
+			if (!await sessionProvider(pCapability))
+			{
+				return false;
+			}
+		}
 		return true;
 	}
 

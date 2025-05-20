@@ -222,7 +222,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		// Get the total record count
 		tmpRecordListData.TotalRecordCount = await this.pict.providers[pProviderHash].getRecordSetCount(tmpRecordListData);
 		// Get the record schema
-		tmpRecordListData.RecordSchema = this.pict.providers[pProviderHash].recordSchema;
+		tmpRecordListData.RecordSchema = await this.pict.providers[pProviderHash].getRecordSchema();
 
 		// TODO: This should be coming from the schema but that can come after we discuss how we deal with default routing
 		tmpRecordListData.GUIDAddress = `GUID${this.pict.providers[pProviderHash].options.Entity}`;

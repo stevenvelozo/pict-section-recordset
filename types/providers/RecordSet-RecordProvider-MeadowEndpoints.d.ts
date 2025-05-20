@@ -22,6 +22,8 @@ export = RecordSetProvider;
 declare class RecordSetProvider extends libRecordSetProviderBase {
     /** @type {RestClient} */
     restClient: RestClient;
+    /** @type {import('fable') & import('pict')} */
+    pict: any & import("pict");
     /** @type {Record<string, any>} */
     _Schema: Record<string, any>;
     /**
@@ -80,6 +82,7 @@ declare class RecordSetProvider extends libRecordSetProviderBase {
      * @param {(error?: Error) => void} fCallback - The callback function.
      */
     onInitializeAsync(fCallback: (error?: Error) => void): void;
+    getRecordSchema(): Promise<Record<string, any>>;
 }
 declare namespace RecordSetProvider {
     export { RestClientCallback, RecordSetFilter, RecordSetResult, RestClient };

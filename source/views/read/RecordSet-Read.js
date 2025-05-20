@@ -154,7 +154,7 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 		tmpRecordReadData.GUIDAddress = `GUID${this.pict.providers[pProviderHash].options.Entity}`;
 
 		tmpRecordReadData.Record = await this.pict.providers[pProviderHash].getRecordByGUID(pRecordGUID);
-		tmpRecordReadData.RecordSchema = this.pict.providers[pProviderHash].recordSchema;
+		tmpRecordReadData.RecordSchema = await this.pict.providers[pProviderHash].getRecordSchema();
 
 		tmpRecordReadData = this.onBeforeRenderRead(tmpRecordReadData);
 
