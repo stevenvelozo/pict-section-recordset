@@ -263,8 +263,24 @@ class viewRecordSetList extends libPictRecordSetRecordView
 
 		//FIXME: short-term workaround to not blow up the tempplate rendering with way too many links
 		const linkRangeStart = Math.max(0, tmpRecordListData.PageLinkBookmarks.Current - 10);
-		const linkRangeEnd = Math.min(tmpRecordListData.PageLinks.length - 1, tmpRecordListData.PageLinkBookmarks.Current + 10);
+		const linkRangeEnd = Math.min(tmpRecordListData.PageLinks.length, tmpRecordListData.PageLinkBookmarks.Current + 10);
 		tmpRecordListData.PageLinksLimited = tmpRecordListData.PageLinks.slice(linkRangeStart, linkRangeEnd);
+		if (linkRangeStart > 0)
+		{
+			tmpRecordListData.PageLinksLimited.unshift(
+				{
+					Page: 1,
+					URL:`#/PSRS/${tmpRecordListData.RecordSet}/List/${0}/${tmpRecordListData.PageSize}`
+				});
+		}
+		if (linkRangeEnd < tmpRecordListData.PageLinks.length)
+		{
+			tmpRecordListData.PageLinksLimited.push(
+				{
+					Page: tmpRecordListData.PageCount,
+					URL:`#/PSRS/${tmpRecordListData.RecordSet}/List/${(tmpRecordListData.PageCount - 1) * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+				});
+		}
 
 		tmpRecordListData.PageLinkBookmarks.Previous = tmpRecordListData.PageLinkBookmarks.Current - 1;
 		tmpRecordListData.PageLinkBookmarks.Next = tmpRecordListData.PageLinkBookmarks.Current + 1;
