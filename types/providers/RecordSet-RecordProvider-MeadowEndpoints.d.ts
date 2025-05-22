@@ -20,12 +20,12 @@ export = RecordSetProvider;
  * @extends libRecordSetProviderBase
  */
 declare class RecordSetProvider extends libRecordSetProviderBase {
-    /** @type {RestClient} */
-    restClient: RestClient;
     /** @type {import('fable') & import('pict')} */
     pict: any & import("pict");
     /** @type {Record<string, any>} */
     _Schema: Record<string, any>;
+    /** @type {RestClient} */
+    get restClient(): RestClient;
     /**
      * @typedef {(error?: Error, result?: T) => void} RecordSetCallback
      * @template T = Record<string, any>

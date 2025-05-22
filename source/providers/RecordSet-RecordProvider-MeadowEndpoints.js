@@ -34,8 +34,6 @@ class RecordSetProvider extends libRecordSetProviderBase
 	{
 		super(pFable, pOptions, pServiceHash);
 
-		/** @type {RestClient} */
-		this.restClient;
 		/** @type {Record<string, any>} */
 		this.options;
 		/** @type {import('fable')} */
@@ -45,6 +43,12 @@ class RecordSetProvider extends libRecordSetProviderBase
 		//TODO: make this typedef better
 		/** @type {Record<string, any>} */
 		this._Schema = { };
+	}
+
+	/** @type {RestClient} */
+	get restClient()
+	{
+		return this.fable.RestClient;
 	}
 
 	/**
@@ -318,7 +322,6 @@ class RecordSetProvider extends libRecordSetProviderBase
 	onInitializeAsync(fCallback)
 	{
 		this.fable.log.info('Initializing RecordSetProvider-MeadowEndpoints');
-		this.restClient = this.fable.RestClient;
 		const checkSession = this.pict.services.PictSectionRecordSet ? this.pict.services.PictSectionRecordSet.checkSession.bind(this.pict.services.PictSectionRecordSet) : async () => true;
 		checkSession('Schema').then(async (supported) =>
 		{
