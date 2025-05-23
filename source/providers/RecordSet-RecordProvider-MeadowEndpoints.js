@@ -33,6 +33,19 @@ class RecordSetProvider extends libRecordSetProviderBase
 		this._Schema = { };
 	}
 
+	/** @return {import('pict/types/source/Pict-Meadow-EntityProvider.js')} */
+	get entityProvider()
+	{
+		/** @type {import('pict/types/source/Pict-Meadow-EntityProvider.js')} */
+		//TODO: figure out a pattern to share this with other consumers, to consolidate cache
+		this._EntityProvider = this.pict.instantiateServiceProviderWithoutRegistration('EntityProvider');
+		if (this.options.URLPrefix)
+		{
+			this._EntityProvider.options.urlPrefix = this.options.URLPrefix;
+		}
+		return this._EntityProvider;
+	}
+
 	/**
 	 * @typedef {(error?: Error, result?: T) => void} RecordSetCallback
 	 * @template T = Record<string, any>
@@ -299,16 +312,6 @@ class RecordSetProvider extends libRecordSetProviderBase
 		delete pRecord[`ID${this.options.Entity}`];
 		delete pRecord[`GUID${this.options.Entity}`];
 		return pRecord;
-	}
-
-	onBeforeInitialize()
-	{
-		/** @type {import('pict/types/source/Pict-Meadow-EntityProvider.js')} */
-		this.entityProvider = this.pict.instantiateServiceProviderWithoutRegistration('EntityProvider');
-		if (this.options.URLPrefix)
-		{
-			this.entityProvider.options.urlPrefix = this.options.URLPrefix;
-		}
 	}
 
 	/**

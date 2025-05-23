@@ -12,6 +12,10 @@ declare class RecordSetProvider extends libRecordSetProviderBase {
     pict: any & import("pict");
     /** @type {Record<string, any>} */
     _Schema: Record<string, any>;
+    /** @return {import('pict/types/source/Pict-Meadow-EntityProvider.js')} */
+    get entityProvider(): import("pict/types/source/Pict-Meadow-EntityProvider.js");
+    /** @type {import('pict/types/source/Pict-Meadow-EntityProvider.js')} */
+    _EntityProvider: import("pict/types/source/Pict-Meadow-EntityProvider.js");
     /**
      * @typedef {(error?: Error, result?: T) => void} RecordSetCallback
      * @template T = Record<string, any>
@@ -64,9 +68,6 @@ declare class RecordSetProvider extends libRecordSetProviderBase {
      * @param {Record<string, any>} pRecord - The record to clone.
      */
     cloneRecord(pRecord: Record<string, any>): Promise<any>;
-    onBeforeInitialize(): void;
-    /** @type {import('pict/types/source/Pict-Meadow-EntityProvider.js')} */
-    entityProvider: import("pict/types/source/Pict-Meadow-EntityProvider.js");
     /**
      * @param {(error?: Error) => void} fCallback - The callback function.
      */
