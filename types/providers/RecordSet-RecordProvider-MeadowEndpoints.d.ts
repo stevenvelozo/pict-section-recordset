@@ -1,19 +1,7 @@
 export = RecordSetProvider;
 /**
- * @typedef {(error?: Error, result?: any) => void} RestClientCallback
- *
  * @typedef {import('./RecordSet-RecordProvider-Base.js').RecordSetFilter} RecordSetFilter
  * @typedef {import('./RecordSet-RecordProvider-Base.js').RecordSetResult} RecordSetResult
- *
- * @typedef {{
- *  getJSON(pOptionsOrURL: string | Record<string, any>, fCallback: RestClientCallback): void,
- *  putJSON(pOptions: Record<string, any>, fCallback: RestClientCallback): void,
- *  postJSON(pOptions: Record<string, any>, fCallback: RestClientCallback): void,
- *  patchJSON(pOptions: Record<string, any>, fCallback: RestClientCallback): void,
- *  headJSON(pOptions: Record<string, any>, fCallback: RestClientCallback): void,
- *  delJSON(pOptions: Record<string, any>, fCallback: RestClientCallback): void,
- *  getRawText(pOptionsOrURL: string | Record<string, any>, fCallback: RestClientCallback): void,
- * }} RestClient
  */
 /**
  * Class representing a data change detection provider for Pict dynamic forms.
@@ -24,8 +12,6 @@ declare class RecordSetProvider extends libRecordSetProviderBase {
     pict: any & import("pict");
     /** @type {Record<string, any>} */
     _Schema: Record<string, any>;
-    /** @type {RestClient} */
-    get restClient(): RestClient;
     /**
      * @typedef {(error?: Error, result?: T) => void} RecordSetCallback
      * @template T = Record<string, any>
@@ -78,6 +64,9 @@ declare class RecordSetProvider extends libRecordSetProviderBase {
      * @param {Record<string, any>} pRecord - The record to clone.
      */
     cloneRecord(pRecord: Record<string, any>): Promise<any>;
+    onBeforeInitialize(): void;
+    /** @type {import('pict/types/source/Pict-Meadow-EntityProvider.js')} */
+    entityProvider: import("pict/types/source/Pict-Meadow-EntityProvider.js");
     /**
      * @param {(error?: Error) => void} fCallback - The callback function.
      */
@@ -85,19 +74,9 @@ declare class RecordSetProvider extends libRecordSetProviderBase {
     getRecordSchema(): Promise<Record<string, any>>;
 }
 declare namespace RecordSetProvider {
-    export { RestClientCallback, RecordSetFilter, RecordSetResult, RestClient };
+    export { RecordSetFilter, RecordSetResult };
 }
 import libRecordSetProviderBase = require("./RecordSet-RecordProvider-Base.js");
-type RestClientCallback = (error?: Error, result?: any) => void;
 type RecordSetFilter = import("./RecordSet-RecordProvider-Base.js").RecordSetFilter;
 type RecordSetResult = import("./RecordSet-RecordProvider-Base.js").RecordSetResult;
-type RestClient = {
-    getJSON(pOptionsOrURL: string | Record<string, any>, fCallback: RestClientCallback): void;
-    putJSON(pOptions: Record<string, any>, fCallback: RestClientCallback): void;
-    postJSON(pOptions: Record<string, any>, fCallback: RestClientCallback): void;
-    patchJSON(pOptions: Record<string, any>, fCallback: RestClientCallback): void;
-    headJSON(pOptions: Record<string, any>, fCallback: RestClientCallback): void;
-    delJSON(pOptions: Record<string, any>, fCallback: RestClientCallback): void;
-    getRawText(pOptionsOrURL: string | Record<string, any>, fCallback: RestClientCallback): void;
-};
 //# sourceMappingURL=RecordSet-RecordProvider-MeadowEndpoints.d.ts.map

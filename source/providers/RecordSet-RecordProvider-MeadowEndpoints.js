@@ -2,20 +2,8 @@
 const libRecordSetProviderBase = require('./RecordSet-RecordProvider-Base.js');
 
 /**
- * @typedef {(error?: Error, result?: any) => void} RestClientCallback
- *
  * @typedef {import('./RecordSet-RecordProvider-Base.js').RecordSetFilter} RecordSetFilter
  * @typedef {import('./RecordSet-RecordProvider-Base.js').RecordSetResult} RecordSetResult
- *
- * @typedef {{
- *  getJSON(pOptionsOrURL: string | Record<string, any>, fCallback: RestClientCallback): void,
- *  putJSON(pOptions: Record<string, any>, fCallback: RestClientCallback): void,
- *  postJSON(pOptions: Record<string, any>, fCallback: RestClientCallback): void,
- *  patchJSON(pOptions: Record<string, any>, fCallback: RestClientCallback): void,
- *  headJSON(pOptions: Record<string, any>, fCallback: RestClientCallback): void,
- *  delJSON(pOptions: Record<string, any>, fCallback: RestClientCallback): void,
- *  getRawText(pOptionsOrURL: string | Record<string, any>, fCallback: RestClientCallback): void,
- * }} RestClient
  */
 
 /**
@@ -45,12 +33,6 @@ class RecordSetProvider extends libRecordSetProviderBase
 		this._Schema = { };
 	}
 
-	/** @type {RestClient} */
-	get restClient()
-	{
-		return this.fable.RestClient;
-	}
-
 	/**
 	 * @typedef {(error?: Error, result?: T) => void} RecordSetCallback
 	 * @template T = Record<string, any>
@@ -78,13 +60,13 @@ class RecordSetProvider extends libRecordSetProviderBase
 		}
 		return new Promise((resolve, reject) =>
 		{
-			this.restClient.getJSON(`${this.options.URLPrefix}${this.options.Entity}/${pIDOrGuid}`, (error, response, result) =>
+			this.entityProvider.getEntity(this.options.Entity, pIDOrGuid, (pError, pResult) =>
 			{
-				if (error)
+				if (pError)
 				{
-					return reject(error);
+					return reject(pError);
 				}
-				resolve(result);
+				resolve(pResult);
 			});
 		});
 	}
@@ -106,13 +88,17 @@ class RecordSetProvider extends libRecordSetProviderBase
 		}
 		return new Promise((resolve, reject) =>
 		{
-			this.restClient.getJSON(`${this.options.URLPrefix}${this.options.Entity}s/FilteredTo/FBV~GUID${this.options.Entity}~EQ~${encodeURIComponent(pGuid)}`, (error, response, result) =>
+			this.entityProvider.getEntitySet(this.options.Entity, `FBV~GUID${this.options.Entity}~EQ~${encodeURIComponent(pGuid)}`, (pError, pResult) =>
 			{
-				if (error)
+				if (pError)
 				{
-					return reject(error);
+					return reject(pError);
 				}
-				resolve(result[0]);
+				if (pResult.length > 1)
+				{
+					this.pict.log.error(`Multiple ${this.options.Entity} records found for GUID ${pGuid}`, { Records: pResult });
+				}
+				resolve(pResult[0]);
 			});
 		});
 	}
@@ -129,22 +115,21 @@ class RecordSetProvider extends libRecordSetProviderBase
 		{
 			throw new Error('Entity is not defined in the provider options.');
 		}
+		const tmpEntity = pOptions.Entity || this.options.Entity;
 		if (this.pict.LogNoisiness > 1)
 		{
-			this.pict.log.info(`Reading ${this.options.Entity} records`, { Options: pOptions });
+			this.pict.log.info(`Reading ${tmpEntity} records`, { Options: pOptions });
 		}
-		const filterString = pOptions.FilterString ? `/FilteredTo/${pOptions.FilterString}` : '';
-		const pagination = `/${pOptions.Offset || 0}/${pOptions.PageSize || 250}`;
-		//TODO: lite support / other variants?
 		return new Promise((resolve, reject) =>
 		{
-			this.restClient.getJSON(`${this.options.URLPrefix}${this.options.Entity || pOptions.Entity}s${filterString}${pagination}`, (error, response, result) =>
+			// using a space here, otherwise you get a `//` in the URL which breaks some stuff
+			this.entityProvider.getEntitySetPage(tmpEntity, pOptions.FilterString ? pOptions.FilterString : ' ', pOptions.Offset || 0, pOptions.PageSize || 250, (pError, pResult) =>
 			{
-				if (error)
+				if (pError)
 				{
-					return reject(error);
+					return reject(pError);
 				}
-				resolve({ Records: result, Facets: { } });
+				resolve({ Records: pResult, Facets: { } });
 			});
 		});
 	}
@@ -173,21 +158,21 @@ class RecordSetProvider extends libRecordSetProviderBase
 		{
 			throw new Error('Entity is not defined in the provider options.');
 		}
+		const tmpEntity = pOptions.Entity || this.options.Entity;
 		if (this.pict.LogNoisiness > 1)
 		{
-			this.pict.log.info(`Counting ${this.options.Entity} records`, { Options: pOptions });
+			this.pict.log.info(`Counting ${tmpEntity} records`, { Options: pOptions });
 		}
-		const filterString = pOptions.FilterString ? `/FilteredTo/${pOptions.FilterString}` : '';
 		//TODO: lite support / other variants?
 		return new Promise((resolve, reject) =>
 		{
-			this.restClient.getJSON(`${this.options.URLPrefix}${this.options.Entity || pOptions.Entity}s/Count${filterString}`, (error, response, result) =>
+			this.entityProvider.getEntitySetRecordCount(tmpEntity, pOptions.FilterString, (pError, pCount) =>
 			{
-				if (error)
+				if (pError)
 				{
-					return reject(error);
+					return reject(pError);
 				}
-				resolve(result);
+				resolve({ Count: pCount });
 			});
 		});
 	}
@@ -201,11 +186,11 @@ class RecordSetProvider extends libRecordSetProviderBase
 	{
 		return new Promise((resolve, reject) =>
 		{
-		if (this.pict.LogNoisiness > 1)
-		{
-			this.pict.log.info(`Creating record ${this.options.Entity}`, { Record: pRecord });
-		}
-			this.restClient.postJSON({
+			if (this.pict.LogNoisiness > 1)
+			{
+				this.pict.log.info(`Creating record ${this.options.Entity}`, { Record: pRecord });
+			}
+			this.entityProvider.restClient.postJSON({
 				url: `${this.options.URLPrefix}${this.options.Entity}`,
 				body: pRecord,
 			}, (error, response, result) =>
@@ -232,7 +217,7 @@ class RecordSetProvider extends libRecordSetProviderBase
 		}
 		return new Promise((resolve, reject) =>
 		{
-			this.restClient.putJSON({
+			this.entityProvider.restClient.putJSON({
 				url: `${this.options.URLPrefix}${this.options.Entity}`,
 				body: pRecord,
 			}, (error, response, result) =>
@@ -259,7 +244,7 @@ class RecordSetProvider extends libRecordSetProviderBase
 		}
 		return new Promise((resolve, reject) =>
 		{
-			this.restClient.delJSON({
+			this.entityProvider.restClient.delJSON({
 				url: `${this.options.URLPrefix}${this.options.Entity}/${pRecord[`ID${this.options.Entity}`]}`,
 				body: pRecord,
 			}, (error, response, result) =>
@@ -316,6 +301,16 @@ class RecordSetProvider extends libRecordSetProviderBase
 		return pRecord;
 	}
 
+	onBeforeInitialize()
+	{
+		/** @type {import('pict/types/source/Pict-Meadow-EntityProvider.js')} */
+		this.entityProvider = this.pict.instantiateServiceProviderWithoutRegistration('EntityProvider');
+		if (this.options.URLPrefix)
+		{
+			this.entityProvider.options.urlPrefix = this.options.URLPrefix;
+		}
+	}
+
 	/**
 	 * @param {(error?: Error) => void} fCallback - The callback function.
 	 */
@@ -329,7 +324,7 @@ class RecordSetProvider extends libRecordSetProviderBase
 			{
 				return fCallback();
 			}
-			this.restClient.getJSON(`${this.options.URLPrefix}${this.options.Entity}/Schema`, (error, response, result) =>
+			this.entityProvider.restClient.getJSON(`${this.options.URLPrefix}${this.options.Entity}/Schema`, (error, response, result) =>
 			{
 				if (error)
 				{
