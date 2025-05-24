@@ -92,9 +92,9 @@ const _DEFAULT_CONFIGURATION_List_PaginationTop = (
 				{
 					Hash: 'PRSP-List-Pagination-Template-Pages',
 					Template: /*html*/`
-	<!-- DefaultPackage pict view template: [PRSP-List-Pagination-Template-Button-Page] -->
-	<a href="{~D:Record.URL~}" aria-label="Go to page {~D:Record.Page~}">{~D:Record.Page~}</a>
-	<!-- DefaultPackage end view template:  [PRSP-List-Pagination-Template-Button-Page] -->
+	<!-- DefaultPackage pict view template: [PRSP-List-Pagination-Template-Button-Pages] -->
+	<a href="{~D:Record.URL~}" aria-label="Go to page {~D:Record.Page~}" class="page-offset_{~D:Record.RelativeOffset~}">{~D:Record.Page~}</a>
+	<!-- DefaultPackage end view template:  [PRSP-List-Pagination-Template-Button-Pages] -->
 	`
 				}
 			],

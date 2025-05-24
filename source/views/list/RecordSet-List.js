@@ -235,6 +235,11 @@ class viewRecordSetList extends libPictRecordSetRecordView
 
 		// Generate each page's links.
 		// TODO: This is fast and cool; any reason not to?
+		// Get "bookmarks" as references to the array of page links.
+		tmpRecordListData.PageLinkBookmarks = (
+			{
+				Current: Math.floor(tmpRecordListData.Offset / tmpRecordListData.PageSize)
+			});
 		tmpRecordListData.PageLinks = [];
 		for (let i = 0; i < tmpRecordListData.PageCount; i++)
 		{
@@ -242,24 +247,21 @@ class viewRecordSetList extends libPictRecordSetRecordView
 			{
 				tmpRecordListData.PageLinks.push(
 					{
-						Page: i+1,
-						URL:`#/PSRS/${tmpRecordListData.RecordSet}/List/FilteredTo/${tmpRecordListData.FilterString}/${i * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+						Page: i + 1,
+						RelativeOffset: (i + 1) - tmpRecordListData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/FilteredTo/${tmpRecordListData.FilterString}/${i * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
 					});
 			}
 			else
 			{
 				tmpRecordListData.PageLinks.push(
 					{
-						Page: i+1,
-						URL:`#/PSRS/${tmpRecordListData.RecordSet}/List/${i * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+						Page: i + 1,
+						RelativeOffset: (i + 1) - tmpRecordListData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/${i * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
 					});
 			}
 		}
-		// Get "bookmarks" as references to the array of page links.
-		tmpRecordListData.PageLinkBookmarks = (
-			{
-				Current: Math.floor(tmpRecordListData.Offset / tmpRecordListData.PageSize)
-			});
 
 		//FIXME: short-term workaround to not blow up the tempplate rendering with way too many links
 		const linkRangeStart = Math.max(0, tmpRecordListData.PageLinkBookmarks.Current - 10);
@@ -267,19 +269,45 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		tmpRecordListData.PageLinksLimited = tmpRecordListData.PageLinks.slice(linkRangeStart, linkRangeEnd);
 		if (linkRangeStart > 0)
 		{
-			tmpRecordListData.PageLinksLimited.unshift(
-				{
-					Page: 1,
-					URL:`#/PSRS/${tmpRecordListData.RecordSet}/List/${0}/${tmpRecordListData.PageSize}`
-				});
+			if (tmpRecordListData.FilterString)
+			{
+				tmpRecordListData.PageLinksLimited.unshift(
+					{
+						Page: 1,
+						RelativeOffset: 1 - tmpRecordListData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/FilteredTo/${tmpRecordListData.FilterString}/${tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+					});
+			}
+			else
+			{
+				tmpRecordListData.PageLinksLimited.unshift(
+					{
+						Page: 1,
+						RelativeOffset: 1 - tmpRecordListData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/${0}/${tmpRecordListData.PageSize}`
+					});
+			}
 		}
 		if (linkRangeEnd < tmpRecordListData.PageLinks.length)
 		{
-			tmpRecordListData.PageLinksLimited.push(
-				{
-					Page: tmpRecordListData.PageCount,
-					URL:`#/PSRS/${tmpRecordListData.RecordSet}/List/${(tmpRecordListData.PageCount - 1) * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
-				});
+			if (tmpRecordListData.FilterString)
+			{
+				tmpRecordListData.PageLinksLimited.push(
+					{
+						Page: tmpRecordListData.PageCount,
+						RelativeOffset: tmpRecordListData.PageCount - tmpRecordListData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/FilteredTo/${tmpRecordListData.FilterString}/${(tmpRecordListData.PageCount - 1) * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+					});
+			}
+			else
+			{
+				tmpRecordListData.PageLinksLimited.push(
+					{
+						Page: tmpRecordListData.PageCount,
+						RelativeOffset: tmpRecordListData.PageCount - tmpRecordListData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/${(tmpRecordListData.PageCount - 1) * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+					});
+			}
 		}
 
 		tmpRecordListData.PageLinkBookmarks.Previous = tmpRecordListData.PageLinkBookmarks.Current - 1;
