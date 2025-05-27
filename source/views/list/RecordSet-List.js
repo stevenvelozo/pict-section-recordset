@@ -248,7 +248,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 				tmpRecordListData.PageLinks.push(
 					{
 						Page: i + 1,
-						RelativeOffset: (i + 1) - tmpRecordListData.PageLinkBookmarks.Current,
+						RelativeOffset: i - tmpRecordListData.PageLinkBookmarks.Current,
 						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/FilteredTo/${tmpRecordListData.FilterString}/${i * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
 					});
 			}
@@ -257,7 +257,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 				tmpRecordListData.PageLinks.push(
 					{
 						Page: i + 1,
-						RelativeOffset: (i + 1) - tmpRecordListData.PageLinkBookmarks.Current,
+						RelativeOffset: i - tmpRecordListData.PageLinkBookmarks.Current,
 						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/${i * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
 					});
 			}
@@ -274,7 +274,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 				tmpRecordListData.PageLinksLimited.unshift(
 					{
 						Page: 1,
-						RelativeOffset: 1 - tmpRecordListData.PageLinkBookmarks.Current,
+						RelativeOffset: -tmpRecordListData.PageLinkBookmarks.Current,
 						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/FilteredTo/${tmpRecordListData.FilterString}/${tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
 					});
 			}
@@ -283,7 +283,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 				tmpRecordListData.PageLinksLimited.unshift(
 					{
 						Page: 1,
-						RelativeOffset: 1 - tmpRecordListData.PageLinkBookmarks.Current,
+						RelativeOffset: -tmpRecordListData.PageLinkBookmarks.Current,
 						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/${0}/${tmpRecordListData.PageSize}`
 					});
 			}
@@ -295,7 +295,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 				tmpRecordListData.PageLinksLimited.push(
 					{
 						Page: tmpRecordListData.PageCount,
-						RelativeOffset: tmpRecordListData.PageCount - tmpRecordListData.PageLinkBookmarks.Current,
+						RelativeOffset: (tmpRecordListData.PageCount - 1) - tmpRecordListData.PageLinkBookmarks.Current,
 						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/FilteredTo/${tmpRecordListData.FilterString}/${(tmpRecordListData.PageCount - 1) * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
 					});
 			}
@@ -304,7 +304,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 				tmpRecordListData.PageLinksLimited.push(
 					{
 						Page: tmpRecordListData.PageCount,
-						RelativeOffset: tmpRecordListData.PageCount - tmpRecordListData.PageLinkBookmarks.Current,
+						RelativeOffset: (tmpRecordListData.PageCount - 1) - tmpRecordListData.PageLinkBookmarks.Current,
 						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/${(tmpRecordListData.PageCount - 1) * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
 					});
 			}
