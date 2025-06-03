@@ -1,6 +1,6 @@
 {
   "name": "pict-section-recordset",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Pict dynamic record set management views",
   "main": "source/Pict-Section-RecordSet.js",
   "directories": {
@@ -23,7 +23,7 @@
     "lint": "eslint source/**",
     "types": "tsc -p tsconfig.build.json"
   },
-  "types": "types/source/Pict-Section-RecordSet.d.ts",
+  "types": "types/Pict-Section-RecordSet.d.ts",
   "author": "steven velozo <steven@velozo.com>",
   "license": "MIT",
   "devDependencies": {
