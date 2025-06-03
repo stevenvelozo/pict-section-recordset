@@ -67,6 +67,14 @@ declare class RecordSetProviderBase {
     /**
      * Read records from the provider.
      *
+     * @param {RecordSetFilter} pOptions - Options for the read operation.
+     *
+     * @return {Promise<RecordSetResult>} - The result of the read operation.
+     */
+    getDecoratedRecords(pOptions: RecordSetFilter): Promise<RecordSetResult>;
+    /**
+     * Read records from the provider.
+     *
      * @param {string} [pFilterString] - The filter string to apply.
      * @param {number} [pOffset] - The starting record number for pagination.
      * @param {number} [pPageSize] - The number of records to return.
@@ -85,18 +93,21 @@ declare class RecordSetProviderBase {
      * Create a new record.
      *
      * @param {Record<string, any>} pRecord - The record to create.
+     * @return {Promise<Record<string, any>>} - The created record.
      */
     createRecord(pRecord: Record<string, any>): Promise<Record<string, any>>;
     /**
      * Update a record.
      *
      * @param {Record<string, any>} pRecord - The record to update.
+     * @return {Promise<Record<string, any>>} - The updated record.
      */
     updateRecord(pRecord: Record<string, any>): Promise<Record<string, any>>;
     /**
      * Delete a record.
      *
      * @param {Record<string, any>} pRecord - The record to delete.
+     * @return {Promise<void>}
      */
     deleteRecord(pRecord: Record<string, any>): Promise<void>;
     /**
@@ -116,6 +127,7 @@ declare class RecordSetProviderBase {
      * Clone a record.
      *
      * @param {Record<string, any>} pRecord - The record to clone.
+     * @return {Promise<Record<string, any>>} - The cloned record.
      */
     cloneRecord(pRecord: Record<string, any>): Promise<Record<string, any>>;
     /**
@@ -128,6 +140,13 @@ declare class RecordSetProviderBase {
      * @return {Record<string, any>} The schema of the record.
      */
     get recordSchema(): Record<string, any>;
+    /**
+     * Abstract decoration method for core records. Subclasses should implement this method to decorate records with additional information.
+     *
+     * @param {Array<Record<string, any>>} pRecords - The records to decorate.
+     * @return {Promise<void>}
+     */
+    decorateCoreRecords(pRecords: Array<Record<string, any>>): Promise<void>;
 }
 declare namespace RecordSetProviderBase {
     export { _DefaultProviderConfiguration as default_configuration, RecordSetSearchRangeFacet, RecordSetSearchFacetPayload, RecordSetResult, RecordSetFilter };

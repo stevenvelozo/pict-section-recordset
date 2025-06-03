@@ -1,12 +1,12 @@
 const libPictView = require('pict-view');
 
 /** @type {Record<string, any>} */
-const _DEFAULT_CONFIGURATION_Dashboard_HeaderDashboard =
+const _DEFAULT_CONFIGURATION_Dashboard_HeaderList =
 {
-	ViewIdentifier: 'PRSP-Dashboard-HeaderDashboard',
+	ViewIdentifier: 'PRSP-Dashboard-HeaderList',
 
-	DefaultRenderable: 'PRSP_Renderable_HeaderDashboard',
-	DefaultDestinationAddress: '#PRSP_HeaderDashboard_Container',
+	DefaultRenderable: 'PRSP_Renderable_HeaderList',
+	DefaultDestinationAddress: '#PRSP_HeaderList_Container',
 	DefaultTemplateRecordAddress: false,
 
 	// If this is set to true, when the App initializes this will.
@@ -28,37 +28,37 @@ const _DEFAULT_CONFIGURATION_Dashboard_HeaderDashboard =
 	Templates:
 	[
 		{
-			Hash: 'PRSP-Dashboard-HeaderDashboard-Template',
+			Hash: 'PRSP-Dashboard-HeaderList-Template',
 			Template: /*html*/`
-	<!-- DefaultPackage pict view template: [PRSP-Dashboard-HeaderDashboard-Template] -->
-	<!-- DefaultPackage end view template:  [PRSP-Dashboard-HeaderDashboard-Template] -->
+	<!-- DefaultPackage pict view template: [PRSP-Dashboard-HeaderList-Template] -->
+	<!-- DefaultPackage end view template:	[PRSP-Dashboard-HeaderList-Template] -->
 `
-		}
+		},
 	],
 
 	Renderables:
 	[
 		{
-			RenderableHash: 'PRSP_Renderable_HeaderDashboard',
-			TemplateHash: 'PRSP-Dashboard-HeaderDashboard-Template',
-			DestinationAddress: '#PRSP_HeaderDashboard_Container',
+			RenderableHash: 'PRSP_Renderable_HeaderList',
+			TemplateHash: 'PRSP-Dashboard-HeaderList-Template',
+			DestinationAddress: '#PRSP_HeaderList_Container',
 			RenderMethod: 'replace'
-		}
+		},
 	],
 
-	Manifests: {}
+	Manifests: {},
 };
 
-class viewRecordSetDashboardHeaderDashboard extends libPictView
+class viewRecordSetListHeaderList extends libPictView
 {
 	constructor(pFable, pOptions, pServiceHash)
 	{
-		let tmpOptions = Object.assign({}, _DEFAULT_CONFIGURATION_Dashboard_HeaderDashboard, pOptions);
+		let tmpOptions = Object.assign({}, _DEFAULT_CONFIGURATION_Dashboard_HeaderList, pOptions);
 		super(pFable, tmpOptions, pServiceHash);
 	}
 }
 
-module.exports = viewRecordSetDashboardHeaderDashboard;
+module.exports = viewRecordSetListHeaderList;
 
-module.exports.default_configuration = _DEFAULT_CONFIGURATION_Dashboard_HeaderDashboard;
+module.exports.default_configuration = _DEFAULT_CONFIGURATION_Dashboard_HeaderList;
 

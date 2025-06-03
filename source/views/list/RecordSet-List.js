@@ -43,7 +43,7 @@ const _DEFAULT_CONFIGURATION__List = (
 	<section id="PRSP_List_Container">
 		{~V:PRSP-List-Title~}
 		{~V:PRSP-List-HeaderList~}
-		{~V:PRSP-Filters~}
+		{~FV:PRSP-Filters:List~}
 		{~V:PRSP-List-PaginationTop~}
 		{~V:PRSP-List-RecordList~}
 		{~V:PRSP-List-PaginationBottom~}
@@ -90,31 +90,6 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		};
 	}
 
-	handleSearch(pSearchString)
-	{
-		const pictRouter = this.pict.providers.PictRouter;
-		const recordSet = pictRouter.router.current[0]?.data?.RecordSet;
-		const offset = '0'; // since we are searching, we reset to page 1
-		const pageSize = pictRouter.router.current[0]?.data?.PageSize || '100';
-		if (!recordSet)
-		{
-			this.pict.log.error('PictRecordSetRouter.handleSearch: No record set found in the current route: ', { routes: pictRouter.router.current });
-			return;
-		}
-		const tmpProviderConfiguration = this.pict.PictSectionRecordSet.recordSetProviderConfigurations[recordSet];
-		if (pSearchString)
-		{
-			//FIXME: figure this out based on the record set; or defer to another provider?
-			const searchFields = tmpProviderConfiguration?.SearchFields ?? [ 'Name' ];
-			const filterExpr = searchFields.map((filterField) => `FBVOR~${filterField}~LK~${encodeURIComponent(`%${pSearchString}%`)}`).join('~');
-			pictRouter.navigate(`/PSRS/${recordSet}/List/FilteredTo/${filterExpr}/${offset}/${pageSize}`);
-		}
-		else
-		{
-			pictRouter.navigate(`/PSRS/${recordSet}/List`);
-		}
-	}
-
 	handleRecordSetListRoute(pRoutePayload)
 	{
 		if (typeof(pRoutePayload) != 'object')
@@ -142,10 +117,12 @@ class viewRecordSetList extends libPictRecordSetRecordView
 
 	addRoutes(pPictRouter)
 	{
-		pPictRouter.addRoute('/PSRS/:RecordSet/List/FilteredTo/:FilterString/:Offset/:PageSize', this.handleRecordSetListRoute.bind(this));
-		pPictRouter.addRoute('/PSRS/:RecordSet/List/:Offset/:PageSize', this.handleRecordSetListRoute.bind(this));
-		pPictRouter.addRoute('/PSRS/:RecordSet/List/:Offset', this.handleRecordSetListRoute.bind(this));
-		pPictRouter.addRoute('/PSRS/:RecordSet/List', this.handleRecordSetListRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/ListFilteredTo/:FilterString/:Offset/:PageSize', this.handleRecordSetListRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/ListFilteredTo/:FilterString', this.handleRecordSetListRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/List/:Offset/:PageSize', this.handleRecordSetListRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/List/:Offset', this.handleRecordSetListRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/List', this.handleRecordSetListRoute.bind(this));
+		pPictRouter.router.resolve();
 		return true;
 	}
 
@@ -250,7 +227,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 					{
 						Page: i + 1,
 						RelativeOffset: i - tmpRecordListData.PageLinkBookmarks.Current,
-						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/FilteredTo/${tmpRecordListData.FilterString}/${i * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+						URL: `#/PSRS/${tmpRecordListData.RecordSet}/ListFilteredTo/${tmpRecordListData.FilterString}/${i * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
 					});
 			}
 			else
@@ -276,7 +253,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 					{
 						Page: 1,
 						RelativeOffset: -tmpRecordListData.PageLinkBookmarks.Current,
-						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/FilteredTo/${tmpRecordListData.FilterString}/${tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+						URL: `#/PSRS/${tmpRecordListData.RecordSet}/ListFilteredTo/${tmpRecordListData.FilterString}/${tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
 					});
 			}
 			else
@@ -297,7 +274,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 					{
 						Page: tmpRecordListData.PageCount,
 						RelativeOffset: (tmpRecordListData.PageCount - 1) - tmpRecordListData.PageLinkBookmarks.Current,
-						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/FilteredTo/${tmpRecordListData.FilterString}/${(tmpRecordListData.PageCount - 1) * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+						URL: `#/PSRS/${tmpRecordListData.RecordSet}/ListFilteredTo/${tmpRecordListData.FilterString}/${(tmpRecordListData.PageCount - 1) * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
 					});
 			}
 			else
@@ -371,7 +348,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 	{
 		this.childViews.headerList = this.pict.addView('PRSP-List-HeaderList', viewHeaderList.default_configuration, viewHeaderList);
 		this.childViews.title = this.pict.addView('PRSP-List-Title', viewTitle.default_configuration, viewTitle);
-		this.childViews.filters = this.pict.addView('PRSP-Filters', viewFilters.default_configuration, viewFilters);
+		this.childViews.filters = this.pict.views['PRSP-Filters'] || this.pict.addView('PRSP-Filters', { }, viewFilters);
 		this.childViews.paginationTop = this.pict.addView('PRSP-List-PaginationTop', viewPaginationTop.default_configuration, viewPaginationTop);
 		this.childViews.recordList = this.pict.addView('PRSP-List-RecordList', viewRecordList.default_configuration, viewRecordList);
 		this.childViews.recordListHeader = this.pict.addView('PRSP-List-RecordListHeader', viewRecordListHeader.default_configuration, viewRecordListHeader);

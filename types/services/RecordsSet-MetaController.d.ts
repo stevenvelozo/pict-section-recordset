@@ -5,6 +5,9 @@ declare class RecordSetMetacontroller {
     fable: import("pict") & {
         addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any;
     };
+    pict: import("pict") & {
+        addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any;
+    };
     /** @type {any} */
     log: any;
     /** @type {any} */
@@ -19,11 +22,25 @@ declare class RecordSetMetacontroller {
     };
     recordSetProviders: {};
     recordSetProviderConfigurations: {};
-    recordSetListConfigurations: {};
+    dashboardConfigurations: {};
     sessionProviders: any[];
     has_initialized: boolean;
+    /**
+     * @return {Record<string, any>} - The registered configuration for the RecordSet
+     */
+    getRecordSetConfiguration(pRecordSet: any): Record<string, any>;
     loadRecordSetConfiguration(pRecordSetConfiguration: any): boolean;
     loadRecordSetConfigurationArray(pRecordSetConfigurationArray: any): boolean;
+    /**
+     * @param {Array<Record<string, any>>} pDashboardConfigurationArray - An array of dashboard configurations.
+     */
+    loadDashboardConfigurationArray(pDashboardConfigurationArray: Array<Record<string, any>>): boolean;
+    /**
+     * TODO: This method is still incomplete.
+     *
+     * @param {Record<string, any>} pDashboardConfiguration - The dashboard configuration to add.
+     */
+    addDashboardConfiguration(pDashboardConfiguration: Record<string, any>): boolean;
     loadRecordSetDynamcally(pRecordSet: any, pEntity: any, pDefaultFilter: any): any;
     handleLoadDynamicRecordSetRoute(pRoutePayload: any): any;
     addRoutes(pPictRouter: any): boolean;

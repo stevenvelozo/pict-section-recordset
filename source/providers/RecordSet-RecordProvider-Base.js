@@ -107,6 +107,20 @@ class RecordSetProviderBase extends libPictProvider
 	/**
 	 * Read records from the provider.
 	 *
+	 * @param {RecordSetFilter} pOptions - Options for the read operation.
+	 *
+	 * @return {Promise<RecordSetResult>} - The result of the read operation.
+	 */
+	async getDecoratedRecords(pOptions)
+	{
+		const tmpRecords = await this.getRecords(pOptions);
+		await this.decorateCoreRecords(tmpRecords.Records);
+		return tmpRecords;
+	}
+
+	/**
+	 * Read records from the provider.
+	 *
 	 * @param {string} [pFilterString] - The filter string to apply.
 	 * @param {number} [pOffset] - The starting record number for pagination.
 	 * @param {number} [pPageSize] - The number of records to return.
@@ -133,6 +147,7 @@ class RecordSetProviderBase extends libPictProvider
 	 * Create a new record.
 	 *
 	 * @param {Record<string, any>} pRecord - The record to create.
+	 * @return {Promise<Record<string, any>>} - The created record.
 	 */
 	async createRecord(pRecord)
 	{
@@ -144,6 +159,7 @@ class RecordSetProviderBase extends libPictProvider
 	 * Update a record.
 	 *
 	 * @param {Record<string, any>} pRecord - The record to update.
+	 * @return {Promise<Record<string, any>>} - The updated record.
 	 */
 	async updateRecord(pRecord)
 	{
@@ -155,6 +171,7 @@ class RecordSetProviderBase extends libPictProvider
 	 * Delete a record.
 	 *
 	 * @param {Record<string, any>} pRecord - The record to delete.
+	 * @return {Promise<void>}
 	 */
 	async deleteRecord(pRecord)
 	{
@@ -188,6 +205,7 @@ class RecordSetProviderBase extends libPictProvider
 	 * Clone a record.
 	 *
 	 * @param {Record<string, any>} pRecord - The record to clone.
+	 * @return {Promise<Record<string, any>>} - The cloned record.
 	 */
 	async cloneRecord(pRecord)
 	{
@@ -210,6 +228,16 @@ class RecordSetProviderBase extends libPictProvider
 	get recordSchema()
 	{
 		return { };
+	}
+
+	/**
+	 * Abstract decoration method for core records. Subclasses should implement this method to decorate records with additional information.
+	 *
+	 * @param {Array<Record<string, any>>} pRecords - The records to decorate.
+	 * @return {Promise<void>}
+	 */
+	async decorateCoreRecords(pRecords)
+	{
 	}
 }
 

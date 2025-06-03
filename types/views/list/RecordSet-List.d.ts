@@ -9,7 +9,6 @@ declare class viewRecordSetList extends libPictRecordSetRecordView {
         recordListEntry: any;
         paginationBottom: any;
     };
-    handleSearch(pSearchString: any): void;
     handleRecordSetListRoute(pRoutePayload: any): Promise<boolean>;
     onBeforeRenderList(pRecordListData: any): any;
     dynamicallyGenerateColumns(pRecordListData: any): any;

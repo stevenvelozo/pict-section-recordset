@@ -28,6 +28,7 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 
 		/** @type {import('pict') & { addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any }} */
 		this.fable;
+		this.pict = this.fable;
 		/** @type {any} */
 		this.log;
 		/** @type {any} */
@@ -45,7 +46,8 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		this.recordSetProviders = {};
 		this.recordSetProviderConfigurations = {};
 
-		this.recordSetListConfigurations = {};
+		this.dashboardConfigurations = {};
+
 		this.sessionProviders = [];
 
 		this.has_initialized = false;
@@ -77,6 +79,15 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 				}
 			]
 	 */
+
+	/**
+	 * @return {Record<string, any>} - The registered configuration for the RecordSet
+	 */
+	getRecordSetConfiguration(pRecordSet)
+	{
+		return this.recordSetProviderConfigurations[pRecordSet];
+	}
+
 	loadRecordSetConfiguration(pRecordSetConfiguration)
 	{
 		if (typeof pRecordSetConfiguration !== 'object')
@@ -190,6 +201,72 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		}
 	}
 
+	/**
+	 * @param {Array<Record<string, any>>} pDashboardConfigurationArray - An array of dashboard configurations.
+	 */
+	loadDashboardConfigurationArray(pDashboardConfigurationArray)
+	{
+		if (!Array.isArray(pDashboardConfigurationArray))
+		{
+			this.fable.log.error(`RecordSetMetacontroller: ${this.UUID} loadDashboardConfigurationArray called with invalid configuration.`);
+			return false;
+		}
+		if (pDashboardConfigurationArray.length === 0)
+		{
+			this.fable.log.warn(`RecordSetMetacontroller: ${this.UUID} loadDashboardConfigurationArray called with empty configuration.`);
+			return false;
+		}
+		for (const tmpDashboardConfiguration of pDashboardConfigurationArray)
+		{
+			if (tmpDashboardConfiguration.RecordDecorationConfiguration)
+			{
+				//TODO: register the record decoration configuration
+			}
+		}
+	}
+
+	/**
+	 * TODO: This method is still incomplete.
+	 *
+	 * @param {Record<string, any>} pDashboardConfiguration - The dashboard configuration to add.
+	 */
+	addDashboardConfiguration(pDashboardConfiguration)
+	{
+		let tmpProvider = false;
+
+		if (this.recordSetProviders[pDashboardConfiguration.RecordSet])
+		{
+			this.pict.log.error(`RecordSetMetacontroller: ${this.UUID} addDashboardConfiguration called with invalid configuration. RecordSet ${pDashboardConfiguration.RecordSet} already exists.`);
+			return null;
+		}
+		const providerConfiguration = Object.assign({}, {Hash: `RSP-Provider-${pDashboardConfiguration.RecordSet}`}, pDashboardConfiguration);
+		this.dashboardConfigurations[providerConfiguration.RecordSet] = providerConfiguration;
+
+		// Create a Meadow Endpoints provider
+		// Allow the Record Set to optionally point to a different entity
+		if ('RecordSetCoreMeadowEntity' in pDashboardConfiguration)
+		{
+			providerConfiguration.Entity = pDashboardConfiguration.RecordSetCoreMeadowEntity;
+		}
+		else
+		{
+			this.pict.log.error(`RecordSetMetacontroller: ${this.UUID} addDashboardConfiguration called with invalid configuration. Missing RecordSetCoreMeadowEntity.`);
+			return null;
+		}
+		// Default the URLPrefix to the base URLPrefix
+		if ('RecordSetURLPrefix' in pDashboardConfiguration)
+		{
+			providerConfiguration.URLPrefix = pDashboardConfiguration.RecordSetURLPrefix;
+		}
+		else
+		{
+			providerConfiguration.URLPrefix = '/1.0/';
+		}
+		tmpProvider = this.recordSetProviders[pDashboardConfiguration.RecordSet] = this.fable.addProvider(providerConfiguration.Hash, providerConfiguration, providerMeadowEndpoints);
+
+		return tmpProvider;
+	}
+
 	loadRecordSetDynamcally(pRecordSet, pEntity, pDefaultFilter)
 	{
 		if (typeof(pRecordSet) === 'object')
@@ -284,6 +361,7 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		this.fable.addProvider('RecordSetLinkManager', {}, providerLinkManager);
 
 		// Add the subviews internally and externally
+		this.pict.addTemplate(require('../templates/Pict-Template-FilterView.js'));
 		this.childViews.list = this.fable.addView('RSP-RecordSet-List', this.options, viewRecordSetList);
 		this.childViews.edit = this.fable.addView('RSP-RecordSet-Edit', this.options, viewRecordSetEdit);
 		this.childViews.read = this.fable.addView('RSP-RecordSet-Read', this.options, viewRecordSetRead);
@@ -300,6 +378,11 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		if (this.fable.settings.hasOwnProperty('DefaultRecordSetConfigurations'))
 		{
 			this.loadRecordSetConfigurationArray(this.fable.settings.DefaultRecordSetConfigurations);
+		}
+
+		if (this.fable.settings.hasOwnProperty('DefaultDashboards'))
+		{
+			this.loadDashboardConfigurationArray(this.fable.settings.DefaultDashboards);
 		}
 
 		this.has_initialized = true;

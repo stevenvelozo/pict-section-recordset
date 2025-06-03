@@ -1,4 +1,4 @@
-export = RecordSetProvider;
+export = MeadowEndpointsRecordSetProvider;
 /**
  * @typedef {import('./RecordSet-RecordProvider-Base.js').RecordSetFilter} RecordSetFilter
  * @typedef {import('./RecordSet-RecordProvider-Base.js').RecordSetResult} RecordSetResult
@@ -7,9 +7,42 @@ export = RecordSetProvider;
  * Class representing a data change detection provider for Pict dynamic forms.
  * @extends libRecordSetProviderBase
  */
-declare class RecordSetProvider extends libRecordSetProviderBase {
-    /** @type {import('fable') & import('pict')} */
-    pict: any & import("pict");
+declare class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase {
+    /** @type {import('pict') & {
+     *      log: any,
+     *      services:
+     *      {
+     *			PictSectionRecordSet: InstanceType<import('../Pict-Section-RecordSet.js')>,
+     *			[key: string]: any,
+     *		},
+     *      instantiateServiceProviderWithoutRegistration: (hash: String) => any,
+     *      PictSectionRecordSet: InstanceType<import('../Pict-Section-RecordSet.js')>
+     *  }} */
+    pict: import("pict") & {
+        log: any;
+        services: {
+            PictSectionRecordSet: InstanceType<{
+                new (pFable: any, pOptions: any, pServiceHash: any): import("../services/RecordsSet-MetaController.js");
+                default_configuration: Record<string, any>;
+                PictRecordSetApplication: typeof import("../application/Pict-Application-RecordSet.js");
+                RecordSetProviderBase: typeof libRecordSetProviderBase;
+                RecordSetProviderMeadowEndpoints: typeof MeadowEndpointsRecordSetProvider;
+            }>;
+            [key: string]: any;
+        };
+        instantiateServiceProviderWithoutRegistration: (hash: string) => any;
+        PictSectionRecordSet: InstanceType<{
+            new (pFable: any, pOptions: any, pServiceHash: any): import("../services/RecordsSet-MetaController.js");
+            default_configuration: Record<string, any>;
+            PictRecordSetApplication: typeof import("../application/Pict-Application-RecordSet.js");
+            RecordSetProviderBase: typeof libRecordSetProviderBase;
+            RecordSetProviderMeadowEndpoints: typeof MeadowEndpointsRecordSetProvider;
+        }>;
+    };
+    /** @type {string} */
+    Hash: string;
+    /** @type {string} */
+    UUID: string;
     /** @type {Record<string, any>} */
     _Schema: Record<string, any>;
     /** @return {import('pict/types/source/Pict-Meadow-EntityProvider.js')} */
@@ -74,7 +107,7 @@ declare class RecordSetProvider extends libRecordSetProviderBase {
     onInitializeAsync(fCallback: (error?: Error) => void): void;
     getRecordSchema(): Promise<Record<string, any>>;
 }
-declare namespace RecordSetProvider {
+declare namespace MeadowEndpointsRecordSetProvider {
     export { RecordSetFilter, RecordSetResult };
 }
 import libRecordSetProviderBase = require("./RecordSet-RecordProvider-Base.js");

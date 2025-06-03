@@ -10,7 +10,7 @@ const libRecordSetProviderBase = require('./RecordSet-RecordProvider-Base.js');
  * Class representing a data change detection provider for Pict dynamic forms.
  * @extends libRecordSetProviderBase
  */
-class RecordSetProvider extends libRecordSetProviderBase
+class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 {
 	/**
 	 * Creates an instance of RecordSetProvider.
@@ -26,8 +26,21 @@ class RecordSetProvider extends libRecordSetProviderBase
 		this.options;
 		/** @type {import('fable')} */
 		this.fable;
-		/** @type {import('fable') & import('pict')} */
+		/** @type {import('pict') & {
+		 *      log: any,
+		 *      services:
+		 *      {
+		 *			PictSectionRecordSet: InstanceType<import('../Pict-Section-RecordSet.js')>,
+		 *			[key: string]: any,
+		 *		},
+		 *      instantiateServiceProviderWithoutRegistration: (hash: String) => any,
+		 *      PictSectionRecordSet: InstanceType<import('../Pict-Section-RecordSet.js')>
+		 *  }} */
 		this.pict;
+		/** @type {string} */
+		this.Hash;
+		/** @type {string} */
+		this.UUID;
 		//TODO: make this typedef better
 		/** @type {Record<string, any>} */
 		this._Schema = { };
@@ -359,6 +372,43 @@ class RecordSetProvider extends libRecordSetProviderBase
 		}
 		return this._Schema;
 	}
+
+	/**
+	 * Abstract decoration method for core records. Subclasses should implement this method to decorate records with additional information.
+	 *
+	 * @param {Array<Record<string, any>>} pRecords - The records to decorate.
+	 * @return {Promise<void>}
+	 */
+	async decorateCoreRecords(pRecords)
+	{
+		if (!this.options.RecordDecorationConfiguration)
+		{
+			return;
+		}
+		if (!Array.isArray(this.options.RecordDecorationConfiguration))
+		{
+			this.pict.log.error('RecordDecorationConfiguration is not an array', { RecordDecorationConfiguration: this.options.RecordDecorationConfiguration });
+			return;
+		}
+		this.pict.AppData[this.Hash] = { CoreEntityRecordSubset: pRecords };
+		const config = [{ Type: 'SetStateAddress', StateAddress: `AppData[${this.Hash}]` }].concat(this.options.RecordDecorationConfiguration);
+
+		try
+		{
+			await new Promise((resolve, reject) => this.pict.EntityProvider.gatherDataFromServer(config, (err) =>
+			{
+				if (err)
+				{
+					return reject(err);
+				}
+				resolve();
+			}));
+		}
+		catch (error)
+		{
+			this.pict.log.error(`MeadowEndpointsRecordSetProvider: Error gathering data from server for record decoration: ${error.message}`, { Stack: error.stack });
+		}
+	}
 }
 
-module.exports = RecordSetProvider;
+module.exports = MeadowEndpointsRecordSetProvider;
