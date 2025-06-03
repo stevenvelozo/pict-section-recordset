@@ -1,5 +1,6 @@
 const libPictRecordSetRecordView = require('../RecordSet-RecordBaseView.js');
 
+/** @type {Record<string, any>} */
 const _DEFAULT_CONFIGURATION__Edit =
 {
 	ViewIdentifier: 'PRSP-Edit',

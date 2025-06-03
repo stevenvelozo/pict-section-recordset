@@ -1,8 +1,6 @@
 declare const _exports: {
     new (pFable: any, pOptions: any, pServiceHash: any): import("./services/RecordsSet-MetaController.js");
-    default_configuration: {
-        DefaultMeadowURLPrefix: string;
-    };
+    default_configuration: Record<string, any>;
     PictRecordSetApplication: typeof import("./application/Pict-Application-RecordSet.js");
     RecordSetProviderBase: typeof import("./providers/RecordSet-RecordProvider-Base.js");
     RecordSetProviderMeadowEndpoints: typeof import("./providers/RecordSet-RecordProvider-MeadowEndpoints.js");

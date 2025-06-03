@@ -1,5 +1,6 @@
 const libPictView = require('pict-view');
 
+/** @type {Record<string, any>} */
 const _DEFAULT_CONFIGURATION_Edit_RecordEditControls =
 {
 	ViewIdentifier: 'PRSP-Edit-RecordEditControls',

@@ -1,6 +1,7 @@
 const libPictProvider = require('pict-provider');
 const libPictRouter = require('pict-router');
 
+/** @type {Record<string, any>} */
 const _DEFAULT_PROVIDER_CONFIGURATION =
 {
 	ProviderIdentifier: 'Pict-RecordSet-Router',

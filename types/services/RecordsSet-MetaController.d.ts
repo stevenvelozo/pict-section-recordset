@@ -34,7 +34,6 @@ declare class RecordSetMetacontroller {
 declare namespace RecordSetMetacontroller {
     export { _DEFAULT_CONFIGURATION as default_configuration };
 }
-declare namespace _DEFAULT_CONFIGURATION {
-    let DefaultMeadowURLPrefix: string;
-}
+/** @type {Record<string, any>} */
+declare const _DEFAULT_CONFIGURATION: Record<string, any>;
 //# sourceMappingURL=RecordsSet-MetaController.d.ts.map

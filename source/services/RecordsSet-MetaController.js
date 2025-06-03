@@ -13,6 +13,7 @@ const providerLinkManager = require('../providers/RecordSet-Link-Manager.js');
 
 const providerRouter = require('../providers/RecordSet-Router.js');
 
+/** @type {Record<string, any>} */
 const _DEFAULT_CONFIGURATION =
 	{
 		DefaultMeadowURLPrefix: '/1.0/'

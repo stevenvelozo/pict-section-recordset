@@ -44,6 +44,7 @@ class PictSectionRecordSetApplication extends libPictApplication
 
 module.exports = PictSectionRecordSetApplication
 
+/** @type {Record<string, any>} */
 module.exports.default_configuration = (
 {
 	"Name": "A Simple Pict RecordSet Application",

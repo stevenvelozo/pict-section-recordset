@@ -7,9 +7,7 @@ declare class PictRecordSetRouter {
     pict: import("pict") & {
         PictSectionRecordSet: InstanceType<{
             new (pFable: any, pOptions: any, pServiceHash: any): import("../services/RecordsSet-MetaController.js");
-            default_configuration: {
-                DefaultMeadowURLPrefix: string;
-            };
+            default_configuration: Record<string, any>;
             PictRecordSetApplication: typeof import("../application/Pict-Application-RecordSet.js");
             RecordSetProviderBase: typeof import("./RecordSet-RecordProvider-Base.js");
             RecordSetProviderMeadowEndpoints: typeof import("./RecordSet-RecordProvider-MeadowEndpoints.js");
@@ -28,9 +26,6 @@ declare class PictRecordSetRouter {
 declare namespace PictRecordSetRouter {
     export { _DEFAULT_PROVIDER_CONFIGURATION as default_configuration };
 }
-declare namespace _DEFAULT_PROVIDER_CONFIGURATION {
-    let ProviderIdentifier: string;
-    let AutoInitialize: boolean;
-    let AutoInitializeOrdinal: number;
-}
+/** @type {Record<string, any>} */
+declare const _DEFAULT_PROVIDER_CONFIGURATION: Record<string, any>;
 //# sourceMappingURL=RecordSet-Router.d.ts.map

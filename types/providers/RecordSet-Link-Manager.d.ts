@@ -15,9 +15,6 @@ declare class PictRecordSetRouter {
 declare namespace PictRecordSetRouter {
     export { _DEFAULT_PROVIDER_CONFIGURATION as default_configuration };
 }
-declare namespace _DEFAULT_PROVIDER_CONFIGURATION {
-    let ProviderIdentifier: string;
-    let AutoInitialize: boolean;
-    let AutoInitializeOrdinal: number;
-}
+/** @type {Record<string, any>} */
+declare const _DEFAULT_PROVIDER_CONFIGURATION: Record<string, any>;
 //# sourceMappingURL=RecordSet-Link-Manager.d.ts.map

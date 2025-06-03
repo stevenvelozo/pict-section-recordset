@@ -14,11 +14,5 @@ declare namespace PictSectionRecordSetApplication {
     export { default_configuration };
 }
 import libPictApplication = require("pict-application");
-declare namespace default_configuration {
-    let Name: string;
-    let Hash: string;
-    namespace pict_configuration {
-        let Product: string;
-    }
-}
+declare const default_configuration: Record<string, any>;
 //# sourceMappingURL=Pict-Application-RecordSet.d.ts.map

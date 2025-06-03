@@ -1,5 +1,6 @@
 const libPictView = require('pict-view');
 
+/** @type {Record<string, any>} */
 const _DEFAULT_CONFIGURATION_Read_TabBarRead =
 {
 	ViewIdentifier: 'PRSP-Read-TabBarRead',

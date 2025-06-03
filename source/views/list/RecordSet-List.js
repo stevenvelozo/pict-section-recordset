@@ -9,6 +9,7 @@ const viewRecordListHeader = require('./RecordSet-List-RecordListHeader.js');
 const viewRecordListEntry = require('./RecordSet-List-RecordListEntry.js');
 const viewPaginationBottom = require('./RecordSet-List-PaginationBottom.js');
 
+/** @type {Record<string, any>} */
 const _DEFAULT_CONFIGURATION__List = (
 	{
 		ViewIdentifier: 'PRSP-List',

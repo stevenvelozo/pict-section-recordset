@@ -6,6 +6,7 @@ const viewRecordRead = require('./RecordSet-Read-RecordRead.js');
 const viewRecordReadExtra = require('./RecordSet-Read-RecordReadExtra.js');
 const viewTabBarRead = require('./RecordSet-Read-TabBarRead.js');
 
+/** @type {Record<string, any>} */
 const _DEFAULT_CONFIGURATION__Read = (
 	{
 		ViewIdentifier: 'PRSP-Read',

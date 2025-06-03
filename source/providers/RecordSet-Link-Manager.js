@@ -1,5 +1,6 @@
 const libPictProvider = require('pict-provider');
 
+/** @type {Record<string, any>} */
 const _DEFAULT_PROVIDER_CONFIGURATION =
 {
 	ProviderIdentifier: 'Pict-RecordSet-LinkManager',
