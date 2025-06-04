@@ -79,7 +79,7 @@ class PictTemplateFilterViewInstruction extends libPictTemplate
 		}
 		if (!pRecord.ViewContext)
 		{
-			pRecord.ViewContext = tmpViewContext;
+			pRecord.ViewContext = pRecord.DashboardHash ? `${tmpViewContext}-${pRecord.DashboardHash}` : tmpViewContext;
 		}
 
 		let tmpRenderGUID = this.pict.getUUID();
@@ -144,7 +144,7 @@ class PictTemplateFilterViewInstruction extends libPictTemplate
 		}
 		if (!pRecord.ViewContext)
 		{
-			pRecord.ViewContext = tmpViewContext;
+			pRecord.ViewContext = pRecord.DashboardHash ? `${tmpViewContext}-${pRecord.DashboardHash}` : tmpViewContext;
 		}
 		let tmpRenderGUID = this.pict.getUUID();
 

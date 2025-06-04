@@ -24,6 +24,7 @@ declare class RecordSetMetacontroller {
     recordSetProviderConfigurations: {};
     dashboardConfigurations: {};
     sessionProviders: any[];
+    manifests: {};
     has_initialized: boolean;
     /**
      * @return {Record<string, any>} - The registered configuration for the RecordSet
@@ -31,22 +32,13 @@ declare class RecordSetMetacontroller {
     getRecordSetConfiguration(pRecordSet: any): Record<string, any>;
     loadRecordSetConfiguration(pRecordSetConfiguration: any): boolean;
     loadRecordSetConfigurationArray(pRecordSetConfigurationArray: any): boolean;
-    /**
-     * @param {Array<Record<string, any>>} pDashboardConfigurationArray - An array of dashboard configurations.
-     */
-    loadDashboardConfigurationArray(pDashboardConfigurationArray: Array<Record<string, any>>): boolean;
-    /**
-     * TODO: This method is still incomplete.
-     *
-     * @param {Record<string, any>} pDashboardConfiguration - The dashboard configuration to add.
-     */
-    addDashboardConfiguration(pDashboardConfiguration: Record<string, any>): boolean;
     loadRecordSetDynamcally(pRecordSet: any, pEntity: any, pDefaultFilter: any): any;
     handleLoadDynamicRecordSetRoute(pRoutePayload: any): any;
     addRoutes(pPictRouter: any): boolean;
     checkSession(pCapability: any): Promise<boolean>;
     addRecordLinkTemplate(pNameTemplate: any, pURLTemplate: any, pDefault: any): any;
     initialize(): true | this;
+    generateManifestTableCells(pManifest: any): void;
 }
 declare namespace RecordSetMetacontroller {
     export { _DEFAULT_CONFIGURATION as default_configuration };

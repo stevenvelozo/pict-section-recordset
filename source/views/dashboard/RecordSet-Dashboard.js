@@ -56,10 +56,6 @@ const _DEFAULT_CONFIGURATION__Dashboard = (
 					Template: /*html*/`
 	<!-- DefaultPackage end view template:  [PRSP-Dashboard-Template] -->
 	`
-				},
-				{
-					Hash: 'PRSP-Dashboard-Filter-URL',
-					Template: /*html*/`#/PSRS/{~D:Record.Filter.RecordSet~}/DashboardFilteredTo/{~D:Record.Filter.FilterString~}`
 				}
 			],
 
@@ -98,7 +94,12 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 	{
 		if (typeof(pRoutePayload) != 'object')
 		{
+			return;
 			throw new Error(`Pict RecordSet List view route handler called with invalid route payload.`);
+		}
+		if (!pRoutePayload.data || !pRoutePayload.data.RecordSet)
+		{
+			return;
 		}
 
 		//_Pict.PictSectionRecordSet.recordSetProviderConfigurations['Book'], 'RSP-Provider-Book'
@@ -116,7 +117,11 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		const tmpOffset = pRoutePayload.data.Offset ? pRoutePayload.data.Offset : 0;
 		const tmpPageSize = pRoutePayload.data.PageSize ? pRoutePayload.data.PageSize : 100;
 
-		return this.renderList(tmpProviderConfiguration, tmpProviderHash, tmpFilterString, tmpOffset, tmpPageSize);
+		if (pRoutePayload.data.DashboardHash)
+		{
+			return this.renderSpecificDashboard(pRoutePayload.data.DashboardHash, tmpProviderConfiguration, tmpProviderHash, tmpFilterString, tmpOffset, tmpPageSize);
+		}
+		return this.renderDashboard(tmpProviderConfiguration, tmpProviderHash, tmpFilterString, tmpOffset, tmpPageSize);
 	}
 
 	/**
@@ -124,11 +129,17 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 	 */
 	addRoutes(pPictRouter)
 	{
-		pPictRouter.router.on('/PSRS/:RecordSet/DashboardFilteredTo/:FilterString/:Offset/:PageSize', this.handleRecordSetDashboardRoute.bind(this));
-		pPictRouter.router.on('/PSRS/:RecordSet/DashboardFilteredTo/:FilterString', this.handleRecordSetDashboardRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/Dashboard/FilteredTo/:FilterString/:Offset/:PageSize', this.handleRecordSetDashboardRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/Dashboard/FilteredTo/:FilterString', this.handleRecordSetDashboardRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/Dashboard/:Offset/:PageSize', this.handleRecordSetDashboardRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/Dashboard/:Offset', this.handleRecordSetDashboardRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/Dashboard', this.handleRecordSetDashboardRoute.bind(this));
+
+		pPictRouter.router.on('/PSRS/:RecordSet/SpecificDashboard/:DashboardHash/FilteredTo/:FilterString/:Offset/:PageSize', this.handleRecordSetDashboardRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/SpecificDashboard/:DashboardHash/FilteredTo/:FilterString', this.handleRecordSetDashboardRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/SpecificDashboard/:DashboardHash/:Offset/:PageSize', this.handleRecordSetDashboardRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/SpecificDashboard/:DashboardHash/:Offset', this.handleRecordSetDashboardRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/SpecificDashboard/:DashboardHash', this.handleRecordSetDashboardRoute.bind(this));
 		pPictRouter.router.resolve();
 		return true;
 	}
@@ -174,18 +185,239 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		return pRecordListData;
 	}
 
-	async renderList(pRecordSetConfiguration, pProviderHash, pFilterString, pOffset, pPageSize)
+	/**
+	 * @param {string} pDashboardHash
+	 * @param {Record<string, any>} pRecordSetConfiguration
+	 * @param {string} pProviderHash
+	 * @param {string} pFilterString
+	 * @param {number} pOffset
+	 * @param {number} pPageSize
+	 *
+	 * @return {Promise<void>}
+	 */
+	async renderSpecificDashboard(pDashboardHash, pRecordSetConfiguration, pProviderHash, pFilterString, pOffset, pPageSize)
 	{
 		// Get the records
 		if (!(pProviderHash in this.pict.providers))
 		{
 			this.pict.log.error(`RecordSetDashboard: No provider found for ${pProviderHash} in ${pRecordSetConfiguration.RecordSet}.  List Render failed.`);
-			return false;
+			return;
 		}
 
-		let tmpRecordListData =
+		let tmpManifest;
+		if (pDashboardHash)
 		{
-			"Title": pRecordSetConfiguration.RecordSet,
+			tmpManifest = this.pict.PictSectionRecordSet.manifests[pDashboardHash];
+		}
+		let tmpTitle = pRecordSetConfiguration.Title || pRecordSetConfiguration.RecordSet;
+		if (tmpManifest && tmpManifest.TitleTemplate)
+		{
+			tmpTitle = this.pict.parseTemplate(tmpManifest.TitleTemplate, pRecordSetConfiguration);
+		}
+
+		let tmpRecordDashboardData =
+		{
+			"Title": tmpTitle,
+
+			"RecordSet": pRecordSetConfiguration.RecordSet,
+			"RecordSetConfiguration": pRecordSetConfiguration,
+
+			"RenderDestination": this.options.DefaultDestinationAddress,
+
+			"FilterString": pFilterString ? encodeURIComponent(pFilterString) : undefined,
+
+			"Records": { "Records": [] },
+			"TotalRecordCount": { "Count": -1 },
+
+			"Offset": pOffset || 0,
+			"PageSize": pPageSize || 100,
+			"DashboardHash": pDashboardHash,
+		};
+
+		// TODO: There are still problems with the way these have nested data.  Discuss how we might move that around
+		// Fetch the records
+		tmpRecordDashboardData.Records = await this.pict.providers[pProviderHash].getDecoratedRecords(tmpRecordDashboardData);
+		// Get the total record count
+		tmpRecordDashboardData.TotalRecordCount = await this.pict.providers[pProviderHash].getRecordSetCount(tmpRecordDashboardData);
+		// Get the record schema
+		tmpRecordDashboardData.RecordSchema = await this.pict.providers[pProviderHash].getRecordSchema();
+
+		// TODO: This should be coming from the schema but that can come after we discuss how we deal with default routing
+		tmpRecordDashboardData.GUIDAddress = `GUID${this.pict.providers[pProviderHash].options.Entity}`;
+
+		// Get the "page end record number" for the current page (e.g. for messaging like Record 700 to 800 of 75,000)
+		tmpRecordDashboardData.PageEnd = parseInt(tmpRecordDashboardData.Offset) + tmpRecordDashboardData.Records.Records.length;
+
+		// Compute the number of pages total
+		tmpRecordDashboardData.PageCount = Math.ceil(tmpRecordDashboardData.TotalRecordCount.Count / tmpRecordDashboardData.PageSize);
+
+		// Generate each page's links.
+		// TODO: This is fast and cool; any reason not to?
+		// Get "bookmarks" as references to the array of page links.
+		tmpRecordDashboardData.PageLinkBookmarks = (
+			{
+				Current: Math.floor(tmpRecordDashboardData.Offset / tmpRecordDashboardData.PageSize)
+			});
+		tmpRecordDashboardData.PageLinks = [];
+		for (let i = 0; i < tmpRecordDashboardData.PageCount; i++)
+		{
+			if (tmpRecordDashboardData.FilterString)
+			{
+				tmpRecordDashboardData.PageLinks.push(
+					{
+						Page: i + 1,
+						RelativeOffset: i - tmpRecordDashboardData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordDashboardData.RecordSet}/SpecificDashboard/${pDashboardHash}/FilteredTo/${tmpRecordDashboardData.FilterString}/${i * tmpRecordDashboardData.PageSize}/${tmpRecordDashboardData.PageSize}`
+					});
+			}
+			else
+			{
+				tmpRecordDashboardData.PageLinks.push(
+					{
+						Page: i + 1,
+						RelativeOffset: i - tmpRecordDashboardData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordDashboardData.RecordSet}/SpecificDashboard/${pDashboardHash}/${i * tmpRecordDashboardData.PageSize}/${tmpRecordDashboardData.PageSize}`
+					});
+			}
+		}
+
+		//FIXME: short-term workaround to not blow up the tempplate rendering with way too many links
+		const linkRangeStart = Math.max(0, tmpRecordDashboardData.PageLinkBookmarks.Current - 10);
+		const linkRangeEnd = Math.min(tmpRecordDashboardData.PageLinks.length, tmpRecordDashboardData.PageLinkBookmarks.Current + 10);
+		tmpRecordDashboardData.PageLinksLimited = tmpRecordDashboardData.PageLinks.slice(linkRangeStart, linkRangeEnd);
+		if (linkRangeStart > 0)
+		{
+			if (tmpRecordDashboardData.FilterString)
+			{
+				tmpRecordDashboardData.PageLinksLimited.unshift(
+					{
+						Page: 1,
+						RelativeOffset: -tmpRecordDashboardData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordDashboardData.RecordSet}/SpecificDashboard/${pDashboardHash}/FilteredTo/${tmpRecordDashboardData.FilterString}/${tmpRecordDashboardData.PageSize}/${tmpRecordDashboardData.PageSize}`
+					});
+			}
+			else
+			{
+				tmpRecordDashboardData.PageLinksLimited.unshift(
+					{
+						Page: 1,
+						RelativeOffset: -tmpRecordDashboardData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordDashboardData.RecordSet}/SpecificDashboard/${pDashboardHash}/0/${tmpRecordDashboardData.PageSize}`
+					});
+			}
+		}
+		if (linkRangeEnd < tmpRecordDashboardData.PageLinks.length)
+		{
+			if (tmpRecordDashboardData.FilterString)
+			{
+				tmpRecordDashboardData.PageLinksLimited.push(
+					{
+						Page: tmpRecordDashboardData.PageCount,
+						RelativeOffset: (tmpRecordDashboardData.PageCount - 1) - tmpRecordDashboardData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordDashboardData.RecordSet}/SpecificDashboard/${pDashboardHash}/FilteredTo/${tmpRecordDashboardData.FilterString}/${(tmpRecordDashboardData.PageCount - 1) * tmpRecordDashboardData.PageSize}/${tmpRecordDashboardData.PageSize}`
+					});
+			}
+			else
+			{
+				tmpRecordDashboardData.PageLinksLimited.push(
+					{
+						Page: tmpRecordDashboardData.PageCount,
+						RelativeOffset: (tmpRecordDashboardData.PageCount - 1) - tmpRecordDashboardData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordDashboardData.RecordSet}/SpecificDashboard/${pDashboardHash}/${(tmpRecordDashboardData.PageCount - 1) * tmpRecordDashboardData.PageSize}/${tmpRecordDashboardData.PageSize}`
+					});
+			}
+		}
+
+		tmpRecordDashboardData.PageLinkBookmarks.Previous = tmpRecordDashboardData.PageLinkBookmarks.Current - 1;
+		tmpRecordDashboardData.PageLinkBookmarks.Next = tmpRecordDashboardData.PageLinkBookmarks.Current + 1;
+		tmpRecordDashboardData.PageLinkBookmarks.ShowPreviousLink = true;
+		tmpRecordDashboardData.PageLinkBookmarks.ShowNextLink = true;
+		if (tmpRecordDashboardData.PageLinkBookmarks.Previous < 0)
+		{
+			tmpRecordDashboardData.PageLinkBookmarks.PreviousLink = false;
+			tmpRecordDashboardData.PageLinkBookmarks.ShowPreviousLink = false;
+		}
+		else
+		{
+			tmpRecordDashboardData.PageLinkBookmarks.PreviousLink = tmpRecordDashboardData.PageLinks[tmpRecordDashboardData.PageLinkBookmarks.Previous];
+		}
+		if (tmpRecordDashboardData.PageLinkBookmarks.Next >= tmpRecordDashboardData.PageLinks.length)
+		{
+			tmpRecordDashboardData.PageLinkBookmarks.NextLink = false;
+			tmpRecordDashboardData.PageLinkBookmarks.ShowNextLink = false;
+		}
+		else
+		{
+			tmpRecordDashboardData.PageLinkBookmarks.NextLink = tmpRecordDashboardData.PageLinks[tmpRecordDashboardData.PageLinkBookmarks.Next];
+		}
+
+		if (pDashboardHash)
+		{
+			tmpRecordDashboardData.TableCells = this.pict.PictSectionRecordSet.manifests[pDashboardHash]?.TableCells;
+		}
+		if (!tmpRecordDashboardData.TableCells)
+		{
+			tmpRecordDashboardData.TableCells = [];
+			// Put code here to preprocess columns into other data parts.
+			/*
+				"RecordSetListManifestOnly": false,
+
+				"RecordSetListManifests": [ "Bestsellers", "Underdogs", "NewReleases" ],
+				"RecordSetDashboardManifests": [ "Bestsellers" ],
+			 */
+			if (tmpRecordDashboardData.RecordSetConfiguration.hasOwnProperty('RecordSetListColumns'))
+			{
+				tmpRecordDashboardData.TableCells = tmpRecordDashboardData.RecordSetConfiguration.RecordSetListColumns;
+			}
+			else
+			{
+				this.dynamicallyGenerateColumns(tmpRecordDashboardData);
+			}
+		}
+
+		tmpRecordDashboardData = this.onBeforeRenderList(tmpRecordDashboardData);
+
+		this.renderAsync('PRSP_Renderable_List', tmpRecordDashboardData.RenderDestination, tmpRecordDashboardData,
+			function (pError)
+			{
+				if (pError)
+				{
+					this.pict.log.error(`RecordSetDashboard: Error rendering list ${pError}`, tmpRecordDashboardData);
+					return;
+				}
+
+				if (this.pict.LogNoisiness > 0)
+				{
+					this.pict.log.info(`RecordSetDashboard: Rendered list ${tmpRecordDashboardData.RecordSet} with ${tmpRecordDashboardData.Records.Records.length} records.`, tmpRecordDashboardData);
+				}
+				else
+				{
+					this.pict.log.info(`RecordSetDashboard: Rendered list ${tmpRecordDashboardData.RecordSet} with ${tmpRecordDashboardData.Records.Records.length} records.`);
+				}
+			}.bind(this));
+	}
+
+	/**
+	 * @param {Record<string, any>} pRecordSetConfiguration
+	 * @param {string} pProviderHash
+	 * @param {string} pFilterString
+	 * @param {number} pOffset
+	 * @param {number} pPageSize
+	 *
+	 * @return {Promise<void>}
+	 */
+	async renderDashboard(pRecordSetConfiguration, pProviderHash, pFilterString, pOffset, pPageSize)
+	{
+		// Get the records
+		if (!(pProviderHash in this.pict.providers))
+		{
+			this.pict.log.error(`RecordSetDashboard: No provider found for ${pProviderHash} in ${pRecordSetConfiguration.RecordSet}.  List Render failed.`);
+			return;
+		}
+
+		let tmpRecordDashboardData =
+		{
+			"Title": pRecordSetConfiguration.Title || pRecordSetConfiguration.RecordSet,
 
 			"RecordSet": pRecordSetConfiguration.RecordSet,
 			"RecordSetConfiguration": pRecordSetConfiguration,
@@ -203,151 +435,162 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 
 		// TODO: There are still problems with the way these have nested data.  Discuss how we might move that around
 		// Fetch the records
-		tmpRecordListData.Records = await this.pict.providers[pProviderHash].getDecoratedRecords(tmpRecordListData);
+		const [ tmpRecords, tmpTotalRecordCount, tmpRecordSchema ] = await Promise.all([
+			this.pict.providers[pProviderHash].getRecords(tmpRecordDashboardData),
+			this.pict.providers[pProviderHash].getRecordSetCount(tmpRecordDashboardData),
+			this.pict.providers[pProviderHash].getRecordSchema(),
+		]);
+		tmpRecordDashboardData.Records = tmpRecords;
 		// Get the total record count
-		tmpRecordListData.TotalRecordCount = await this.pict.providers[pProviderHash].getRecordSetCount(tmpRecordListData);
+		tmpRecordDashboardData.TotalRecordCount = tmpTotalRecordCount;
 		// Get the record schema
-		tmpRecordListData.RecordSchema = await this.pict.providers[pProviderHash].getRecordSchema();
+		tmpRecordDashboardData.RecordSchema = tmpRecordSchema;
 
 		// TODO: This should be coming from the schema but that can come after we discuss how we deal with default routing
-		tmpRecordListData.GUIDAddress = `GUID${this.pict.providers[pProviderHash].options.Entity}`;
+		tmpRecordDashboardData.GUIDAddress = `GUID${this.pict.providers[pProviderHash].options.Entity}`;
 
 		// Get the "page end record number" for the current page (e.g. for messaging like Record 700 to 800 of 75,000)
-		tmpRecordListData.PageEnd = parseInt(tmpRecordListData.Offset) + tmpRecordListData.Records.Records.length;
+		tmpRecordDashboardData.PageEnd = parseInt(tmpRecordDashboardData.Offset) + tmpRecordDashboardData.Records.Records.length;
 
 		// Compute the number of pages total
-		tmpRecordListData.PageCount = Math.ceil(tmpRecordListData.TotalRecordCount.Count / tmpRecordListData.PageSize);
+		tmpRecordDashboardData.PageCount = Math.ceil(tmpRecordDashboardData.TotalRecordCount.Count / tmpRecordDashboardData.PageSize);
 
 		// Generate each page's links.
 		// TODO: This is fast and cool; any reason not to?
 		// Get "bookmarks" as references to the array of page links.
-		tmpRecordListData.PageLinkBookmarks = (
+		tmpRecordDashboardData.PageLinkBookmarks = (
 			{
-				Current: Math.floor(tmpRecordListData.Offset / tmpRecordListData.PageSize)
+				Current: Math.floor(tmpRecordDashboardData.Offset / tmpRecordDashboardData.PageSize)
 			});
-		tmpRecordListData.PageLinks = [];
-		for (let i = 0; i < tmpRecordListData.PageCount; i++)
+		tmpRecordDashboardData.PageLinks = [];
+		for (let i = 0; i < tmpRecordDashboardData.PageCount; i++)
 		{
-			if (tmpRecordListData.FilterString)
+			if (tmpRecordDashboardData.FilterString)
 			{
-				tmpRecordListData.PageLinks.push(
+				tmpRecordDashboardData.PageLinks.push(
 					{
 						Page: i + 1,
-						RelativeOffset: i - tmpRecordListData.PageLinkBookmarks.Current,
-						URL: `#/PSRS/${tmpRecordListData.RecordSet}/DashboardFilteredTo/${tmpRecordListData.FilterString}/${i * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+						RelativeOffset: i - tmpRecordDashboardData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordDashboardData.RecordSet}/Dashboard/FilteredTo/${tmpRecordDashboardData.FilterString}/${i * tmpRecordDashboardData.PageSize}/${tmpRecordDashboardData.PageSize}`
 					});
 			}
 			else
 			{
-				tmpRecordListData.PageLinks.push(
+				tmpRecordDashboardData.PageLinks.push(
 					{
 						Page: i + 1,
-						RelativeOffset: i - tmpRecordListData.PageLinkBookmarks.Current,
-						URL: `#/PSRS/${tmpRecordListData.RecordSet}/Dashboard/${i * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+						RelativeOffset: i - tmpRecordDashboardData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordDashboardData.RecordSet}/Dashboard/${i * tmpRecordDashboardData.PageSize}/${tmpRecordDashboardData.PageSize}`
 					});
 			}
 		}
 
 		//FIXME: short-term workaround to not blow up the tempplate rendering with way too many links
-		const linkRangeStart = Math.max(0, tmpRecordListData.PageLinkBookmarks.Current - 10);
-		const linkRangeEnd = Math.min(tmpRecordListData.PageLinks.length, tmpRecordListData.PageLinkBookmarks.Current + 10);
-		tmpRecordListData.PageLinksLimited = tmpRecordListData.PageLinks.slice(linkRangeStart, linkRangeEnd);
+		const linkRangeStart = Math.max(0, tmpRecordDashboardData.PageLinkBookmarks.Current - 10);
+		const linkRangeEnd = Math.min(tmpRecordDashboardData.PageLinks.length, tmpRecordDashboardData.PageLinkBookmarks.Current + 10);
+		tmpRecordDashboardData.PageLinksLimited = tmpRecordDashboardData.PageLinks.slice(linkRangeStart, linkRangeEnd);
 		if (linkRangeStart > 0)
 		{
-			if (tmpRecordListData.FilterString)
+			if (tmpRecordDashboardData.FilterString)
 			{
-				tmpRecordListData.PageLinksLimited.unshift(
+				tmpRecordDashboardData.PageLinksLimited.unshift(
 					{
 						Page: 1,
-						RelativeOffset: -tmpRecordListData.PageLinkBookmarks.Current,
-						URL: `#/PSRS/${tmpRecordListData.RecordSet}/DashboardFilteredTo/${tmpRecordListData.FilterString}/${tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+						RelativeOffset: -tmpRecordDashboardData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordDashboardData.RecordSet}/Dashboard/FilteredTo/${tmpRecordDashboardData.FilterString}/${tmpRecordDashboardData.PageSize}/${tmpRecordDashboardData.PageSize}`
 					});
 			}
 			else
 			{
-				tmpRecordListData.PageLinksLimited.unshift(
+				tmpRecordDashboardData.PageLinksLimited.unshift(
 					{
 						Page: 1,
-						RelativeOffset: -tmpRecordListData.PageLinkBookmarks.Current,
-						URL: `#/PSRS/${tmpRecordListData.RecordSet}/Dashboard/${0}/${tmpRecordListData.PageSize}`
+						RelativeOffset: -tmpRecordDashboardData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordDashboardData.RecordSet}/Dashboard/${0}/${tmpRecordDashboardData.PageSize}`
 					});
 			}
 		}
-		if (linkRangeEnd < tmpRecordListData.PageLinks.length)
+		if (linkRangeEnd < tmpRecordDashboardData.PageLinks.length)
 		{
-			if (tmpRecordListData.FilterString)
+			if (tmpRecordDashboardData.FilterString)
 			{
-				tmpRecordListData.PageLinksLimited.push(
+				tmpRecordDashboardData.PageLinksLimited.push(
 					{
-						Page: tmpRecordListData.PageCount,
-						RelativeOffset: (tmpRecordListData.PageCount - 1) - tmpRecordListData.PageLinkBookmarks.Current,
-						URL: `#/PSRS/${tmpRecordListData.RecordSet}/DashboardFilteredTo/${tmpRecordListData.FilterString}/${(tmpRecordListData.PageCount - 1) * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+						Page: tmpRecordDashboardData.PageCount,
+						RelativeOffset: (tmpRecordDashboardData.PageCount - 1) - tmpRecordDashboardData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordDashboardData.RecordSet}/Dashboard/FilteredTo/${tmpRecordDashboardData.FilterString}/${(tmpRecordDashboardData.PageCount - 1) * tmpRecordDashboardData.PageSize}/${tmpRecordDashboardData.PageSize}`
 					});
 			}
 			else
 			{
-				tmpRecordListData.PageLinksLimited.push(
+				tmpRecordDashboardData.PageLinksLimited.push(
 					{
-						Page: tmpRecordListData.PageCount,
-						RelativeOffset: (tmpRecordListData.PageCount - 1) - tmpRecordListData.PageLinkBookmarks.Current,
-						URL: `#/PSRS/${tmpRecordListData.RecordSet}/Dashboard/${(tmpRecordListData.PageCount - 1) * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+						Page: tmpRecordDashboardData.PageCount,
+						RelativeOffset: (tmpRecordDashboardData.PageCount - 1) - tmpRecordDashboardData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordDashboardData.RecordSet}/Dashboard/${(tmpRecordDashboardData.PageCount - 1) * tmpRecordDashboardData.PageSize}/${tmpRecordDashboardData.PageSize}`
 					});
 			}
 		}
 
-		tmpRecordListData.PageLinkBookmarks.Previous = tmpRecordListData.PageLinkBookmarks.Current - 1;
-		tmpRecordListData.PageLinkBookmarks.Next = tmpRecordListData.PageLinkBookmarks.Current + 1;
-		tmpRecordListData.PageLinkBookmarks.ShowPreviousLink = true;
-		tmpRecordListData.PageLinkBookmarks.ShowNextLink = true;
-		if (tmpRecordListData.PageLinkBookmarks.Previous < 0)
+		tmpRecordDashboardData.PageLinkBookmarks.Previous = tmpRecordDashboardData.PageLinkBookmarks.Current - 1;
+		tmpRecordDashboardData.PageLinkBookmarks.Next = tmpRecordDashboardData.PageLinkBookmarks.Current + 1;
+		tmpRecordDashboardData.PageLinkBookmarks.ShowPreviousLink = true;
+		tmpRecordDashboardData.PageLinkBookmarks.ShowNextLink = true;
+		if (tmpRecordDashboardData.PageLinkBookmarks.Previous < 0)
 		{
-			tmpRecordListData.PageLinkBookmarks.PreviousLink = false;
-			tmpRecordListData.PageLinkBookmarks.ShowPreviousLink = false;
+			tmpRecordDashboardData.PageLinkBookmarks.PreviousLink = false;
+			tmpRecordDashboardData.PageLinkBookmarks.ShowPreviousLink = false;
 		}
 		else
 		{
-			tmpRecordListData.PageLinkBookmarks.PreviousLink = tmpRecordListData.PageLinks[tmpRecordListData.PageLinkBookmarks.Previous];
+			tmpRecordDashboardData.PageLinkBookmarks.PreviousLink = tmpRecordDashboardData.PageLinks[tmpRecordDashboardData.PageLinkBookmarks.Previous];
 		}
-		if (tmpRecordListData.PageLinkBookmarks.Next >= tmpRecordListData.PageLinks.length)
+		if (tmpRecordDashboardData.PageLinkBookmarks.Next >= tmpRecordDashboardData.PageLinks.length)
 		{
-			tmpRecordListData.PageLinkBookmarks.NextLink = false;
-			tmpRecordListData.PageLinkBookmarks.ShowNextLink = false;
+			tmpRecordDashboardData.PageLinkBookmarks.NextLink = false;
+			tmpRecordDashboardData.PageLinkBookmarks.ShowNextLink = false;
 		}
 		else
 		{
-			tmpRecordListData.PageLinkBookmarks.NextLink = tmpRecordListData.PageLinks[tmpRecordListData.PageLinkBookmarks.Next];
+			tmpRecordDashboardData.PageLinkBookmarks.NextLink = tmpRecordDashboardData.PageLinks[tmpRecordDashboardData.PageLinkBookmarks.Next];
 		}
 
+		tmpRecordDashboardData.TableCells = [];
 		// Put code here to preprocess columns into other data parts.
-		if (tmpRecordListData.RecordSetConfiguration.hasOwnProperty('RecordSetListColumns'))
+		/*
+			"RecordSetListManifestOnly": false,
+
+			"RecordSetListManifests": [ "Bestsellers", "Underdogs", "NewReleases" ],
+			"RecordSetDashboardManifests": [ "Bestsellers" ],
+		 */
+		if (tmpRecordDashboardData.RecordSetConfiguration.hasOwnProperty('RecordSetListColumns'))
 		{
-			tmpRecordListData.TableCells = tmpRecordListData.RecordSetConfiguration.RecordSetListColumns;
+			tmpRecordDashboardData.TableCells = tmpRecordDashboardData.RecordSetConfiguration.RecordSetListColumns;
 		}
 		else
 		{
-			this.dynamicallyGenerateColumns(tmpRecordListData);
+			this.dynamicallyGenerateColumns(tmpRecordDashboardData);
 		}
 
-		tmpRecordListData = this.onBeforeRenderList(tmpRecordListData);
+		tmpRecordDashboardData = this.onBeforeRenderList(tmpRecordDashboardData);
 
-		this.renderAsync('PRSP_Renderable_List', tmpRecordListData.RenderDestination, tmpRecordListData,
+		this.renderAsync('PRSP_Renderable_List', tmpRecordDashboardData.RenderDestination, tmpRecordDashboardData,
 			function (pError)
 			{
 				if (pError)
 				{
-					this.pict.log.error(`RecordSetDashboard: Error rendering list ${pError}`, tmpRecordListData);
-					return false;
+					this.pict.log.error(`RecordSetDashboard: Error rendering list ${pError}`, tmpRecordDashboardData);
+					return;
 				}
 
 				if (this.pict.LogNoisiness > 0)
 				{
-					this.pict.log.info(`RecordSetDashboard: Rendered list ${tmpRecordListData.RecordSet} with ${tmpRecordListData.Records.Records.length} records.`, tmpRecordListData);
+					this.pict.log.info(`RecordSetDashboard: Rendered list ${tmpRecordDashboardData.RecordSet} with ${tmpRecordDashboardData.Records.Records.length} records.`, tmpRecordDashboardData);
 				}
 				else
 				{
-					this.pict.log.info(`RecordSetDashboard: Rendered list ${tmpRecordListData.RecordSet} with ${tmpRecordListData.Records.Records.length} records.`);
+					this.pict.log.info(`RecordSetDashboard: Rendered list ${tmpRecordDashboardData.RecordSet} with ${tmpRecordDashboardData.Records.Records.length} records.`);
 				}
-				return true;
 			}.bind(this));
 	}
 

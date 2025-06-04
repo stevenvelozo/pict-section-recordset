@@ -9,7 +9,7 @@ declare class viewRecordSetDashboard extends libPictRecordSetRecordView {
         recordListEntry: any;
         paginationBottom: any;
     };
-    handleRecordSetDashboardRoute(pRoutePayload: any): Promise<boolean>;
+    handleRecordSetDashboardRoute(pRoutePayload: any): Promise<void>;
     /**
      * @param {import('pict-router')} pPictRouter
      */
@@ -17,7 +17,27 @@ declare class viewRecordSetDashboard extends libPictRecordSetRecordView {
     onBeforeRenderList(pRecordListData: any): any;
     dynamicallyGenerateColumns(pRecordListData: any): any;
     excludedByDefaultCells: string[];
-    renderList(pRecordSetConfiguration: any, pProviderHash: any, pFilterString: any, pOffset: any, pPageSize: any): Promise<boolean>;
+    /**
+     * @param {string} pDashboardHash
+     * @param {Record<string, any>} pRecordSetConfiguration
+     * @param {string} pProviderHash
+     * @param {string} pFilterString
+     * @param {number} pOffset
+     * @param {number} pPageSize
+     *
+     * @return {Promise<void>}
+     */
+    renderSpecificDashboard(pDashboardHash: string, pRecordSetConfiguration: Record<string, any>, pProviderHash: string, pFilterString: string, pOffset: number, pPageSize: number): Promise<void>;
+    /**
+     * @param {Record<string, any>} pRecordSetConfiguration
+     * @param {string} pProviderHash
+     * @param {string} pFilterString
+     * @param {number} pOffset
+     * @param {number} pPageSize
+     *
+     * @return {Promise<void>}
+     */
+    renderDashboard(pRecordSetConfiguration: Record<string, any>, pProviderHash: string, pFilterString: string, pOffset: number, pPageSize: number): Promise<void>;
 }
 declare namespace viewRecordSetDashboard {
     export { _DEFAULT_CONFIGURATION__Dashboard as default_configuration };

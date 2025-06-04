@@ -178,7 +178,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 
 		let tmpRecordListData =
 		{
-			"Title": pRecordSetConfiguration.RecordSet,
+			"Title": pRecordSetConfiguration.Title || pRecordSetConfiguration.RecordSet,
 
 			"RecordSet": pRecordSetConfiguration.RecordSet,
 			"RecordSetConfiguration": pRecordSetConfiguration,
@@ -196,11 +196,16 @@ class viewRecordSetList extends libPictRecordSetRecordView
 
 		// TODO: There are still problems with the way these have nested data.  Discuss how we might move that around
 		// Fetch the records
-		tmpRecordListData.Records = await this.pict.providers[pProviderHash].getRecords(tmpRecordListData);
+		const [ tmpRecords, tmpTotalRecordCount, tmpRecordSchema ] = await Promise.all([
+			this.pict.providers[pProviderHash].getRecords(tmpRecordListData),
+			this.pict.providers[pProviderHash].getRecordSetCount(tmpRecordListData),
+			this.pict.providers[pProviderHash].getRecordSchema(),
+		]);
+		tmpRecordListData.Records = tmpRecords;
 		// Get the total record count
-		tmpRecordListData.TotalRecordCount = await this.pict.providers[pProviderHash].getRecordSetCount(tmpRecordListData);
+		tmpRecordListData.TotalRecordCount = tmpTotalRecordCount;
 		// Get the record schema
-		tmpRecordListData.RecordSchema = await this.pict.providers[pProviderHash].getRecordSchema();
+		tmpRecordListData.RecordSchema = tmpRecordSchema;
 
 		// TODO: This should be coming from the schema but that can come after we discuss how we deal with default routing
 		tmpRecordListData.GUIDAddress = `GUID${this.pict.providers[pProviderHash].options.Entity}`;
@@ -320,7 +325,6 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		{
 			this.dynamicallyGenerateColumns(tmpRecordListData);
 		}
-
 		tmpRecordListData = this.onBeforeRenderList(tmpRecordListData);
 
 		this.renderAsync('PRSP_Renderable_List', tmpRecordListData.RenderDestination, tmpRecordListData,

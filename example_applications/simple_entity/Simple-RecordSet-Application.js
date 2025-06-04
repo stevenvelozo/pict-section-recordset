@@ -12,35 +12,65 @@ module.exports.default_configuration.pict_configuration = (
 				"AutoRenderMainViewportViewAfterInitialize": false
 			},
 
-		"DefaultDashboards":
-		[
+		"Manifests": // Manifest'Ohs: Breakfast of Champions
+		{
+			"Bestsellers":
 			{
-				"Scope": "Bookstore",
+				"Scope": "Bestsellers",
 				"CoreEntity": "Book",
-				"RecordDecorationConfiguration":
-				[
+				"TitleTemplate": "Bestsellers ({~D:Record.RecordSet~} LoL)",
+				"Descriptors":
+				{
+					"Title":
 					{
-						"Entity": "BookAuthorJoin",
-						"Filter": "FBL~IDBook~INN~{~PJU:,^IDBook^Record.State.CoreEntityRecordSubset~}",
-						"Destination": "State.BookAuthorJoins"
+						"Name": "Title",
+						"Hash": "Title",
+						"PictDashboard":
+						{
+							"ValueTemplate": "{~D:Record.Payload.Title~} {~PJU:; ^Name^Record.Payload.Authors~} {~D:AppData.RSP-Provider-BookstoreInventory.Authors.length~}"
+						}
 					},
+					"AuthorBookCount":
 					{
-						"Entity": "Author",
-						"Filter": "FBL~IDAuthor~INN~{~PJU:,^IDAuthor^Record.State.BookAuthorJoins~}",
-						"Destination": "State.Authors"
+						"Name": "Author Book Count",
+						"Hash": "AuthorBookCount",
 					},
+					"Authors":
 					{
-						"Type": "MapJoin",
-						"DestinationRecordSetAddress": "State.CoreEntityRecordSubset",
-						"DestinationJoinValue": "IDBook",
-						"JoinJoinValueLHS": "IDBook",
-						"Joins": "State.BookAuthorJoins",
-						"JoinJoinValueRHS": "IDAuthor",
-						"JoinRecordSetAddress": "State.Authors",
-						"JoinValue": "IDAuthor",
-						"RecordDestinationAddress": "Authors"
+						"Name": "Authors",
+						"Hash": "Authors",
+						"DataType": "Array",
+						"PictDashboard":
+						{
+						}
+					},
+					"AuthorCount":
+					{
+						"Name": "Number of Authors",
+						"Hash": "AuthorCount",
+						"DataType": "Number",
+						"PictDashboard":
+						{
+							"Solvers": [ "Record.Payload.AuthorCount = COS(Record.Payload.Authors.length)" ],
+						}
+					},
+					"AuthorSineWave":
+					{
+						"Name": "Number of Authors in Orbit",
+						"Hash": "AuthorSineWave",
+						"DataType": "Number",
+						"PictDashboard":
+						{
+							"ValueTemplate": "{~D:Record.Payload.AuthorsInOrbit~}",
+							"Solvers": [ "Record.Payload.AuthorsInOrbit = SIN(Record.Payload.Authors.length)" ],
+						}
 					}
-				],
+				},
+			},
+			"Underdogs":
+			{
+				"Scope": "Underdogs",
+				"CoreEntity": "Book",
 				"Descriptors":
 				{
 					"Title":
@@ -53,9 +83,8 @@ module.exports.default_configuration.pict_configuration = (
 					{
 						"Name": "Authors",
 						"Hash": "Authors",
-						"PictForm":
+						"PictDashboard":
 						{
-							"InputType": "ReadOnly",
 						}
 					},
 					"AuthorCount":
@@ -63,20 +92,44 @@ module.exports.default_configuration.pict_configuration = (
 						"Name": "Number of Authors",
 						"Hash": "AuthorCount",
 						"DataType": "Number",
-						"PictForm":
+						"PictDashboard":
 						{
-							"InputType": "ReadOnly"
 						}
 					}
-				}
+				},
 			},
+			"NewReleases":
 			{
-				"Scope": "AuthorSummary",
+				"Scope": "NewReleases",
+				"CoreEntity": "Book",
 				"Descriptors":
 				{
-				}
+					"Title":
+					{
+						"Name": "Title",
+						"Hash": "Title",
+						"DataType": "String"
+					},
+					"Authors":
+					{
+						"Name": "Authors",
+						"Hash": "Authors",
+						"PictDashboard":
+						{
+						}
+					},
+					"AuthorCount":
+					{
+						"Name": "Number of Authors",
+						"Hash": "AuthorCount",
+						"DataType": "Number",
+						"PictDashboard":
+						{
+						}
+					}
+				},
 			}
-		],
+		},
 		"DefaultRecordSetConfigurations":
 			[
 				{
@@ -100,6 +153,11 @@ module.exports.default_configuration.pict_configuration = (
 						}
 					],
 
+					"RecordSetListManifestOnly": false,
+
+					"RecordSetListManifests": [ "Bestsellers", "Underdogs", "NewReleases" ],
+					"RecordSetDashboardManifests": [ "Bestsellers" ],
+
 					"RecordSetListHasExtraColumns": true,
 					"RecordSetListExtraColumnsHeaderTemplate": "<th style=\"border-bottom: 1px solid #ccc; padding: 5px; background-color: #f2f2f2; color: #333;\">Cover</th>",
 					"RecordSetListExtraColumnRowTemplate": "<td><img src=\"{~D:Record.Data.ImageURL~}\"></td>",
@@ -108,15 +166,19 @@ module.exports.default_configuration.pict_configuration = (
 
 					"RecordSetFilterURLTemplate-Default": "/PSRS/{~D:Record.RecordSet~}/ListFilteredTo/{~D:Record.FilterString~}",
 					"RecordSetFilterURLTemplate-List": "/PSRS/{~D:Record.RecordSet~}/ListFilteredTo/{~D:Record.FilterString~}",
-					"RecordSetFilterURLTemplate-Dashboard": "/PSRS/{~D:Record.RecordSet~}/DashboardFilteredTo/{~D:Record.FilterString~}",
+					"RecordSetFilterURLTemplate-Dashboard": "/PSRS/{~D:Record.RecordSet~}/Dashboard/FilteredTo/{~D:Record.FilterString~}",
 
 					"RecordSetURLPrefix": "/1.0/"
 				},
 				{
 					"RecordSet": "BookstoreInventory",
+					"Title": "Bookstore Inventory",
 
 					"RecordSetType": "MeadowEndpoint", // Could be "Custom" which would require a provider to already be created for the record set.
 					"RecordSetMeadowEntity": "Book",   // This leverages the /Schema endpoint to get the record set columns.
+
+					"RecordSetDashboardManifests": [ "Bestsellers", "Underdogs", "NewReleases" ],
+
 					"RecordDecorationConfiguration":
 					[
 						{
@@ -139,6 +201,27 @@ module.exports.default_configuration.pict_configuration = (
 							"JoinRecordSetAddress": "State.Authors",
 							"JoinValue": "IDAuthor",
 							"RecordDestinationAddress": "Authors"
+						},
+						{
+							"Entity": "BookAuthorJoin",
+							"Filter": "FBL~IDAuthor~INN~{~PJU:,^IDAuthor^Record.State.Authors~}",
+							"Destination": "State.BookAuthorJoinsRev"
+						},
+						{
+							"Entity": "Book",
+							"Filter": "FBL~IDBook~INN~{~PJU:,^IDBook^Record.State.BookAuthorJoinsRev~}",
+							"Destination": "State.BooksForAuthors"
+						},
+						{
+							"Type": "MapJoin",
+							"DestinationRecordSetAddress": "State.Authors",
+							"DestinationJoinValue": "IDAuthor",
+							"JoinJoinValueLHS": "IDAuthor",
+							"Joins": "State.BookAuthorJoinsRev",
+							"JoinJoinValueRHS": "IDBook",
+							"JoinRecordSetAddress": "State.BooksForAuthors",
+							"JoinValue": "IDBook",
+							"RecordDestinationAddress": "Books"
 						}
 					],
 					"AvailableVerbs": [ "Dashboard" ],
@@ -151,7 +234,12 @@ module.exports.default_configuration.pict_configuration = (
 
 					"RecordSetFilterURLTemplate-Default": "/PSRS/{~D:Record.RecordSet~}/ListFilteredTo/{~D:Record.FilterString~}",
 					"RecordSetFilterURLTemplate-List": "/PSRS/{~D:Record.RecordSet~}/ListFilteredTo/{~D:Record.FilterString~}",
-					"RecordSetFilterURLTemplate-Dashboard": "/PSRS/{~D:Record.RecordSet~}/DashboardFilteredTo/{~D:Record.FilterString~}",
+					"RecordSetFilterURLTemplate-Dashboard": "/PSRS/{~D:Record.RecordSet~}/Dashboard/FilteredTo/{~D:Record.FilterString~}",
+					//TODO: something like this to reduce boilerplate
+					"RecordSetFilterURLTemplate-Dashboard-Specific": "/PSRS/{~D:Record.RecordSet~}/SpecificDashboard/$$DASHBOARD_HASH$$/FilteredTo/{~D:Record.FilterString~}",
+					"RecordSetFilterURLTemplate-Dashboard-Bestsellers": "/PSRS/{~D:Record.RecordSet~}/SpecificDashboard/Bestsellers/FilteredTo/{~D:Record.FilterString~}",
+					"RecordSetFilterURLTemplate-Dashboard-Underdogs": "/PSRS/{~D:Record.RecordSet~}/SpecificDashboard/Underdogs/FilteredTo/{~D:Record.FilterString~}",
+					"RecordSetFilterURLTemplate-Dashboard-NewReleases": "/PSRS/{~D:Record.RecordSet~}/SpecificDashboard/NewReleases/FilteredTo/{~D:Record.FilterString~}",
 
 					"RecordSetURLPrefix": "/1.0/"
 				},

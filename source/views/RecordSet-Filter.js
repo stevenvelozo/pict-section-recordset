@@ -109,7 +109,7 @@ class viewRecordSetSUBSETFilter extends libPictView
 	{
 		const tmpPictRouter = this.pict.providers.PictRouter;
 		const tmpProviderConfiguration = this.pict.PictSectionRecordSet.recordSetProviderConfigurations[pRecordSet];
-		let filterExpr = ' ';
+		let filterExpr = '%20';
 		if (pFilterString)
 		{
 			const searchFields = tmpProviderConfiguration?.SearchFields ?? [ 'Name' ];

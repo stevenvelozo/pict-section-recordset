@@ -40,6 +40,18 @@ const _DEFAULT_CONFIGURATION_List_RecordListHeader = (
 	`
 				},
 				{
+					Hash: 'PRSP-Dashboard-RecordListHeader-Manifest-Template',
+					Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-Dashboard-RecordListHeader-Template] -->
+	<tr>
+		{~TS:PRSP-Dashboard-RecordListHeader-Template-Header:Record.ManifestOhz~}
+		{~T:PRSP-Dashboard-RecordListHeader-Template-Extra-Header~}
+		{~T:PRSP-Dashboard-RecordListActions-Template-Header~}
+	</tr>
+	<!-- DefaultPackage end view template:  [PRSP-Dashboard-RecordListHeader-Template] -->
+	`
+				},
+				{
 					Hash: 'PRSP-Dashboard-RecordListHeader-Template-Header',
 					Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Dashboard-RecordListHeader-Template-Header] -->

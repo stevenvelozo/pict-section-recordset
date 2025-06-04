@@ -50,6 +50,8 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 
 		this.sessionProviders = [];
 
+		this.manifests = {};
+
 		this.has_initialized = false;
 	}
 
@@ -201,72 +203,6 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		}
 	}
 
-	/**
-	 * @param {Array<Record<string, any>>} pDashboardConfigurationArray - An array of dashboard configurations.
-	 */
-	loadDashboardConfigurationArray(pDashboardConfigurationArray)
-	{
-		if (!Array.isArray(pDashboardConfigurationArray))
-		{
-			this.fable.log.error(`RecordSetMetacontroller: ${this.UUID} loadDashboardConfigurationArray called with invalid configuration.`);
-			return false;
-		}
-		if (pDashboardConfigurationArray.length === 0)
-		{
-			this.fable.log.warn(`RecordSetMetacontroller: ${this.UUID} loadDashboardConfigurationArray called with empty configuration.`);
-			return false;
-		}
-		for (const tmpDashboardConfiguration of pDashboardConfigurationArray)
-		{
-			if (tmpDashboardConfiguration.RecordDecorationConfiguration)
-			{
-				//TODO: register the record decoration configuration
-			}
-		}
-	}
-
-	/**
-	 * TODO: This method is still incomplete.
-	 *
-	 * @param {Record<string, any>} pDashboardConfiguration - The dashboard configuration to add.
-	 */
-	addDashboardConfiguration(pDashboardConfiguration)
-	{
-		let tmpProvider = false;
-
-		if (this.recordSetProviders[pDashboardConfiguration.RecordSet])
-		{
-			this.pict.log.error(`RecordSetMetacontroller: ${this.UUID} addDashboardConfiguration called with invalid configuration. RecordSet ${pDashboardConfiguration.RecordSet} already exists.`);
-			return null;
-		}
-		const providerConfiguration = Object.assign({}, {Hash: `RSP-Provider-${pDashboardConfiguration.RecordSet}`}, pDashboardConfiguration);
-		this.dashboardConfigurations[providerConfiguration.RecordSet] = providerConfiguration;
-
-		// Create a Meadow Endpoints provider
-		// Allow the Record Set to optionally point to a different entity
-		if ('RecordSetCoreMeadowEntity' in pDashboardConfiguration)
-		{
-			providerConfiguration.Entity = pDashboardConfiguration.RecordSetCoreMeadowEntity;
-		}
-		else
-		{
-			this.pict.log.error(`RecordSetMetacontroller: ${this.UUID} addDashboardConfiguration called with invalid configuration. Missing RecordSetCoreMeadowEntity.`);
-			return null;
-		}
-		// Default the URLPrefix to the base URLPrefix
-		if ('RecordSetURLPrefix' in pDashboardConfiguration)
-		{
-			providerConfiguration.URLPrefix = pDashboardConfiguration.RecordSetURLPrefix;
-		}
-		else
-		{
-			providerConfiguration.URLPrefix = '/1.0/';
-		}
-		tmpProvider = this.recordSetProviders[pDashboardConfiguration.RecordSet] = this.fable.addProvider(providerConfiguration.Hash, providerConfiguration, providerMeadowEndpoints);
-
-		return tmpProvider;
-	}
-
 	loadRecordSetDynamcally(pRecordSet, pEntity, pDefaultFilter)
 	{
 		if (typeof(pRecordSet) === 'object')
@@ -380,9 +316,15 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 			this.loadRecordSetConfigurationArray(this.fable.settings.DefaultRecordSetConfigurations);
 		}
 
-		if (this.fable.settings.hasOwnProperty('DefaultDashboards'))
+		for (const [ tmpManifestKey, tmpManifest ] of Object.entries(this.fable.settings.Manifests || {}))
 		{
-			this.loadDashboardConfigurationArray(this.fable.settings.DefaultDashboards);
+			if (!tmpManifest || !tmpManifest.Scope || !tmpManifest.Descriptors)
+			{
+				this.pict.log.error(`RecordSetDashboard: Invalid manifest: ${tmpManifestKey}.`, tmpManifest);
+				continue;
+			}
+			this.generateManifestTableCells(tmpManifest);
+			this.manifests[tmpManifest.Scope] = tmpManifest;
 		}
 
 		this.has_initialized = true;
@@ -396,6 +338,30 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 
 		return true;
 	}
+
+	generateManifestTableCells(pManifest)
+	{
+		if (!pManifest || !pManifest.Descriptors || !pManifest.Scope)
+		{
+			this.pict.log.error(`RecordSetDashboard: No manifest or descriptors found for ${pManifest}.  Cannot generate table cells.`);
+			return;
+		}
+		const tmpTableCells = Object.entries(pManifest.Descriptors || {}).filter(([ key, descriptor ]) => descriptor.PictDashboard).map(([ key, descriptor ]) =>
+		{
+			const tmpPictDashboard = descriptor.PictDashboard || {};
+			if (!tmpPictDashboard.ValueTemplate)
+			{
+				tmpPictDashboard.ValueTemplate = '{~DVBK:Record.Payload:Record.Data.Key~}';
+			}
+			return {
+				Key: key,
+				DisplayName: descriptor.Name || key,
+				PictDashboard: tmpPictDashboard,
+			};
+		});
+		pManifest.TableCells = tmpTableCells;
+	}
+
 }
 
 module.exports = RecordSetMetacontroller;
