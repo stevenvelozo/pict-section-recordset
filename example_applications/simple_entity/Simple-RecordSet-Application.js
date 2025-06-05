@@ -19,15 +19,49 @@ module.exports.default_configuration.pict_configuration = (
 				"Scope": "Bestsellers",
 				"CoreEntity": "Book",
 				"TitleTemplate": "Bestsellers ({~D:Record.RecordSet~} LoL)",
+				"GlobalSolvers":
+				[
+					{
+						"Ordinal": 0,
+						"Expression": "AppData.AuthorsFavoriteNumber = AVG(RecordSubset[].IDBook)",
+					},
+					{
+						"Ordinal": 1,
+						"Expression": "AppData.AuthorsLeastFavoriteNumber = SUM(RecordSubset[].IDBook)",
+					},
+					{
+						"Ordinal": 1,
+						"Expression": "AppData.BookCount = COUNT(RecordSet[])",
+					},
+					{
+						"Ordinal": 1,
+						"Expression": "AppData.TotalLibraryValue = SUM(RecordSet[].Price)",
+					},
+				],
 				"Descriptors":
 				{
+					"IDBook":
+					{
+						"Name": "Book Identifier",
+						"Hash": "BookIdentifire",
+					},
+					"PublicationYear":
+					{
+						"Name": "PublicationYear",
+						"Hash": "PublicationYear",
+						"PictDashboard":
+						{
+							"Equation": "ROUND(SQRT(PublicationYear), 3)",
+							"ValueTemplate": "{~D:Record.Payload.PublicationYear~} ({~SBR:Record.Data.PictDashboard.Equation:Record.Payload:Pict.PictSectionRecordSet.getManifest(Record.Data.ManifestHash)~})",
+						}
+					},
 					"Title":
 					{
 						"Name": "Title",
 						"Hash": "Title",
 						"PictDashboard":
 						{
-							"ValueTemplate": "{~D:Record.Payload.Title~} {~PJU:; ^Name^Record.Payload.Authors~} {~D:AppData.RSP-Provider-BookstoreInventory.Authors.length~}"
+							"ValueTemplate": "{~D:Record.Payload.Title~} ({~D:AppData.RSP-Provider-BookstoreInventory.Authors.length~} authors in cohort)"
 						}
 					},
 					"AuthorBookCount":
@@ -38,10 +72,11 @@ module.exports.default_configuration.pict_configuration = (
 					"Authors":
 					{
 						"Name": "Authors",
-						"Hash": "Authors",
+						"Hash": "BookAuthors",
 						"DataType": "Array",
 						"PictDashboard":
 						{
+							"ValueTemplate": "{~PJU:, ^Name^Record.Payload.Authors~}"
 						}
 					},
 					"AuthorCount":
@@ -51,7 +86,16 @@ module.exports.default_configuration.pict_configuration = (
 						"DataType": "Number",
 						"PictDashboard":
 						{
-							"Solvers": [ "Record.Payload.AuthorCount = COS(Record.Payload.Authors.length)" ],
+							"EquationNamespaceScope": "Full",
+							"Equation": "Payload.Authors.length + 0", //FIXME: having to + 0 here seems sketchy
+							"Solvers":
+							[
+								{
+									"Ordinal": 0,
+									"Expression": "Price = ROUND(RANDOMFLOATBETWEEN(0.5, 40), 2)",
+								},
+								"AuthorCount = COS(Authors.length)",
+							],
 						}
 					},
 					"AuthorSineWave":
@@ -61,8 +105,9 @@ module.exports.default_configuration.pict_configuration = (
 						"DataType": "Number",
 						"PictDashboard":
 						{
-							"ValueTemplate": "{~D:Record.Payload.AuthorsInOrbit~}",
-							"Solvers": [ "Record.Payload.AuthorsInOrbit = SIN(Record.Payload.Authors.length)" ],
+							"Equation": "AuthorSineWave = ROUND(SIN(BookIdentifire / 100)^3,5)", //FIXME: having to + 0 here seems sketchy
+							//"ValueTemplate": "{~D:Record.Payload.AuthorsInOrbit~}",
+							"Solvers": [ "AuthorsInOrbit = SIN(Authors.length)" ],
 						}
 					}
 				},

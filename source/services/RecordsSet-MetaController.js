@@ -1,5 +1,6 @@
 const libFableServiceProviderBase = require('fable-serviceproviderbase');
 
+const viewDefinitionRecordSetErrorNotFound = require('../views/error/RecordSet-Error-NotFound.json');
 const viewRecordSetList = require('../views/list/RecordSet-List.js');
 const viewRecordSetEdit = require('../views/edit/RecordSet-Edit.js');
 const viewRecordSetRead = require('../views/read/RecordSet-Read.js');
@@ -26,7 +27,7 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		let tmpOptions = Object.assign({}, _DEFAULT_CONFIGURATION, pOptions);
 		super(pFable, tmpOptions, pServiceHash);
 
-		/** @type {import('pict') & { addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any }} */
+		/** @type {import('pict') & { addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any, newManyfest: (rec: any) => any }} */
 		this.fable;
 		this.pict = this.fable;
 		/** @type {any} */
@@ -50,7 +51,8 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 
 		this.sessionProviders = [];
 
-		this.manifests = {};
+		this.manifestDefinitions = {};
+		this.manifests = { Default: this.pict.manifest };
 
 		this.has_initialized = false;
 	}
@@ -298,6 +300,7 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 
 		// Add the subviews internally and externally
 		this.pict.addTemplate(require('../templates/Pict-Template-FilterView.js'));
+		this.childViews.errorNotFound = this.fable.addView('RSP-RecordSet-Error-NotFound', viewDefinitionRecordSetErrorNotFound);
 		this.childViews.list = this.fable.addView('RSP-RecordSet-List', this.options, viewRecordSetList);
 		this.childViews.edit = this.fable.addView('RSP-RecordSet-Edit', this.options, viewRecordSetEdit);
 		this.childViews.read = this.fable.addView('RSP-RecordSet-Read', this.options, viewRecordSetRead);
@@ -323,8 +326,13 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 				this.pict.log.error(`RecordSetDashboard: Invalid manifest: ${tmpManifestKey}.`, tmpManifest);
 				continue;
 			}
+			if (tmpManifestKey !== tmpManifest.Scope)
+			{
+				this.pict.log.error(`RecordSetDashboard: Manifest key ${tmpManifestKey} does not match manifest scope ${tmpManifest.Scope}.  This is bad.  Fix it.`);
+			}
 			this.generateManifestTableCells(tmpManifest);
-			this.manifests[tmpManifest.Scope] = tmpManifest;
+			this.manifestDefinitions[tmpManifest.Scope] = tmpManifest;
+			this.manifests[tmpManifest.Scope] = this.pict.newManyfest(tmpManifest);
 		}
 
 		this.has_initialized = true;
@@ -339,16 +347,40 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		return true;
 	}
 
+	getManifest(pScope)
+	{
+		return this.manifests[pScope];
+	}
+
+	/**
+	 * @param {Record<string, any>} pManifest - The manifest to generate table cells for.
+	 */
 	generateManifestTableCells(pManifest)
 	{
 		if (!pManifest || !pManifest.Descriptors || !pManifest.Scope)
 		{
 			this.pict.log.error(`RecordSetDashboard: No manifest or descriptors found for ${pManifest}.  Cannot generate table cells.`);
+			if (pManifest)
+			{
+				pManifest.TableCells = [];
+			}
 			return;
 		}
 		const tmpTableCells = Object.entries(pManifest.Descriptors || {}).filter(([ key, descriptor ]) => descriptor.PictDashboard).map(([ key, descriptor ]) =>
 		{
-			const tmpPictDashboard = descriptor.PictDashboard || {};
+			const tmpPictDashboard = descriptor.PictDashboard;
+			if (tmpPictDashboard?.Equation && !tmpPictDashboard.ValueTemplate)
+			{
+				//FIXME: is this the right mapping?
+				if (tmpPictDashboard.EquationNamespaceScope === 'Full')
+				{
+					tmpPictDashboard.ValueTemplate = '{~SBR:Record.Data.PictDashboard.Equation::Pict.PictSectionRecordSet.getManifest(Record.Data.ManifestHash)~}';
+				}
+				else
+				{
+					tmpPictDashboard.ValueTemplate = '{~SBR:Record.Data.PictDashboard.Equation:Record.Payload:Pict.PictSectionRecordSet.getManifest(Record.Data.ManifestHash)~}';
+				}
+			}
 			if (!tmpPictDashboard.ValueTemplate)
 			{
 				tmpPictDashboard.ValueTemplate = '{~DVBK:Record.Payload:Record.Data.Key~}';
@@ -356,6 +388,7 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 			return {
 				Key: key,
 				DisplayName: descriptor.Name || key,
+				ManifestHash: pManifest.Scope,
 				PictDashboard: tmpPictDashboard,
 			};
 		});

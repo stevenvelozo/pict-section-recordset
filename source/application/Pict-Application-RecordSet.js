@@ -1,6 +1,7 @@
 const libPictApplication = require('pict-application');
 
 const libPictSectionRecordSet = require('../Pict-Section-RecordSet.js');
+const libDynamicSolver = require('../providers/RecordSet-DynamicSolver.js');
 
 /**
  * Represents a PictSectionRecordSetApplication.
@@ -20,6 +21,7 @@ class PictSectionRecordSetApplication extends libPictApplication
 		this.pict;
 		// Add the pict recordset meta controller service
 		this.pict.addServiceType('PictSectionRecordSet', libPictSectionRecordSet);
+		this.fable.addProviderSingleton('DynamicSolver', libDynamicSolver.default_configuration, libDynamicSolver);
 	}
 
 	onInitialize()

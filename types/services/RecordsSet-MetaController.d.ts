@@ -1,12 +1,14 @@
 export = RecordSetMetacontroller;
 declare class RecordSetMetacontroller {
     constructor(pFable: any, pOptions: any, pServiceHash: any);
-    /** @type {import('pict') & { addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any }} */
+    /** @type {import('pict') & { addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any, newManyfest: (rec: any) => any }} */
     fable: import("pict") & {
         addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any;
+        newManyfest: (rec: any) => any;
     };
     pict: import("pict") & {
         addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any;
+        newManyfest: (rec: any) => any;
     };
     /** @type {any} */
     log: any;
@@ -24,7 +26,10 @@ declare class RecordSetMetacontroller {
     recordSetProviderConfigurations: {};
     dashboardConfigurations: {};
     sessionProviders: any[];
-    manifests: {};
+    manifestDefinitions: {};
+    manifests: {
+        Default: any;
+    };
     has_initialized: boolean;
     /**
      * @return {Record<string, any>} - The registered configuration for the RecordSet
@@ -38,7 +43,11 @@ declare class RecordSetMetacontroller {
     checkSession(pCapability: any): Promise<boolean>;
     addRecordLinkTemplate(pNameTemplate: any, pURLTemplate: any, pDefault: any): any;
     initialize(): true | this;
-    generateManifestTableCells(pManifest: any): void;
+    getManifest(pScope: any): any;
+    /**
+     * @param {Record<string, any>} pManifest - The manifest to generate table cells for.
+     */
+    generateManifestTableCells(pManifest: Record<string, any>): void;
 }
 declare namespace RecordSetMetacontroller {
     export { _DEFAULT_CONFIGURATION as default_configuration };

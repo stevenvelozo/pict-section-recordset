@@ -112,6 +112,7 @@ class viewRecordSetSUBSETFilter extends libPictView
 		let filterExpr = '%20';
 		if (pFilterString)
 		{
+			/** @type {Array<string>} */
 			const searchFields = tmpProviderConfiguration?.SearchFields ?? [ 'Name' ];
 			filterExpr = searchFields.map((filterField) => `FBVOR~${filterField}~LK~${encodeURIComponent(`%${pFilterString}%`)}`).join('~');
 		}

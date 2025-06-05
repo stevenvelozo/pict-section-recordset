@@ -40,6 +40,8 @@ class PictRecordSetRouter extends libPictProvider
 
 	addRoutes(pRouter)
 	{
+		//FIXME: not working
+		this.pictRouter.addRoute('/PSRS/404', '{~D:Pict.views[RSP-RecordSet-Error-NotFound].render()~}');
 		// TODO: Create some kind of state tracking to see if these routes have already been added
 		//this.pictRouter.addRoute('/PSRS/:RecordSet/List/:Begin/:Cap', "{~LV:Record~}");
 		this.pict.views['RSP-RecordSet-List'].addRoutes(pRouter);

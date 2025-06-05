@@ -110,6 +110,12 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		// 	return false;
 		// }
 		const tmpProviderConfiguration = this.pict.PictSectionRecordSet.recordSetProviderConfigurations[pRoutePayload.data.RecordSet];
+		if (!tmpProviderConfiguration)
+		{
+			this.pict.log.error(`RecordSetDashboard: No record set configuration found for ${pRoutePayload.data.RecordSet}.  List Render failed.`);
+			this.fable.providers.RecordSetRouter.pictRouter.navigate('/PSRS/404');
+			return;
+		}
 		const tmpProviderHash = `RSP-Provider-${pRoutePayload.data.RecordSet}`;
 
 		const tmpFilterString = pRoutePayload.data.FilterString || '';
@@ -176,8 +182,13 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 				if (this.excludedByDefaultCells.includes(tmpColumn) === false)
 				{
 					pRecordListData.TableCells.push({
-						'Key': tmpColumn,
-						'DisplayName': tmpProperties?.[tmpColumn].title || tmpColumn,
+						Key: tmpColumn,
+						DisplayName: tmpProperties?.[tmpColumn].title || tmpColumn,
+						ManifestHash: 'Default',
+						PictDashboard:
+						{
+							ValueTemplate: '{~DVBK:Record.Payload:Record.Data.Key~}',
+						},
 					});
 				}
 			}
@@ -197,6 +208,11 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 	 */
 	async renderSpecificDashboard(pDashboardHash, pRecordSetConfiguration, pProviderHash, pFilterString, pOffset, pPageSize)
 	{
+		if (!pRecordSetConfiguration)
+		{
+			this.pict.log.error(`RecordSetDashboard: No record set configuration found for ${pDashboardHash}.  List Render failed.`);
+			return;
+		}
 		// Get the records
 		if (!(pProviderHash in this.pict.providers))
 		{
@@ -207,7 +223,7 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		let tmpManifest;
 		if (pDashboardHash)
 		{
-			tmpManifest = this.pict.PictSectionRecordSet.manifests[pDashboardHash];
+			tmpManifest = this.pict.PictSectionRecordSet.manifestDefinitions[pDashboardHash];
 		}
 		let tmpTitle = pRecordSetConfiguration.Title || pRecordSetConfiguration.RecordSet;
 		if (tmpManifest && tmpManifest.TitleTemplate)
@@ -353,7 +369,7 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 
 		if (pDashboardHash)
 		{
-			tmpRecordDashboardData.TableCells = this.pict.PictSectionRecordSet.manifests[pDashboardHash]?.TableCells;
+			tmpRecordDashboardData.TableCells = tmpManifest?.TableCells;
 		}
 		if (!tmpRecordDashboardData.TableCells)
 		{
@@ -376,6 +392,8 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		}
 
 		tmpRecordDashboardData = this.onBeforeRenderList(tmpRecordDashboardData);
+
+		this.pict.providers.DynamicSolver.solveDashboard(tmpManifest || { }, tmpRecordDashboardData.Records.Records);
 
 		this.renderAsync('PRSP_Renderable_List', tmpRecordDashboardData.RenderDestination, tmpRecordDashboardData,
 			function (pError)
@@ -408,6 +426,11 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 	 */
 	async renderDashboard(pRecordSetConfiguration, pProviderHash, pFilterString, pOffset, pPageSize)
 	{
+		if (!pRecordSetConfiguration)
+		{
+			this.pict.log.error(`RecordSetDashboard: No record set configuration found.  List Render failed.`);
+			return;
+		}
 		// Get the records
 		if (!(pProviderHash in this.pict.providers))
 		{
@@ -573,6 +596,13 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		}
 
 		tmpRecordDashboardData = this.onBeforeRenderList(tmpRecordDashboardData);
+
+		const tmpManifest = { Scope: 'Default', Descriptors: { }, TableCells: tmpRecordDashboardData.TableCells };
+		for (const tmpCell of tmpRecordDashboardData.TableCells)
+		{
+			tmpManifest.Descriptors[tmpCell.Key] = { Hash: tmpCell.Key, PictDashboard: tmpCell.PictDashboard };
+		}
+		this.pict.providers.DynamicSolver.solveDashboard(tmpManifest, tmpRecordDashboardData.Records.Records);
 
 		this.renderAsync('PRSP_Renderable_List', tmpRecordDashboardData.RenderDestination, tmpRecordDashboardData,
 			function (pError)
