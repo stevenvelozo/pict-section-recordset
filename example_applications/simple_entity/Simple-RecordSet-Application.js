@@ -209,8 +209,8 @@ module.exports.default_configuration.pict_configuration = (
 
 					"SearchFields": [ "Title" ],
 
-					"RecordSetFilterURLTemplate-Default": "/PSRS/{~D:Record.RecordSet~}/ListFilteredTo/{~D:Record.FilterString~}",
-					"RecordSetFilterURLTemplate-List": "/PSRS/{~D:Record.RecordSet~}/ListFilteredTo/{~D:Record.FilterString~}",
+					"RecordSetFilterURLTemplate-Default": "/PSRS/{~D:Record.RecordSet~}/List/FilteredTo/{~D:Record.FilterString~}",
+					"RecordSetFilterURLTemplate-List": "/PSRS/{~D:Record.RecordSet~}/List/FilteredTo/{~D:Record.FilterString~}",
 					"RecordSetFilterURLTemplate-Dashboard": "/PSRS/{~D:Record.RecordSet~}/Dashboard/FilteredTo/{~D:Record.FilterString~}",
 
 					"RecordSetURLPrefix": "/1.0/"
@@ -277,8 +277,8 @@ module.exports.default_configuration.pict_configuration = (
 
 					"SearchFields": [ "Title" ],
 
-					"RecordSetFilterURLTemplate-Default": "/PSRS/{~D:Record.RecordSet~}/ListFilteredTo/{~D:Record.FilterString~}",
-					"RecordSetFilterURLTemplate-List": "/PSRS/{~D:Record.RecordSet~}/ListFilteredTo/{~D:Record.FilterString~}",
+					"RecordSetFilterURLTemplate-Default": "/PSRS/{~D:Record.RecordSet~}/List/FilteredTo/{~D:Record.FilterString~}",
+					"RecordSetFilterURLTemplate-List": "/PSRS/{~D:Record.RecordSet~}/List/FilteredTo/{~D:Record.FilterString~}",
 					"RecordSetFilterURLTemplate-Dashboard": "/PSRS/{~D:Record.RecordSet~}/Dashboard/FilteredTo/{~D:Record.FilterString~}",
 					//TODO: something like this to reduce boilerplate
 					"RecordSetFilterURLTemplate-Dashboard-Specific": "/PSRS/{~D:Record.RecordSet~}/SpecificDashboard/$$DASHBOARD_HASH$$/FilteredTo/{~D:Record.FilterString~}",

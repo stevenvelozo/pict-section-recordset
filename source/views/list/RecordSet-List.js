@@ -117,8 +117,8 @@ class viewRecordSetList extends libPictRecordSetRecordView
 
 	addRoutes(pPictRouter)
 	{
-		pPictRouter.router.on('/PSRS/:RecordSet/ListFilteredTo/:FilterString/:Offset/:PageSize', this.handleRecordSetListRoute.bind(this));
-		pPictRouter.router.on('/PSRS/:RecordSet/ListFilteredTo/:FilterString', this.handleRecordSetListRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/List/FilteredTo/:FilterString/:Offset/:PageSize', this.handleRecordSetListRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/List/FilteredTo/:FilterString', this.handleRecordSetListRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/List/:Offset/:PageSize', this.handleRecordSetListRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/List/:Offset', this.handleRecordSetListRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/List', this.handleRecordSetListRoute.bind(this));
@@ -232,7 +232,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 					{
 						Page: i + 1,
 						RelativeOffset: i - tmpRecordListData.PageLinkBookmarks.Current,
-						URL: `#/PSRS/${tmpRecordListData.RecordSet}/ListFilteredTo/${tmpRecordListData.FilterString}/${i * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/FilteredTo/${tmpRecordListData.FilterString}/${i * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
 					});
 			}
 			else
@@ -258,7 +258,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 					{
 						Page: 1,
 						RelativeOffset: -tmpRecordListData.PageLinkBookmarks.Current,
-						URL: `#/PSRS/${tmpRecordListData.RecordSet}/ListFilteredTo/${tmpRecordListData.FilterString}/${tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/FilteredTo/${tmpRecordListData.FilterString}/${tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
 					});
 			}
 			else
@@ -279,7 +279,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 					{
 						Page: tmpRecordListData.PageCount,
 						RelativeOffset: (tmpRecordListData.PageCount - 1) - tmpRecordListData.PageLinkBookmarks.Current,
-						URL: `#/PSRS/${tmpRecordListData.RecordSet}/ListFilteredTo/${tmpRecordListData.FilterString}/${(tmpRecordListData.PageCount - 1) * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/FilteredTo/${tmpRecordListData.FilterString}/${(tmpRecordListData.PageCount - 1) * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
 					});
 			}
 			else

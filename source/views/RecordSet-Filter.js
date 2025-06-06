@@ -117,11 +117,19 @@ class viewRecordSetSUBSETFilter extends libPictView
 			filterExpr = searchFields.map((filterField) => `FBVOR~${filterField}~LK~${encodeURIComponent(`%${pFilterString}%`)}`).join('~');
 		}
 		let tmpURLTemplate = tmpProviderConfiguration[`RecordSetFilterURLTemplate-${pViewContext}`] || tmpProviderConfiguration[`RecordSetFilterURLTemplate-Default`];
-		const tmpURL = this.pict.parseTemplate(tmpURLTemplate,
-			{
-				RecordSet: pRecordSet,
-				FilterString: filterExpr,
-			});
+		let tmpURL;
+		if (tmpURLTemplate)
+		{
+			tmpURL = this.pict.parseTemplate(tmpURLTemplate,
+				{
+					RecordSet: pRecordSet,
+					FilterString: filterExpr,
+				});
+		}
+		else
+		{
+			tmpURL = `/PSRS/${pRecordSet}/List/FilteredTo/${filterExpr}`;
+		}
 		tmpPictRouter.router.navigate(tmpURL);
 	}
 
