@@ -220,15 +220,15 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 			return;
 		}
 
-		let tmpManifest;
+		let tmpManifestDefinition;
 		if (pDashboardHash)
 		{
-			tmpManifest = this.pict.PictSectionRecordSet.manifestDefinitions[pDashboardHash];
+			tmpManifestDefinition = this.pict.PictSectionRecordSet.manifestDefinitions[pDashboardHash];
 		}
 		let tmpTitle = pRecordSetConfiguration.Title || pRecordSetConfiguration.RecordSet;
-		if (tmpManifest && tmpManifest.TitleTemplate)
+		if (tmpManifestDefinition && tmpManifestDefinition.TitleTemplate)
 		{
-			tmpTitle = this.pict.parseTemplate(tmpManifest.TitleTemplate, pRecordSetConfiguration);
+			tmpTitle = this.pict.parseTemplate(tmpManifestDefinition.TitleTemplate, pRecordSetConfiguration);
 		}
 
 		let tmpRecordDashboardData =
@@ -369,11 +369,10 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 
 		if (pDashboardHash)
 		{
-			tmpRecordDashboardData.TableCells = tmpManifest?.TableCells;
+			tmpRecordDashboardData.TableCells = tmpManifestDefinition?.TableCells;
 		}
 		if (!tmpRecordDashboardData.TableCells)
 		{
-			tmpRecordDashboardData.TableCells = [];
 			// Put code here to preprocess columns into other data parts.
 			/*
 				"RecordSetListManifestOnly": false,
@@ -381,42 +380,58 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 				"RecordSetListManifests": [ "Bestsellers", "Underdogs", "NewReleases" ],
 				"RecordSetDashboardManifests": [ "Bestsellers" ],
 			 */
-			if (tmpRecordDashboardData.RecordSetConfiguration.hasOwnProperty('RecordSetListColumns'))
+			if (pRecordSetConfiguration.RecordSetListManifestOnly)
 			{
-				tmpRecordDashboardData.TableCells = tmpRecordDashboardData.RecordSetConfiguration.RecordSetListColumns.map((key) =>
-					{
-						if (typeof key === 'object')
-						{
-							if (!key.DisplayName)
-							{
-								key.DisplayName = key.Key; //FIXME: use schema?
-							}
-							if (!key.ManifestHash)
-							{
-								key.ManifestHash = 'Default';
-							}
-							return key;
-						}
-						return {
-							Key: key,
-							DisplayName: key, //FIXME: use schema?
-							ManifestHash: 'Default',
-							PictDashboard:
-							{
-								ValueTemplate: '{~DVBK:Record.Payload:Record.Data.Key~}',
-							},
-						};
-					});
+				const tmpManifestHash = pRecordSetConfiguration.RecordSetDashboardDefaultManifest || pRecordSetConfiguration.RecordSetDashboardManifests?.[0];
+				const tmpManifest = this.pict.PictSectionRecordSet.getManifest(tmpManifestHash);
+				if (!tmpManifest)
+				{
+					this.pict.log.error(`RecordSetDashboard: No manifest found for ${pRecordSetConfiguration.RecordSet}.  List Render failed.`);
+				}
+				else
+				{
+					tmpRecordDashboardData.TableCells = tmpManifest.TableCells;
+				}
 			}
-			else
+			if (!tmpRecordDashboardData.TableCells)
 			{
-				this.dynamicallyGenerateColumns(tmpRecordDashboardData);
+				if (tmpRecordDashboardData.RecordSetConfiguration.hasOwnProperty('RecordSetListColumns'))
+				{
+					tmpRecordDashboardData.TableCells = tmpRecordDashboardData.RecordSetConfiguration.RecordSetListColumns.map((key) =>
+						{
+							if (typeof key === 'object')
+							{
+								if (!key.DisplayName)
+								{
+									key.DisplayName = key.Key; //FIXME: use schema?
+								}
+								if (!key.ManifestHash)
+								{
+									key.ManifestHash = 'Default';
+								}
+								return key;
+							}
+							return {
+								Key: key,
+								DisplayName: key, //FIXME: use schema?
+								ManifestHash: 'Default',
+								PictDashboard:
+								{
+									ValueTemplate: '{~DVBK:Record.Payload:Record.Data.Key~}',
+								},
+							};
+						});
+				}
+				else
+				{
+					this.dynamicallyGenerateColumns(tmpRecordDashboardData);
+				}
 			}
 		}
 
 		tmpRecordDashboardData = this.onBeforeRenderList(tmpRecordDashboardData);
 
-		this.pict.providers.DynamicRecordsetSolver.solveDashboard(tmpManifest || { }, tmpRecordDashboardData.Records.Records);
+		this.pict.providers.DynamicRecordsetSolver.solveDashboard(tmpManifestDefinition, tmpRecordDashboardData.Records.Records);
 
 		this.renderAsync('PRSP_Renderable_List', tmpRecordDashboardData.RenderDestination, tmpRecordDashboardData,
 			function (pError)
@@ -460,6 +475,19 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 			this.pict.log.error(`RecordSetDashboard: No provider found for ${pProviderHash} in ${pRecordSetConfiguration.RecordSet}.  List Render failed.`);
 			return;
 		}
+		if (pRecordSetConfiguration.RecordSetListManifestOnly)
+		{
+			const tmpManifestHash = pRecordSetConfiguration.RecordSetDashboardDefaultManifest || pRecordSetConfiguration.RecordSetDashboardManifests?.[0];
+			const tmpManifest = this.pict.PictSectionRecordSet.getManifest(tmpManifestHash);
+			if (!tmpManifest)
+			{
+				this.pict.log.error(`RecordSetDashboard: No manifest found for ${pRecordSetConfiguration.RecordSet}.  List Render failed.`);
+			}
+			else
+			{
+				return this.renderSpecificDashboard(tmpManifestHash, pRecordSetConfiguration, pProviderHash, pFilterString, pOffset, pPageSize);
+			}
+		}
 
 		let tmpRecordDashboardData =
 		{
@@ -482,7 +510,7 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		// TODO: There are still problems with the way these have nested data.  Discuss how we might move that around
 		// Fetch the records
 		const [ tmpRecords, tmpTotalRecordCount, tmpRecordSchema ] = await Promise.all([
-			this.pict.providers[pProviderHash].getRecords(tmpRecordDashboardData),
+			this.pict.providers[pProviderHash].getDecoratedRecords(tmpRecordDashboardData),
 			this.pict.providers[pProviderHash].getRecordSetCount(tmpRecordDashboardData),
 			this.pict.providers[pProviderHash].getRecordSchema(),
 		]);
@@ -601,7 +629,6 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 			tmpRecordDashboardData.PageLinkBookmarks.NextLink = tmpRecordDashboardData.PageLinks[tmpRecordDashboardData.PageLinkBookmarks.Next];
 		}
 
-		tmpRecordDashboardData.TableCells = [];
 		// Put code here to preprocess columns into other data parts.
 		/*
 			"RecordSetListManifestOnly": false,
@@ -611,23 +638,32 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		 */
 		if (tmpRecordDashboardData.RecordSetConfiguration.hasOwnProperty('RecordSetListColumns'))
 		{
-			tmpRecordDashboardData.TableCells = tmpRecordDashboardData.RecordSetConfiguration.RecordSetListColumns.map((key) =>
+			tmpRecordDashboardData.TableCells = tmpRecordDashboardData.RecordSetConfiguration.RecordSetListColumns.map((pKey) =>
 				{
-					if (typeof key === 'object')
+					if (typeof pKey === 'object')
 					{
-						if (!key.DisplayName)
+						const tmpTableCell = pKey;
+						if (!tmpTableCell.DisplayName)
 						{
-							key.DisplayName = key.Key; //FIXME: use schema?
+							tmpTableCell.DisplayName = tmpTableCell.Key; //FIXME: use schema?
 						}
-						if (!key.ManifestHash)
+						if (!tmpTableCell.ManifestHash)
 						{
-							key.ManifestHash = 'Default';
+							tmpTableCell.ManifestHash = 'Default';
 						}
-						return key;
+						if (!tmpTableCell.PictDashboard)
+						{
+							tmpTableCell.PictDashboard = {};
+						}
+						if (!tmpTableCell.PictDashboard.ValueTemplate)
+						{
+							tmpTableCell.PictDashboard.ValueTemplate = '{~DVBK:Record.Payload:Record.Data.Key~}';
+						}
+						return tmpTableCell;
 					}
 					return {
-						Key: key,
-						DisplayName: key, //FIXME: use schema?
+						Key: pKey,
+						DisplayName: pKey, //FIXME: use schema?
 						ManifestHash: 'Default',
 						PictDashboard:
 						{

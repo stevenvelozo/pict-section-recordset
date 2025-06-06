@@ -117,6 +117,13 @@ class viewRecordSetSUBSETFilter extends libPictView
 			filterExpr = searchFields.map((filterField) => `FBVOR~${filterField}~LK~${encodeURIComponent(`%${pFilterString}%`)}`).join('~');
 		}
 		let tmpURLTemplate = tmpProviderConfiguration[`RecordSetFilterURLTemplate-${pViewContext}`] || tmpProviderConfiguration[`RecordSetFilterURLTemplate-Default`];
+		if (!tmpURLTemplate)
+		{
+			if (pViewContext === 'Dashboard' || pViewContext === 'List')
+			{
+				tmpURLTemplate = `/PSRS/${pRecordSet}/${pViewContext}/FilteredTo/{~D:Record.FilterString~}`;
+			}
+		}
 		let tmpURL;
 		if (tmpURLTemplate)
 		{
