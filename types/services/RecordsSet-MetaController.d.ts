@@ -37,7 +37,7 @@ declare class RecordSetMetacontroller {
     getRecordSetConfiguration(pRecordSet: any): Record<string, any>;
     loadRecordSetConfiguration(pRecordSetConfiguration: any): boolean;
     loadRecordSetConfigurationArray(pRecordSetConfigurationArray: any): boolean;
-    loadRecordSetDynamcally(pRecordSet: any, pEntity: any, pDefaultFilter: any): any;
+    loadRecordSetDynamically(pRecordSet: any, pEntity: any, pDefaultFilter: any): any;
     handleLoadDynamicRecordSetRoute(pRoutePayload: any): any;
     addRoutes(pPictRouter: any): boolean;
     checkSession(pCapability: any): Promise<boolean>;

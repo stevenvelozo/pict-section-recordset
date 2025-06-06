@@ -319,7 +319,30 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		// Put code here to preprocess columns into other data parts.
 		if (tmpRecordListData.RecordSetConfiguration.hasOwnProperty('RecordSetListColumns'))
 		{
-			tmpRecordListData.TableCells = tmpRecordListData.RecordSetConfiguration.RecordSetListColumns;
+			tmpRecordListData.TableCells = tmpRecordListData.RecordSetConfiguration.RecordSetListColumns.map((key) =>
+				{
+					if (typeof key === 'object')
+					{
+						if (!key.DisplayName)
+						{
+							key.DisplayName = key.Key; //FIXME: use schema?
+						}
+						if (!key.ManifestHash)
+						{
+							key.ManifestHash = 'Default';
+						}
+						return key;
+					}
+					return {
+						Key: key,
+						DisplayName: key, //FIXME: use schema?
+						ManifestHash: 'Default',
+						PictDashboard:
+						{
+							ValueTemplate: '{~DVBK:Record.Payload:Record.Data.Key~}',
+						},
+					};
+				});
 		}
 		else
 		{

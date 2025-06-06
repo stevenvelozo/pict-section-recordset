@@ -383,7 +383,30 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 			 */
 			if (tmpRecordDashboardData.RecordSetConfiguration.hasOwnProperty('RecordSetListColumns'))
 			{
-				tmpRecordDashboardData.TableCells = tmpRecordDashboardData.RecordSetConfiguration.RecordSetListColumns;
+				tmpRecordDashboardData.TableCells = tmpRecordDashboardData.RecordSetConfiguration.RecordSetListColumns.map((key) =>
+					{
+						if (typeof key === 'object')
+						{
+							if (!key.DisplayName)
+							{
+								key.DisplayName = key.Key; //FIXME: use schema?
+							}
+							if (!key.ManifestHash)
+							{
+								key.ManifestHash = 'Default';
+							}
+							return key;
+						}
+						return {
+							Key: key,
+							DisplayName: key, //FIXME: use schema?
+							ManifestHash: 'Default',
+							PictDashboard:
+							{
+								ValueTemplate: '{~DVBK:Record.Payload:Record.Data.Key~}',
+							},
+						};
+					});
 			}
 			else
 			{
@@ -393,7 +416,7 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 
 		tmpRecordDashboardData = this.onBeforeRenderList(tmpRecordDashboardData);
 
-		this.pict.providers.DynamicSolver.solveDashboard(tmpManifest || { }, tmpRecordDashboardData.Records.Records);
+		this.pict.providers.DynamicRecordsetSolver.solveDashboard(tmpManifest || { }, tmpRecordDashboardData.Records.Records);
 
 		this.renderAsync('PRSP_Renderable_List', tmpRecordDashboardData.RenderDestination, tmpRecordDashboardData,
 			function (pError)
@@ -588,7 +611,30 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		 */
 		if (tmpRecordDashboardData.RecordSetConfiguration.hasOwnProperty('RecordSetListColumns'))
 		{
-			tmpRecordDashboardData.TableCells = tmpRecordDashboardData.RecordSetConfiguration.RecordSetListColumns;
+			tmpRecordDashboardData.TableCells = tmpRecordDashboardData.RecordSetConfiguration.RecordSetListColumns.map((key) =>
+				{
+					if (typeof key === 'object')
+					{
+						if (!key.DisplayName)
+						{
+							key.DisplayName = key.Key; //FIXME: use schema?
+						}
+						if (!key.ManifestHash)
+						{
+							key.ManifestHash = 'Default';
+						}
+						return key;
+					}
+					return {
+						Key: key,
+						DisplayName: key, //FIXME: use schema?
+						ManifestHash: 'Default',
+						PictDashboard:
+						{
+							ValueTemplate: '{~DVBK:Record.Payload:Record.Data.Key~}',
+						},
+					};
+				});
 		}
 		else
 		{
@@ -602,7 +648,7 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		{
 			tmpManifest.Descriptors[tmpCell.Key] = { Hash: tmpCell.Key, PictDashboard: tmpCell.PictDashboard };
 		}
-		this.pict.providers.DynamicSolver.solveDashboard(tmpManifest, tmpRecordDashboardData.Records.Records);
+		this.pict.providers.DynamicRecordsetSolver.solveDashboard(tmpManifest, tmpRecordDashboardData.Records.Records);
 
 		this.renderAsync('PRSP_Renderable_List', tmpRecordDashboardData.RenderDestination, tmpRecordDashboardData,
 			function (pError)

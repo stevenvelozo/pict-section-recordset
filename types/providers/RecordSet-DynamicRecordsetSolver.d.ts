@@ -1,8 +1,8 @@
-export = RecordSetDynamicSolver;
+export = RecordSetDynamicRecordsetSolver;
 /**
  * The PictDynamicSolver class is a provider that solves configuration-generated dynamic views.
  */
-declare class RecordSetDynamicSolver {
+declare class RecordSetDynamicRecordsetSolver {
     /**
      * Creates an instance of the PictDynamicSolver class.
      *
@@ -150,9 +150,9 @@ declare class RecordSetDynamicSolver {
         EndTimeStamp: number;
     };
 }
-declare namespace RecordSetDynamicSolver {
+declare namespace RecordSetDynamicRecordsetSolver {
     export { _DefaultProviderConfiguration as default_configuration };
 }
 /** @type {Record<string, any>} */
 declare const _DefaultProviderConfiguration: Record<string, any>;
-//# sourceMappingURL=RecordSet-DynamicSolver.d.ts.map
+//# sourceMappingURL=RecordSet-DynamicRecordsetSolver.d.ts.map

@@ -205,7 +205,7 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		}
 	}
 
-	loadRecordSetDynamcally(pRecordSet, pEntity, pDefaultFilter)
+	loadRecordSetDynamically(pRecordSet, pEntity, pDefaultFilter)
 	{
 		if (typeof(pRecordSet) === 'object')
 		{
@@ -260,7 +260,7 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		const tmpEntity = pRoutePayload.data.Entity ? pRoutePayload.data.Entity : tmpRecordSet;
 		const tmpDefaultFilter = pRoutePayload.data.DefaultFilter ? pRoutePayload.data.DefaultFilter : '';
 
-		return this.loadRecordSetDynamcally(tmpRecordSet, tmpEntity, tmpDefaultFilter);
+		return this.loadRecordSetDynamically(tmpRecordSet, tmpEntity, tmpDefaultFilter);
 	}
 
 	addRoutes(pPictRouter)

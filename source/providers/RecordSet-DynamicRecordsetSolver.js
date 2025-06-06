@@ -14,7 +14,7 @@ const _DefaultProviderConfiguration = (
 /**
  * The PictDynamicSolver class is a provider that solves configuration-generated dynamic views.
  */
-class RecordSetDynamicSolver extends libPictProvider
+class RecordSetDynamicRecordsetSolver extends libPictProvider
 {
 	/**
 	 * Creates an instance of the PictDynamicSolver class.
@@ -287,7 +287,7 @@ class RecordSetDynamicSolver extends libPictProvider
 		{
 			if (this.pict.LogNoisiness > 1)
 			{
-				this.log.trace(`DynamicSolver [${this.UUID}]::[${this.Hash}] Solving ordinal ${tmpOrdinalKeys[i]}`);
+				this.log.trace(`DynamicRecordsetSolver [${this.UUID}]::[${this.Hash}] Solving ordinal ${tmpOrdinalKeys[i]}`);
 			}
 			let tmpOrdinalContainer = tmpOrdinalsToSolve[tmpOrdinalKeys[i]];
 			this.executeCellSolvers(tmpManifest, tmpOrdinalContainer.CellSolvers, Number(tmpOrdinalKeys[i]), pRecords);
@@ -301,5 +301,5 @@ class RecordSetDynamicSolver extends libPictProvider
 	}
 }
 
-module.exports = RecordSetDynamicSolver;
+module.exports = RecordSetDynamicRecordsetSolver;
 module.exports.default_configuration = _DefaultProviderConfiguration;
