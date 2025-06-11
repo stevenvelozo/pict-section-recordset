@@ -1,8 +1,6 @@
 export = PictRecordSetRouter;
-declare class PictRecordSetRouter {
+declare class PictRecordSetRouter extends libPictProvider {
     constructor(pFable: any, pOptions: any, pServiceHash: any);
-    /** @type {Record<string, any>} */
-    options: Record<string, any>;
     /** @type {import('pict') & { PictSectionRecordSet: InstanceType<import('../Pict-Section-RecordSet.js')> }} */
     pict: import("pict") & {
         PictSectionRecordSet: InstanceType<{
@@ -14,7 +12,6 @@ declare class PictRecordSetRouter {
         }>;
     };
     pictRouter: any;
-    onInitialize(): any;
     addRoutes(pRouter: any): void;
     /**
      * Navigate to a given route (set the browser URL string, add to history, trigger router)
@@ -26,6 +23,7 @@ declare class PictRecordSetRouter {
 declare namespace PictRecordSetRouter {
     export { _DEFAULT_PROVIDER_CONFIGURATION as default_configuration };
 }
+import libPictProvider = require("pict-provider");
 /** @type {Record<string, any>} */
 declare const _DEFAULT_PROVIDER_CONFIGURATION: Record<string, any>;
 //# sourceMappingURL=RecordSet-Router.d.ts.map

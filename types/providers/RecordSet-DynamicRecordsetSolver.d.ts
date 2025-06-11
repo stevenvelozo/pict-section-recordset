@@ -2,7 +2,7 @@ export = RecordSetDynamicRecordsetSolver;
 /**
  * The PictDynamicSolver class is a provider that solves configuration-generated dynamic views.
  */
-declare class RecordSetDynamicRecordsetSolver {
+declare class RecordSetDynamicRecordsetSolver extends libPictProvider {
     /**
      * Creates an instance of the PictDynamicSolver class.
      *
@@ -32,12 +32,6 @@ declare class RecordSetDynamicRecordsetSolver {
         instantiateServiceProviderIfNotExists: (hash: string) => any;
         ExpressionParser: any;
     };
-    /** @type {any} */
-    log: any;
-    /** @type {string} */
-    UUID: string;
-    /** @type {string} */
-    Hash: string;
     /**
      * Checks the solver and returns the solver object if it passes the checks.
      *
@@ -153,6 +147,7 @@ declare class RecordSetDynamicRecordsetSolver {
 declare namespace RecordSetDynamicRecordsetSolver {
     export { _DefaultProviderConfiguration as default_configuration };
 }
+import libPictProvider = require("pict-provider");
 /** @type {Record<string, any>} */
 declare const _DefaultProviderConfiguration: Record<string, any>;
 //# sourceMappingURL=RecordSet-DynamicRecordsetSolver.d.ts.map

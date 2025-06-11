@@ -39,10 +39,6 @@ declare class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase 
             RecordSetProviderMeadowEndpoints: typeof MeadowEndpointsRecordSetProvider;
         }>;
     };
-    /** @type {string} */
-    Hash: string;
-    /** @type {string} */
-    UUID: string;
     /** @type {Record<string, any>} */
     _Schema: Record<string, any>;
     /** @return {import('pict/types/source/Pict-Meadow-EntityProvider.js')} */

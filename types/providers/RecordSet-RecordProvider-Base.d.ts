@@ -31,18 +31,7 @@ export = RecordSetProviderBase;
  * Base record set provider.
  * @extends libPictProvider
  */
-declare class RecordSetProviderBase {
-    /**
-     * Creates an instance of RecordSetProvider.
-     * @param {import('fable')} pFable - The Fable object.
-     * @param {Record<string, any>} [pOptions] - Custom options for the provider.
-     * @param {string} [pServiceHash] - The service hash.
-     */
-    constructor(pFable: any, pOptions?: Record<string, any>, pServiceHash?: string);
-    /** @type {Record<string, any>} */
-    options: Record<string, any>;
-    /** @type {import('fable')} */
-    fable: any;
+declare class RecordSetProviderBase extends libPictProvider {
     /** @type {import('pict')} */
     pict: import("pict");
     /**
@@ -151,6 +140,7 @@ declare class RecordSetProviderBase {
 declare namespace RecordSetProviderBase {
     export { _DefaultProviderConfiguration as default_configuration, RecordSetSearchRangeFacet, RecordSetSearchFacetPayload, RecordSetResult, RecordSetFilter };
 }
+import libPictProvider = require("pict-provider");
 /**
  * Default configuration for the RecordSetProvider provider.
  * @type {Record<string, any>}

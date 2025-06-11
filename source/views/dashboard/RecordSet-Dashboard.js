@@ -262,7 +262,8 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		tmpRecordDashboardData.GUIDAddress = `GUID${this.pict.providers[pProviderHash].options.Entity}`;
 
 		// Get the "page end record number" for the current page (e.g. for messaging like Record 700 to 800 of 75,000)
-		tmpRecordDashboardData.PageEnd = parseInt(tmpRecordDashboardData.Offset) + tmpRecordDashboardData.Records.Records.length;
+		const tmpOffset = typeof(tmpRecordDashboardData.Offset) === 'number' ? tmpRecordDashboardData.Offset : parseInt(tmpRecordDashboardData.Offset);
+		tmpRecordDashboardData.PageEnd = tmpOffset + tmpRecordDashboardData.Records.Records.length;
 
 		// Compute the number of pages total
 		tmpRecordDashboardData.PageCount = Math.ceil(tmpRecordDashboardData.TotalRecordCount.Count / tmpRecordDashboardData.PageSize);
@@ -524,7 +525,8 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		tmpRecordDashboardData.GUIDAddress = `GUID${this.pict.providers[pProviderHash].options.Entity}`;
 
 		// Get the "page end record number" for the current page (e.g. for messaging like Record 700 to 800 of 75,000)
-		tmpRecordDashboardData.PageEnd = parseInt(tmpRecordDashboardData.Offset) + tmpRecordDashboardData.Records.Records.length;
+		const tmpOffset = typeof(tmpRecordDashboardData.Offset) === 'number' ? tmpRecordDashboardData.Offset : parseInt(tmpRecordDashboardData.Offset);
+		tmpRecordDashboardData.PageEnd = tmpOffset + tmpRecordDashboardData.Records.Records.length;
 
 		// Compute the number of pages total
 		tmpRecordDashboardData.PageCount = Math.ceil(tmpRecordDashboardData.TotalRecordCount.Count / tmpRecordDashboardData.PageSize);
