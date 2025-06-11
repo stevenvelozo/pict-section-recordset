@@ -22,14 +22,18 @@ declare class RecordSetMetacontroller {
         read: any;
         dashboard: any;
     };
-    recordSetProviders: {};
-    recordSetProviderConfigurations: {};
-    dashboardConfigurations: {};
-    sessionProviders: any[];
-    manifestDefinitions: {};
-    manifests: {
-        Default: any;
-    };
+    /** @type {Record<string, import('pict-provider')>} */
+    recordSetProviders: Record<string, import("pict-provider")>;
+    /** @type {Record<string, Record<string, any>>} */
+    recordSetProviderConfigurations: Record<string, Record<string, any>>;
+    /** @type {Record<string, Record<string, any>>} */
+    dashboardConfigurations: Record<string, Record<string, any>>;
+    /** @type {Array<(pCapability: string) => Promise<boolean>>} */
+    sessionProviders: Array<(pCapability: string) => Promise<boolean>>;
+    /** @type {Record<string, Record<string, any>>} */
+    manifestDefinitions: Record<string, Record<string, any>>;
+    /** @type {Record<string, import('manyfest')>} */
+    manifests: Record<string, any>;
     has_initialized: boolean;
     /**
      * @return {Record<string, any>} - The registered configuration for the RecordSet

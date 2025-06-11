@@ -44,14 +44,20 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 			dashboard: null
 		};
 
+		/** @type {Record<string, import('pict-provider')>} */
 		this.recordSetProviders = {};
+		/** @type {Record<string, Record<string, any>>} */
 		this.recordSetProviderConfigurations = {};
 
+		/** @type {Record<string, Record<string, any>>} */
 		this.dashboardConfigurations = {};
 
+		/** @type {Array<(pCapability: string) => Promise<boolean>>} */
 		this.sessionProviders = [];
 
+		/** @type {Record<string, Record<string, any>>} */
 		this.manifestDefinitions = {};
+		/** @type {Record<string, import('manyfest')>} */
 		this.manifests = { Default: this.pict.manifest };
 
 		this.has_initialized = false;
