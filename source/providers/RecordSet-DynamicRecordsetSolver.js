@@ -155,6 +155,7 @@ class RecordSetDynamicRecordsetSolver extends libPictProvider
 		return {
 			Pict: this.pict,
 			AppData: this.pict.AppData,
+			Bundle: this.pict.Bundle,
 			RecordSubset: pRecords,
 			Manifest: pManifest,
 		};

@@ -1,6 +1,6 @@
 {
   "name": "pict-section-recordset",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "description": "Pict dynamic record set management views",
   "main": "source/Pict-Section-RecordSet.js",
   "directories": {
@@ -27,25 +27,25 @@
   "author": "steven velozo <steven@velozo.com>",
   "license": "MIT",
   "devDependencies": {
-    "@eslint/js": "^9.27.0",
+    "@eslint/js": "^9.28.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^16.18.126",
     "browser-env": "^3.3.0",
-    "eslint": "^9.27.0",
+    "eslint": "^9.28.0",
     "jquery": "^3.7.1",
-    "pict": "^1.0.270",
-    "pict-application": "^1.0.25",
+    "pict": "^1.0.272",
+    "pict-application": "^1.0.27",
     "pict-service-commandlineutility": "^1.0.15",
     "quackage": "^1.0.41",
     "typescript": "^5.8.3"
   },
   "dependencies": {
     "fable-serviceproviderbase": "^3.0.15",
-    "pict-provider": "^1.0.4",
+    "pict-provider": "^1.0.6",
     "pict-router": "^1.0.4",
-    "pict-section-form": "^1.0.97",
-    "pict-template": "^1.0.10",
-    "pict-view": "^1.0.60"
+    "pict-section-form": "^1.0.98",
+    "pict-template": "^1.0.11",
+    "pict-view": "^1.0.61"
   },
   "mocha": {
     "diff": true,

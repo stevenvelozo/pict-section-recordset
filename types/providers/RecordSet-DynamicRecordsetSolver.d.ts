@@ -71,7 +71,8 @@ declare class RecordSetDynamicRecordsetSolver extends libPictProvider {
                 RecordSetProviderMeadowEndpoints: typeof import("./RecordSet-RecordProvider-MeadowEndpoints.js");
             }>;
         };
-        AppData: any;
+        AppData: Record<string, any>;
+        Bundle: Record<string, any>;
         RecordSubset: Record<string, any>[];
         Manifest: any;
     };
@@ -91,7 +92,8 @@ declare class RecordSetDynamicRecordsetSolver extends libPictProvider {
                 RecordSetProviderMeadowEndpoints: typeof import("./RecordSet-RecordProvider-MeadowEndpoints.js");
             }>;
         };
-        AppData: any;
+        AppData: Record<string, any>;
+        Bundle: Record<string, any>;
         RecordSubset: Record<string, any>[];
         Manifest: any;
     };

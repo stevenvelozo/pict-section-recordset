@@ -95,7 +95,7 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		if (typeof(pRoutePayload) != 'object')
 		{
 			return;
-			throw new Error(`Pict RecordSet List view route handler called with invalid route payload.`);
+			//throw new Error(`Pict RecordSet List view route handler called with invalid route payload.`);
 		}
 		if (!pRoutePayload.data || !pRoutePayload.data.RecordSet)
 		{

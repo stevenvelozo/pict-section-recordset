@@ -390,8 +390,8 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 			this.pict.log.error('RecordDecorationConfiguration is not an array', { RecordDecorationConfiguration: this.options.RecordDecorationConfiguration });
 			return;
 		}
-		this.pict.AppData[this.Hash] = { CoreEntityRecordSubset: pRecords };
-		const config = [{ Type: 'SetStateAddress', StateAddress: `AppData[${this.Hash}]` }].concat(this.options.RecordDecorationConfiguration);
+		this.pict.Bundle[this.Hash] = { CoreEntityRecordSubset: pRecords };
+		const config = [{ Type: 'SetStateAddress', StateAddress: `Bundle[${this.Hash}]` }].concat(this.options.RecordDecorationConfiguration);
 
 		try
 		{
