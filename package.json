@@ -1,6 +1,6 @@
 {
   "name": "pict-section-recordset",
-  "version": "1.0.24",
+  "version": "1.0.25",
   "description": "Pict dynamic record set management views",
   "main": "source/Pict-Section-RecordSet.js",
   "directories": {
@@ -20,7 +20,7 @@
     "coverage": "npx nyc --reporter=lcov --reporter=text-lcov npx mocha -- -u tdd -R spec",
     "build": "npx quack build",
     "test": "npx mocha -u tdd -R spec",
-    "lint": "eslint source/**",
+    "lint": "eslint source",
     "types": "tsc -p tsconfig.build.json"
   },
   "types": "types/Pict-Section-RecordSet.d.ts",
@@ -33,7 +33,7 @@
     "browser-env": "^3.3.0",
     "eslint": "^9.28.0",
     "jquery": "^3.7.1",
-    "pict": "^1.0.272",
+    "pict": "^1.0.275",
     "pict-application": "^1.0.27",
     "pict-service-commandlineutility": "^1.0.15",
     "quackage": "^1.0.41",
@@ -43,7 +43,7 @@
     "fable-serviceproviderbase": "^3.0.15",
     "pict-provider": "^1.0.6",
     "pict-router": "^1.0.4",
-    "pict-section-form": "^1.0.98",
+    "pict-section-form": "^1.0.99",
     "pict-template": "^1.0.11",
     "pict-view": "^1.0.61"
   },

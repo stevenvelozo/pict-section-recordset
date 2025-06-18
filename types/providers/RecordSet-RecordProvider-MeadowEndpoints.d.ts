@@ -39,16 +39,33 @@ declare class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase 
             RecordSetProviderMeadowEndpoints: typeof MeadowEndpointsRecordSetProvider;
         }>;
     };
+    fable: import("pict") & {
+        log: any;
+        services: {
+            PictSectionRecordSet: InstanceType<{
+                new (pFable: any, pOptions: any, pServiceHash: any): import("../services/RecordsSet-MetaController.js");
+                default_configuration: Record<string, any>;
+                PictRecordSetApplication: typeof import("../application/Pict-Application-RecordSet.js");
+                RecordSetProviderBase: typeof libRecordSetProviderBase;
+                RecordSetProviderMeadowEndpoints: typeof MeadowEndpointsRecordSetProvider;
+            }>;
+            [key: string]: any;
+        };
+        instantiateServiceProviderWithoutRegistration: (hash: string) => any;
+        PictSectionRecordSet: InstanceType<{
+            new (pFable: any, pOptions: any, pServiceHash: any): import("../services/RecordsSet-MetaController.js");
+            default_configuration: Record<string, any>;
+            PictRecordSetApplication: typeof import("../application/Pict-Application-RecordSet.js");
+            RecordSetProviderBase: typeof libRecordSetProviderBase;
+            RecordSetProviderMeadowEndpoints: typeof MeadowEndpointsRecordSetProvider;
+        }>;
+    };
     /** @type {Record<string, any>} */
     _Schema: Record<string, any>;
     /** @return {import('pict/types/source/Pict-Meadow-EntityProvider.js')} */
     get entityProvider(): import("pict/types/source/Pict-Meadow-EntityProvider.js");
     /** @type {import('pict/types/source/Pict-Meadow-EntityProvider.js')} */
     _EntityProvider: import("pict/types/source/Pict-Meadow-EntityProvider.js");
-    /**
-     * @typedef {(error?: Error, result?: T) => void} RecordSetCallback
-     * @template T = Record<string, any>
-     */
     /**
      * Get a record by its ID or GUID.
      *
@@ -101,6 +118,10 @@ declare class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase 
      * @param {(error?: Error) => void} fCallback - The callback function.
      */
     onInitializeAsync(fCallback: (error?: Error) => void): void;
+    /**
+     * @param {(error?: Error) => void} fCallback - The callback function.
+     */
+    initializeEntitySchema(fCallback: (error?: Error) => void): void;
     getRecordSchema(): Promise<Record<string, any>>;
 }
 declare namespace MeadowEndpointsRecordSetProvider {

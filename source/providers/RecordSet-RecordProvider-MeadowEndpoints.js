@@ -14,7 +14,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 {
 	/**
 	 * Creates an instance of RecordSetProvider.
-	 * @param {import('fable')} pFable - The Fable object.
+	 * @param {import('pict')} pFable - The Fable object.
 	 * @param {Record<string, any>} [pOptions] - Custom options for the provider.
 	 * @param {string} [pServiceHash] - The service hash.
 	 */
@@ -24,8 +24,6 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 
 		/** @type {Record<string, any>} */
 		this.options;
-		/** @type {import('fable')} */
-		this.fable;
 		/** @type {import('pict') & {
 		 *      log: any,
 		 *      services:
@@ -37,6 +35,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		 *      PictSectionRecordSet: InstanceType<import('../Pict-Section-RecordSet.js')>
 		 *  }} */
 		this.pict;
+		this.fable = this.pict;
 		/** @type {string} */
 		this.Hash;
 		/** @type {string} */
@@ -58,11 +57,6 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		}
 		return this._EntityProvider;
 	}
-
-	/**
-	 * @typedef {(error?: Error, result?: T) => void} RecordSetCallback
-	 * @template T = Record<string, any>
-	 */
 
 	/**
 	 * Get a record by its ID or GUID.
@@ -332,6 +326,20 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 	 */
 	onInitializeAsync(fCallback)
 	{
+		super.onInitializeAsync((pError) =>
+		{
+			this.initializeEntitySchema(() =>
+			{
+				return fCallback(pError);
+			});
+		});
+	}
+
+	/**
+	 * @param {(error?: Error) => void} fCallback - The callback function.
+	 */
+	initializeEntitySchema(fCallback)
+	{
 		this.fable.log.info('Initializing RecordSetProvider-MeadowEndpoints');
 		const checkSession = this.pict.services.PictSectionRecordSet ? this.pict.services.PictSectionRecordSet.checkSession.bind(this.pict.services.PictSectionRecordSet) : async () => true;
 		checkSession('Schema').then(async (supported) =>
@@ -361,7 +369,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 	{
 		if (!this._Schema)
 		{
-			await new Promise((resolve, reject) => this.onInitializeAsync((pError) =>
+			await new Promise((resolve, reject) => this.initializeEntitySchema((pError) =>
 			{
 				if (pError)
 				{

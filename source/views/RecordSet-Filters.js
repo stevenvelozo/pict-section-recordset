@@ -3,10 +3,10 @@ const libPictView = require('pict-view');
 /** @type {Record<string, any>} */
 const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 {
-	ViewIdentifier: 'PRSP-SUBSET-Filter',
+	ViewIdentifier: 'PRSP-SUBSET-Filters',
 
-	DefaultRenderable: 'PRSP_Renderable_Filter',
-	DefaultDestinationAddress: '#PRSP_Filter_Container',
+	DefaultRenderable: 'PRSP_Renderable_Filters',
+	DefaultDestinationAddress: '#PRSP_Filters_Container',
 	DefaultTemplateRecordAddress: false,
 
 	// If this is set to true, when the App initializes this will.
@@ -28,38 +28,51 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 	Templates:
 	[
 		{
-			Hash: 'PRSP-SUBSET-Filter-Template',
+			Hash: 'PRSP-SUBSET-Filters-Template',
 			Template: /*html*/`
-	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filter-Template] -->
-	<section id="PRSP_Filter_Container">
+	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template] -->
+	<section id="PRSP_Filters_Container">
 		<form id="PRSP_Filter_Form" onsubmit="_Pict.views['PRSP-Filters'].handleSearch(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}'); return false;">
-			{~T:PRSP-SUBSET-Filter-Template-Input-Fieldset~}
-			{~T:PRSP-SUBSET-Filter-Template-Button-Fieldset~}
+			{~T:PRSP-SUBSET-Filters-Template-Input-Fieldset~}
+			<div id="PRSP_Filter_Instances">
+				{~TS:PRSP-SUBSET-Filters-Template-Filter-Instance:Context[0].FilterViewHashes~}
+			</div>
+			{~T:PRSP-SUBSET-Filters-Template-Button-Fieldset~}
 		</form>
 	</section>
-	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filter-Template] -->
+	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template] -->
 `
 		},
 		{
-			Hash: 'PRSP-SUBSET-Filter-Template-Input-Fieldset',
+			Hash: 'PRSP-SUBSET-Filters-Template-Input-Fieldset',
 			Template: /*html*/`
-	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filter-Template-Input-Fieldset] -->
+	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-Input-Fieldset] -->
 	<fieldset>
 		<label for="filter">Filter:</label>
 		<input type="text" name="filter">
 	</fieldset>
-	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filter-Template-Input-Fieldset] -->
+	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-Input-Fieldset] -->
 `
 		},
 		{
-			Hash: 'PRSP-SUBSET-Filter-Template-Button-Fieldset',
+			Hash: 'PRSP-SUBSET-Filters-Template-Filter-Instance',
 			Template: /*html*/`
-	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filter-Template-Button-Fieldset] -->
+	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-Filter-Instance] -->
+	<div class="PRSP_Filter_Instance">
+		{~FIV:Record.Value~} <!-- Does this exist? don't think so -->
+	</div>
+	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-Filter-Instance] -->
+`
+		},
+		{
+			Hash: 'PRSP-SUBSET-Filters-Template-Button-Fieldset',
+			Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-Button-Fieldset] -->
 	<fieldset>
 		<button type="button" id="PRSP_Filter_Button_Reset" onclick="_Pict.views['PRSP-Filters'].handleReset(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Reset</button>
 		<button type="submit" id="PRSP_Filter_Button_Apply">Apply</button>
 	</fieldset>
-	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filter-Template-Button-Fieldset] -->
+	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-Button-Fieldset] -->
 `
 		},
 	],
@@ -67,9 +80,9 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 	Renderables:
 	[
 		{
-			RenderableHash: 'PRSP_Renderable_Filter',
-			TemplateHash: 'PRSP-SUBSET-Filter-Template',
-			DestinationAddress: '#PRSP_Filter_Container',
+			RenderableHash: 'PRSP_Renderable_Filters',
+			TemplateHash: 'PRSP-SUBSET-Filters-Template',
+			DestinationAddress: '#PRSP_Filters_Container',
 			RenderMethod: 'replace'
 		},
 	],
@@ -77,7 +90,7 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 	Manifests: {},
 };
 
-class viewRecordSetSUBSETFilter extends libPictView
+class ViewRecordSetSUBSETFilters extends libPictView
 {
 	constructor(pFable, pOptions, pServiceHash)
 	{
@@ -151,9 +164,14 @@ class viewRecordSetSUBSETFilter extends libPictView
 		this.pict.ContentAssignment.assignContent('input[name="filter"]', '');
 		this.performSearch(pRecordSet, pViewContext);
 	}
+
+	get FilterViewHashes()
+	{
+		return [{ Value: 'TestHash' }];
+	}
 }
 
-module.exports = viewRecordSetSUBSETFilter;
+module.exports = ViewRecordSetSUBSETFilters;
 
 module.exports.default_configuration = _DEFAULT_CONFIGURATION_SUBSET_Filter;
 

@@ -1,18 +1,18 @@
 const libFableServiceProviderBase = require('fable-serviceproviderbase');
 
-const viewDefinitionRecordSetErrorNotFound = require('../views/error/RecordSet-Error-NotFound.json');
-const viewRecordSetList = require('../views/list/RecordSet-List.js');
-const viewRecordSetEdit = require('../views/edit/RecordSet-Edit.js');
-const viewRecordSetRead = require('../views/read/RecordSet-Read.js');
-const viewRecordSetDashboard = require('../views/dashboard/RecordSet-Dashboard.js');
+const ViewDefinitionRecordSetErrorNotFound = require('../views/error/RecordSet-Error-NotFound.json');
+const ViewRecordSetList = require('../views/list/RecordSet-List.js');
+const ViewRecordSetEdit = require('../views/edit/RecordSet-Edit.js');
+const ViewRecordSetRead = require('../views/read/RecordSet-Read.js');
+const ViewRecordSetDashboard = require('../views/dashboard/RecordSet-Dashboard.js');
 
 //_Pict.addProvider('BooksProvider', { Entity: 'Book', URLPrefix: 'http://www.datadebase.com:8086/1.0/' }, require('../source/providers/RecordSet-RecordProvider-MeadowEndpoints.js'));
-const providerBase = require('../providers/RecordSet-RecordProvider-Base.js');
-const providerMeadowEndpoints = require('../providers/RecordSet-RecordProvider-MeadowEndpoints.js');
+const ProviderBase = require('../providers/RecordSet-RecordProvider-Base.js');
+const ProviderMeadowEndpoints = require('../providers/RecordSet-RecordProvider-MeadowEndpoints.js');
 
-const providerLinkManager = require('../providers/RecordSet-Link-Manager.js');
+const ProviderLinkManager = require('../providers/RecordSet-Link-Manager.js');
 
-const providerRouter = require('../providers/RecordSet-Router.js');
+const ProviderRouter = require('../providers/RecordSet-Router.js');
 
 /** @type {Record<string, any>} */
 const _DEFAULT_CONFIGURATION =
@@ -163,7 +163,7 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 				{
 					providerConfiguration.URLPrefix = '/1.0/';
 				}
-				tmpProvider = this.recordSetProviders[pRecordSetConfiguration.RecordSet] = this.fable.addProvider(providerConfiguration.Hash, providerConfiguration, providerMeadowEndpoints);
+				tmpProvider = this.recordSetProviders[pRecordSetConfiguration.RecordSet] = this.fable.addProvider(providerConfiguration.Hash, providerConfiguration, ProviderMeadowEndpoints);
 				break;
 			default:
 			case 'Custom':
@@ -177,12 +177,12 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 					}
 					else
 					{
-						tmpProvider = this.recordSetProviders[providerConfiguration.RecordSet] = this.fable.addProvider(providerConfiguration.Hash, providerConfiguration, providerBase);
+						tmpProvider = this.recordSetProviders[providerConfiguration.RecordSet] = this.fable.addProvider(providerConfiguration.Hash, providerConfiguration, ProviderBase);
 					}
 				}
 				else
 				{
-					tmpProvider = this.recordSetProviders[providerConfiguration.RecordSet] = this.fable.addProvider(providerConfiguration.Hash, providerConfiguration, providerBase);
+					tmpProvider = this.recordSetProviders[providerConfiguration.RecordSet] = this.fable.addProvider(providerConfiguration.Hash, providerConfiguration, ProviderBase);
 				}
 				break;
 		}
@@ -302,15 +302,16 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 			return this;
 		}
 
-		this.fable.addProvider('RecordSetLinkManager', {}, providerLinkManager);
+		this.fable.addProvider('RecordSetLinkManager', {}, ProviderLinkManager);
 
 		// Add the subviews internally and externally
 		this.pict.addTemplate(require('../templates/Pict-Template-FilterView.js'));
-		this.childViews.errorNotFound = this.fable.addView('RSP-RecordSet-Error-NotFound', viewDefinitionRecordSetErrorNotFound);
-		this.childViews.list = this.fable.addView('RSP-RecordSet-List', this.options, viewRecordSetList);
-		this.childViews.edit = this.fable.addView('RSP-RecordSet-Edit', this.options, viewRecordSetEdit);
-		this.childViews.read = this.fable.addView('RSP-RecordSet-Read', this.options, viewRecordSetRead);
-		this.childViews.dashboard = this.fable.addView('RSP-RecordSet-Dashboard', this.options, viewRecordSetDashboard);
+		this.pict.addTemplate(require('../templates/Pict-Template-FilterInstanceView.js'));
+		this.childViews.errorNotFound = this.fable.addView('RSP-RecordSet-Error-NotFound', ViewDefinitionRecordSetErrorNotFound);
+		this.childViews.list = this.fable.addView('RSP-RecordSet-List', this.options, ViewRecordSetList);
+		this.childViews.edit = this.fable.addView('RSP-RecordSet-Edit', this.options, ViewRecordSetEdit);
+		this.childViews.read = this.fable.addView('RSP-RecordSet-Read', this.options, ViewRecordSetRead);
+		this.childViews.dashboard = this.fable.addView('RSP-RecordSet-Dashboard', this.options, ViewRecordSetDashboard);
 
 		// Initialize the subviews
 		this.childViews.list.initialize();
@@ -346,7 +347,7 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		// Load pict-router if it isn't loaded
 		if (!('RecordSetRouter' in this.fable.providers))
 		{
-			this.fable.addProvider('RecordSetRouter', {}, providerRouter);
+			this.fable.addProvider('RecordSetRouter', {}, ProviderRouter);
 			this.fable.providers.RecordSetRouter.initialize();
 		}
 
