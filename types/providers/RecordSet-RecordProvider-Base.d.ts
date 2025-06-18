@@ -32,6 +32,15 @@ export = RecordSetProviderBase;
  * @extends libPictProvider
  */
 declare class RecordSetProviderBase extends libPictProvider {
+    /**
+     * Creates an instance of RecordSetProvider.
+     * @param {import('pict')} pFable - The Fable object.
+     * @param {Record<string, any>} [pOptions] - Custom options for the provider.
+     * @param {string} [pServiceHash] - The service hash.
+     */
+    constructor(pFable: import("pict"), pOptions?: Record<string, any>, pServiceHash?: string);
+    /** @type {import('pict')} */
+    fable: import("pict");
     /** @type {import('pict')} */
     pict: import("pict");
     /**

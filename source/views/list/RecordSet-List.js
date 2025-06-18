@@ -2,7 +2,7 @@ const libPictRecordSetRecordView = require('../RecordSet-RecordBaseView.js');
 
 const viewHeaderList = require('./RecordSet-List-HeaderList.js');
 const viewTitle = require('./RecordSet-List-Title.js');
-const viewFilters = require('../RecordSet-Filter.js');
+const viewFilters = require('../RecordSet-Filters.js');
 const viewPaginationTop = require('./RecordSet-List-PaginationTop.js');
 const viewRecordList = require('./RecordSet-List-RecordList.js');
 const viewRecordListHeader = require('./RecordSet-List-RecordListHeader.js');

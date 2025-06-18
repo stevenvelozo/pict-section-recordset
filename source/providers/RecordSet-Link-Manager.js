@@ -9,7 +9,7 @@ const _DEFAULT_PROVIDER_CONFIGURATION =
 	AutoInitializeOrdinal: 0
 }
 
-class PictRecordSetRouter extends libPictProvider
+class PictRecordSetLinkManager extends libPictProvider
 {
 	constructor(pFable, pOptions, pServiceHash)
 	{
@@ -49,5 +49,5 @@ class PictRecordSetRouter extends libPictProvider
 	}
 }
 
-module.exports = PictRecordSetRouter;
+module.exports = PictRecordSetLinkManager;
 module.exports.default_configuration = _DEFAULT_PROVIDER_CONFIGURATION;

@@ -52,7 +52,7 @@ class RecordSetProviderBase extends libPictProvider
 {
 	/**
 	 * Creates an instance of RecordSetProvider.
-	 * @param {import('fable')} pFable - The Fable object.
+	 * @param {import('pict')} pFable - The Fable object.
 	 * @param {Record<string, any>} [pOptions] - Custom options for the provider.
 	 * @param {string} [pServiceHash] - The service hash.
 	 */
@@ -64,7 +64,7 @@ class RecordSetProviderBase extends libPictProvider
 
 		/** @type {Record<string, any>} */
 		this.options;
-		/** @type {import('fable')} */
+		/** @type {import('pict')} */
 		this.fable;
 		/** @type {import('pict')} */
 		this.pict;
@@ -91,6 +91,13 @@ class RecordSetProviderBase extends libPictProvider
 		this.pict.log.info(`RecordSetProviderBase.getRecordByGUID(${pGuid})`);
 		return { };
 	}
+
+	/*
+	get availableFilters()
+	{
+		return { IDBook: [ 'NumericMatch', 'NumericRange', 'ExternalJoinBookByAuthor' ], Title: [ 'StringMatch', 'StringRange' ] };
+	}
+	*/
 
 	/**
 	 * Read records from the provider.

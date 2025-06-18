@@ -1,5 +1,5 @@
-export = PictRecordSetRouter;
-declare class PictRecordSetRouter extends libPictProvider {
+export = PictRecordSetLinkManager;
+declare class PictRecordSetLinkManager extends libPictProvider {
     constructor(pFable: any, pOptions: any, pServiceHash: any);
     /** @type {import('pict')} */
     pict: import("pict");
@@ -10,7 +10,7 @@ declare class PictRecordSetRouter extends libPictProvider {
         Default: any;
     };
 }
-declare namespace PictRecordSetRouter {
+declare namespace PictRecordSetLinkManager {
     export { _DEFAULT_PROVIDER_CONFIGURATION as default_configuration };
 }
 import libPictProvider = require("pict-provider");

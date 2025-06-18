@@ -14,7 +14,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 {
 	/**
 	 * Creates an instance of RecordSetProvider.
-	 * @param {import('fable')} pFable - The Fable object.
+	 * @param {import('pict')} pFable - The Fable object.
 	 * @param {Record<string, any>} [pOptions] - Custom options for the provider.
 	 * @param {string} [pServiceHash] - The service hash.
 	 */
@@ -24,8 +24,6 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 
 		/** @type {Record<string, any>} */
 		this.options;
-		/** @type {import('fable')} */
-		this.fable;
 		/** @type {import('pict') & {
 		 *      log: any,
 		 *      services:
@@ -37,6 +35,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		 *      PictSectionRecordSet: InstanceType<import('../Pict-Section-RecordSet.js')>
 		 *  }} */
 		this.pict;
+		this.fable = this.pict;
 		/** @type {string} */
 		this.Hash;
 		/** @type {string} */
@@ -58,11 +57,6 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		}
 		return this._EntityProvider;
 	}
-
-	/**
-	 * @typedef {(error?: Error, result?: T) => void} RecordSetCallback
-	 * @template T = Record<string, any>
-	 */
 
 	/**
 	 * Get a record by its ID or GUID.
@@ -129,6 +123,25 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		});
 	}
 
+	_prepareFilterState(pEntity, pOptions, pFilterExperienceResultAddress = 'Records')
+	{
+		const tmpCriteria = [].concat(this.pict.Bundle._Filters?.[pOptions.Entity || this.options.Entity]?.Criteria || []);
+		const tmpExperience = Object.assign({}, this.pict.Bundle._Filters?.[pOptions.Entity || this.options.Entity]?.Experience || {});
+		if (!tmpExperience.ResultDestinationAddress)
+		{
+			tmpExperience.ResultDestinationAddress = `Bundle._Filters[${this.options.RecordSet}].${pFilterExperienceResultAddress}`;
+		}
+		if (!tmpExperience.Entity)
+		{
+			tmpExperience.Entity = pEntity;
+		}
+		if (pOptions.FilterString && typeof pOptions.FilterString === 'string' && pOptions.FilterString.trim().length > 0)
+		{
+			tmpCriteria.push({ Type: 'RawFilter', Value: pOptions.FilterString });
+		}
+		return [ tmpCriteria, tmpExperience ];
+	}
+
 	/**
 	 * Read records from the provider.
 	 *
@@ -148,15 +161,16 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		}
 		return new Promise((resolve, reject) =>
 		{
-			// using a space here, otherwise you get a `//` in the URL which breaks some stuff
-			this.entityProvider.getEntitySetPage(tmpEntity, pOptions.FilterString ? pOptions.FilterString : ' ', pOptions.Offset || 0, pOptions.PageSize || 250, (pError, pResult) =>
+			const [ tmpCriteria, tmpExperience ] = this._prepareFilterState(tmpEntity, pOptions);
+			this.pict.providers.FilterManager.loadRecordPageByFilter(tmpCriteria, tmpExperience, pOptions.Offset || 0, pOptions.PageSize || 250, (pError) =>
 			{
 				if (pError)
 				{
 					return reject(pError);
 				}
-				resolve({ Records: pResult, Facets: { } });
+				resolve({ Records: this.pict.resolveStateFromAddress(tmpExperience.ResultDestinationAddress), Facets: { } });
 			});
+			// using a space here, otherwise you get a `//` in the URL which breaks some stuff
 		});
 	}
 
@@ -192,13 +206,14 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		//TODO: lite support / other variants?
 		return new Promise((resolve, reject) =>
 		{
-			this.entityProvider.getEntitySetRecordCount(tmpEntity, pOptions.FilterString, (pError, pCount) =>
+			const [ tmpCriteria, tmpExperience ] = this._prepareFilterState(tmpEntity, pOptions, 'Count');
+			this.pict.providers.FilterManager.countRecordsByFilter(tmpCriteria, tmpExperience, (pError) =>
 			{
 				if (pError)
 				{
 					return reject(pError);
 				}
-				resolve({ Count: pCount });
+				resolve({ Count: this.pict.resolveStateFromAddress(tmpExperience.ResultDestinationAddress) });
 			});
 		});
 	}
@@ -332,6 +347,20 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 	 */
 	onInitializeAsync(fCallback)
 	{
+		super.onInitializeAsync((pError) =>
+		{
+			this.initializeEntitySchema(() =>
+			{
+				return fCallback(pError);
+			});
+		});
+	}
+
+	/**
+	 * @param {(error?: Error) => void} fCallback - The callback function.
+	 */
+	initializeEntitySchema(fCallback)
+	{
 		this.fable.log.info('Initializing RecordSetProvider-MeadowEndpoints');
 		const checkSession = this.pict.services.PictSectionRecordSet ? this.pict.services.PictSectionRecordSet.checkSession.bind(this.pict.services.PictSectionRecordSet) : async () => true;
 		checkSession('Schema').then(async (supported) =>
@@ -361,7 +390,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 	{
 		if (!this._Schema)
 		{
-			await new Promise((resolve, reject) => this.onInitializeAsync((pError) =>
+			await new Promise((resolve, reject) => this.initializeEntitySchema((pError) =>
 			{
 				if (pError)
 				{

@@ -1,4 +1,5 @@
 const libPictApplication = require('pict-application');
+const libPictSectionForm = require('pict-section-form');
 
 const libPictSectionRecordSet = require('../Pict-Section-RecordSet.js');
 const libDynamicSolver = require('../providers/RecordSet-DynamicRecordsetSolver.js');
@@ -21,7 +22,13 @@ class PictSectionRecordSetApplication extends libPictApplication
 		this.pict;
 		// Add the pict recordset meta controller service
 		this.pict.addServiceType('PictSectionRecordSet', libPictSectionRecordSet);
+		//FIXME: this is probably wrong, but needed for now?
+		this.pict.addServiceType('PictSectionForm', libPictSectionForm);
+
 		this.fable.addProviderSingleton('DynamicRecordsetSolver', libDynamicSolver.default_configuration, libDynamicSolver);
+
+		// Add the pict form metacontroller service, which provides programmaatic view construction from manifests and render/marshal methods.
+		this.pict.addView('PictFormMetacontroller', {}, libPictSectionForm.PictFormMetacontroller);
 	}
 
 	onInitialize()

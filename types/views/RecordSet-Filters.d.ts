@@ -1,5 +1,5 @@
-export = viewRecordSetSUBSETFilter;
-declare class viewRecordSetSUBSETFilter extends libPictView {
+export = ViewRecordSetSUBSETFilters;
+declare class ViewRecordSetSUBSETFilters extends libPictView {
     constructor(pFable: any, pOptions: any, pServiceHash: any);
     /** @type {import('fable') & import('pict') & { PictSectionRecordSet: import('../Pict-Section-RecordSet.js') }} */
     pict: any & import("pict") & {
@@ -11,6 +11,10 @@ declare class viewRecordSetSUBSETFilter extends libPictView {
             RecordSetProviderMeadowEndpoints: typeof import("../providers/RecordSet-RecordProvider-MeadowEndpoints.js");
         };
     };
+    /** @type {Array<import('pict-view')>} */
+    filterViews: Array<import("pict-view")>;
+    addFilterView(pFilterViewPrototype: any): any;
+    onAfterRenderAsync(fCallback: any): void;
     /**
      * @param {Event} pEvent - The DOM event that triggered the search
      * @param {string} pRecordSet - The record set being filtered
@@ -29,11 +33,14 @@ declare class viewRecordSetSUBSETFilter extends libPictView {
      * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
      */
     handleReset(pEvent: Event, pRecordSet: string, pViewContext: string): void;
+    get FilterViewHashes(): {
+        Value: string;
+    }[];
 }
-declare namespace viewRecordSetSUBSETFilter {
+declare namespace ViewRecordSetSUBSETFilters {
     export { _DEFAULT_CONFIGURATION_SUBSET_Filter as default_configuration };
 }
 import libPictView = require("pict-view");
 /** @type {Record<string, any>} */
 declare const _DEFAULT_CONFIGURATION_SUBSET_Filter: Record<string, any>;
-//# sourceMappingURL=RecordSet-Filter.d.ts.map
+//# sourceMappingURL=RecordSet-Filters.d.ts.map
