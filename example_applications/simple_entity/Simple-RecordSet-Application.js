@@ -8,6 +8,7 @@ class SimpleApplication extends libPictRecordSet.PictRecordSetApplication
 
 	onBeforeInitialize()
 	{
+		/*
 		this.pict.Bundle._Filters =
 		{
 			Book:
@@ -47,6 +48,7 @@ class SimpleApplication extends libPictRecordSet.PictRecordSetApplication
 				]
 			}
 		};
+		*/
 		return super.onBeforeInitialize();
 	}
 
@@ -298,11 +300,13 @@ module.exports.default_configuration.pict_configuration = (
 				{
 					"FilterByAuthorAndCreateDate":
 					{
+						"Ordinal": 1,
 						"FilterCriteriaHash": "FilterRecordsetByBookAndCreateDate",
 						"Default": true
 					},
 					"FilterByTitle":
 					{
+						"Ordinal": 2,
 						"FilterCriteriaHash": "FilterRecordsetByTitle"
 					}
 				},

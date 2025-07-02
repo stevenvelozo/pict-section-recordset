@@ -29,6 +29,7 @@ class PictSectionRecordSetApplication extends libPictApplication
 
 		// Add the pict form metacontroller service, which provides programmaatic view construction from manifests and render/marshal methods.
 		this.pict.addView('PictFormMetacontroller', {}, libPictSectionForm.PictFormMetacontroller);
+		this.pict.views.PictFormMetacontroller.viewMarshalDestination = 'Bundle'; //FIXME: needed for proper informary marshalling of filters, but interferes with the hosting application
 	}
 
 	onInitialize()

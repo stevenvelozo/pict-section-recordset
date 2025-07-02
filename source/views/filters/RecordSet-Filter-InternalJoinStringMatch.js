@@ -1,6 +1,36 @@
 
-const FilterClauseInternalJoin = require('pict/types/source/filters/FilterClauseInternalJoin');
 const ViewRecordSetSUBSETFilterBase = require('./RecordSet-Filter-Base');
+
+/** @type {Record<string, any>} */
+const _DEFAULT_CONFIGURATION_Filter_InternalJoin_StringMatch =
+{
+	ViewIdentifier: 'PRSP-Filter-InternalJoin-StringMatch',
+
+	DefaultRenderable: 'PRSP_Renderable_Filter_InternalJoin_StringMatch',
+	DefaultDestinationAddress: '#PRSP_Renderable_Filter_InternalJoin_StringMatch',
+
+	Templates:
+	[
+		{
+			Hash: 'PRSP-Filter-InternalJoin-StringMatch-Template',
+			Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-Filter-InternalJoin-StringMatch-Template] -->
+	{~MTIWHA:Value:Record.CriterionValueAddress:String~}
+	<!-- DefaultPackage end view template:	[PRSP-Filter-InternalJoin-StringMatch-Template] -->
+`
+		}
+	],
+
+	Renderables:
+	[
+		{
+			RenderableHash: 'PRSP_Renderable_Filter_InternalJoin_StringMatch',
+			TemplateHash: 'PRSP-Filter-InternalJoin-StringMatch-Template',
+			DestinationAddress: '#PRSP_Filter_InternalJoin_StringMatch_Container',
+			RenderMethod: 'replace'
+		}
+	],
+};
 
 class ViewRecordSetSUBSETFilterInternalJoinStringMatch extends ViewRecordSetSUBSETFilterBase
 {
@@ -19,8 +49,8 @@ class ViewRecordSetSUBSETFilterInternalJoinStringMatch extends ViewRecordSetSUBS
 	{
 		return super.onBeforeInitializeAsync((pError) =>
 		{
-			/** @type {FilterClauseInternalJoin} */
-			this.filter = this.addFilterClauseType('InternalJoinStringMatch');
+			/** @type {import('pict/types/source/filters/FilterClauseInternalJoin')} */
+			//this.filter = this.addFilterClauseType('InternalJoinStringMatch');
 
 			return fCallback(pError);
 		});
@@ -29,3 +59,4 @@ class ViewRecordSetSUBSETFilterInternalJoinStringMatch extends ViewRecordSetSUBS
 
 module.exports = ViewRecordSetSUBSETFilterInternalJoinStringMatch;
 
+module.exports.default_configuration = Object.assign({}, ViewRecordSetSUBSETFilterInternalJoinStringMatch.default_configuration, _DEFAULT_CONFIGURATION_Filter_InternalJoin_StringMatch);

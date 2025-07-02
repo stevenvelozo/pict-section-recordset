@@ -11,10 +11,6 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
             RecordSetProviderMeadowEndpoints: typeof import("../providers/RecordSet-RecordProvider-MeadowEndpoints.js");
         };
     };
-    /** @type {Array<import('pict-view')>} */
-    filterViews: Array<import("pict-view")>;
-    addFilterView(pFilterViewPrototype: any): any;
-    onAfterRenderAsync(fCallback: any): void;
     /**
      * @param {Event} pEvent - The DOM event that triggered the search
      * @param {string} pRecordSet - The record set being filtered
@@ -33,9 +29,12 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
      * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
      */
     handleReset(pEvent: Event, pRecordSet: string, pViewContext: string): void;
-    get FilterViewHashes(): {
-        Value: string;
-    }[];
+    /**
+     * Lifecycle hook that triggers after the view is rendered (async flow).
+     *
+     * @param {ErrorCallback} fCallback - The callback to call when the async operation is complete.
+     */
+    onAfterRenderAsync(fCallback: ErrorCallback): void;
 }
 declare namespace ViewRecordSetSUBSETFilters {
     export { _DEFAULT_CONFIGURATION_SUBSET_Filter as default_configuration };

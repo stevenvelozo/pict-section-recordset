@@ -13,6 +13,7 @@ declare class PictTemplateFilterInstanceViewInstruction extends libPictTemplate 
     constructor(pFable: any, pOptions: any, pServiceHash: string);
     /** @type {any} */
     log: any;
+    _getViewForFilterCriteria(pCriteria: any): import("../views/filters/RecordSet-Filter-Base.js");
 }
 import libPictTemplate = require("pict-template");
-//# sourceMappingURL=Pict-Template-FilterInstanceView.d.ts.map
+//# sourceMappingURL=Pict-Template-FilterInstanceViews.d.ts.map

@@ -1,8 +1,9 @@
 export = ViewRecordSetSUBSETFilterExternalJoinNumericRange;
 declare class ViewRecordSetSUBSETFilterExternalJoinNumericRange extends ViewRecordSetSUBSETFilterBase {
-    /** @type {FilterClauseExternalJoin} */
-    filter: FilterClauseExternalJoin;
+}
+declare namespace ViewRecordSetSUBSETFilterExternalJoinNumericRange {
+    export { default_configuration };
 }
 import ViewRecordSetSUBSETFilterBase = require("./RecordSet-Filter-Base");
-import FilterClauseExternalJoin = require("pict/types/source/filters/FilterClauseExternalJoin");
+declare const default_configuration: any;
 //# sourceMappingURL=RecordSet-Filter-ExternalJoinNumericRange.d.ts.map

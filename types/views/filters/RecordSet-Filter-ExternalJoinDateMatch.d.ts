@@ -1,8 +1,9 @@
 export = ViewRecordSetSUBSETFilterExternalJoinDateMatch;
 declare class ViewRecordSetSUBSETFilterExternalJoinDateMatch extends ViewRecordSetSUBSETFilterBase {
-    /** @type {FilterClauseExternalJoin} */
-    filter: FilterClauseExternalJoin;
+}
+declare namespace ViewRecordSetSUBSETFilterExternalJoinDateMatch {
+    export { default_configuration };
 }
 import ViewRecordSetSUBSETFilterBase = require("./RecordSet-Filter-Base");
-import FilterClauseExternalJoin = require("pict/types/source/filters/FilterClauseExternalJoin");
+declare const default_configuration: any;
 //# sourceMappingURL=RecordSet-Filter-ExternalJoinDateMatch.d.ts.map

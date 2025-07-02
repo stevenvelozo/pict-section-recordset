@@ -1,12 +1,54 @@
 
-const FilterClauseLocal = require('pict/types/source/filters/FilterClauseLocal');
 const ViewRecordSetSUBSETFilterBase = require('./RecordSet-Filter-Base');
+
+/** @type {Record<string, any>} */
+const _DEFAULT_CONFIGURATION_Filter_NumericRange =
+{
+	ViewIdentifier: 'PRSP-Filter-NumericRange',
+
+	DefaultRenderable: 'PRSP_Renderable_Filter_NumericRange',
+	DefaultDestinationAddress: '#PRSP_Renderable_Filter_NumericRange',
+
+	Templates:
+	[
+		{
+			Hash: 'PRSP-Filter-NumericRange-Template',
+			Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-Filter-NumericRange-Template] -->
+	{~MTIWHA:Start Value:Record.StartCriterionAddress:Number~}
+	{~MTIWHA:End Value:Record.EndCriterionAddress:Number~}
+	<!-- DefaultPackage end view template:	[PRSP-Filter-NumericRange-Template] -->
+`
+		}
+	],
+
+	Renderables:
+	[
+		{
+			RenderableHash: 'PRSP_Renderable_Filter_NumericRange',
+			TemplateHash: 'PRSP-Filter-NumericRange-Template',
+			DestinationAddress: '#PRSP_Filter_NumericRange_Container',
+			RenderMethod: 'replace'
+		}
+	],
+};
 
 class ViewRecordSetSUBSETFilterNumericRange extends ViewRecordSetSUBSETFilterBase
 {
 	constructor(pFable, pOptions, pServiceHash)
 	{
 		super(pFable, pOptions, pServiceHash);
+	}
+
+	/**
+	 * @param {Record<string, any>} pRecord
+	 */
+	prepareRecord(pRecord)
+	{
+		super.prepareRecord(pRecord);
+
+		pRecord.StartCriterionAddress = pRecord.CriterionValuesAddress + '.Start';
+		pRecord.EndCriterionAddress = pRecord.CriterionValuesAddress + '.End';
 	}
 
 	/**
@@ -19,8 +61,8 @@ class ViewRecordSetSUBSETFilterNumericRange extends ViewRecordSetSUBSETFilterBas
 	{
 		return super.onBeforeInitializeAsync((pError) =>
 		{
-			/** @type {FilterClauseLocal} */
-			this.filter = this.addFilterClauseType('NumericRange');
+			/** @type {import('pict/types/source/filters/FilterClauseLocal')} */
+			//this.filter = this.addFilterClauseType('NumericRange');
 
 			return fCallback(pError);
 		});
@@ -29,3 +71,4 @@ class ViewRecordSetSUBSETFilterNumericRange extends ViewRecordSetSUBSETFilterBas
 
 module.exports = ViewRecordSetSUBSETFilterNumericRange;
 
+module.exports.default_configuration = Object.assign({}, ViewRecordSetSUBSETFilterNumericRange.default_configuration, _DEFAULT_CONFIGURATION_Filter_NumericRange);

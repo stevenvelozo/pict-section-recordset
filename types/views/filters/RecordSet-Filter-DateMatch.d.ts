@@ -1,8 +1,9 @@
 export = ViewRecordSetSUBSETFilterDateMatch;
 declare class ViewRecordSetSUBSETFilterDateMatch extends ViewRecordSetSUBSETFilterBase {
-    /** @type {FilterClauseLocal} */
-    filter: FilterClauseLocal;
+}
+declare namespace ViewRecordSetSUBSETFilterDateMatch {
+    export { default_configuration };
 }
 import ViewRecordSetSUBSETFilterBase = require("./RecordSet-Filter-Base");
-import FilterClauseLocal = require("pict/types/source/filters/FilterClauseLocal");
+declare const default_configuration: any;
 //# sourceMappingURL=RecordSet-Filter-DateMatch.d.ts.map

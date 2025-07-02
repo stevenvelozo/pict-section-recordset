@@ -1,6 +1,35 @@
 
-const FilterClauseExternalJoin = require('pict/types/source/filters/FilterClauseExternalJoin');
 const ViewRecordSetSUBSETFilterBase = require('./RecordSet-Filter-Base');
+
+const _DEFAULT_CONFIGURATION_Filter_ExternalJoin_NumericMatch =
+{
+	ViewIdentifier: 'PRSP-Filter-ExternalJoin-NumericMatch',
+
+	DefaultRenderable: 'PRSP_Renderable_Filter_ExternalJoin_NumericMatch',
+	DefaultDestinationAddress: '#PRSP_Renderable_Filter_ExternalJoin_NumericMatch',
+
+	Templates:
+	[
+		{
+			Hash: 'PRSP-Filter-ExternalJoin-NumericMatch-Template',
+			Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-Filter-ExternalJoin-NumericMatch-Template] -->
+	{~MTIWHA:Date:Record.CriterionValueAddress:DateTime~}
+	<!-- DefaultPackage end view template:	[PRSP-Filter-ExternalJoin-NumericMatch-Template] -->
+`
+		}
+	],
+
+	Renderables:
+	[
+		{
+			RenderableHash: 'PRSP_Renderable_Filter_ExternalJoin_NumericMatch',
+			TemplateHash: 'PRSP-Filter-ExternalJoin-NumericMatch-Template',
+			DestinationAddress: '#PRSP_Filter_ExternalJoin_NumericMatch_Container',
+			RenderMethod: 'replace'
+		}
+	],
+};
 
 class ViewRecordSetSUBSETFilterExternalJoinNumericMatch extends ViewRecordSetSUBSETFilterBase
 {
@@ -19,8 +48,8 @@ class ViewRecordSetSUBSETFilterExternalJoinNumericMatch extends ViewRecordSetSUB
 	{
 		return super.onBeforeInitializeAsync((pError) =>
 		{
-			/** @type {FilterClauseExternalJoin} */
-			this.filter = this.addFilterClauseType('ExternalJoinNumericMatch');
+			/** @type {import('pict/types/source/filters/FilterClauseExternalJoin')} */
+			//this.filter = this.addFilterClauseType('ExternalJoinNumericMatch');
 
 			return fCallback(pError);
 		});
@@ -29,3 +58,4 @@ class ViewRecordSetSUBSETFilterExternalJoinNumericMatch extends ViewRecordSetSUB
 
 module.exports = ViewRecordSetSUBSETFilterExternalJoinNumericMatch;
 
+module.exports.default_configuration = Object.assign({}, ViewRecordSetSUBSETFilterExternalJoinNumericMatch.default_configuration, _DEFAULT_CONFIGURATION_Filter_ExternalJoin_NumericMatch);

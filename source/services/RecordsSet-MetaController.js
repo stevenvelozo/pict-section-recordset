@@ -306,7 +306,7 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 
 		// Add the subviews internally and externally
 		this.pict.addTemplate(require('../templates/Pict-Template-FilterView.js'));
-		this.pict.addTemplate(require('../templates/Pict-Template-FilterInstanceView.js'));
+		this.pict.addTemplate(require('../templates/Pict-Template-FilterInstanceViews.js'));
 		this.childViews.errorNotFound = this.fable.addView('RSP-RecordSet-Error-NotFound', ViewDefinitionRecordSetErrorNotFound);
 		this.childViews.list = this.fable.addView('RSP-RecordSet-List', this.options, ViewRecordSetList);
 		this.childViews.edit = this.fable.addView('RSP-RecordSet-Edit', this.options, ViewRecordSetEdit);
@@ -320,6 +320,22 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		this.childViews.dashboard.initialize();
 
 		// Now initialize the router
+
+		if (this.fable.settings.hasOwnProperty('Filters') && typeof this.fable.settings.Filters === 'object')
+		{
+			for (const tmpFilterKey of Object.keys(this.fable.settings.Filters))
+			{
+				this.pict.providers.FilterManager.addFilter(tmpFilterKey, this.fable.settings.Filters[tmpFilterKey]);
+			}
+		}
+
+		if (this.fable.settings.hasOwnProperty('FilterCriteria') && typeof this.fable.settings.FilterCriteria === 'object')
+		{
+			for (const tmpFilterCriterionKey of Object.keys(this.fable.settings.FilterCriteria))
+			{
+				this.pict.providers.FilterManager.addFilterCriteria(tmpFilterCriterionKey, this.fable.settings.FilterCriteria[tmpFilterCriterionKey]);
+			}
+		}
 
 		if (this.fable.settings.hasOwnProperty('DefaultRecordSetConfigurations'))
 		{

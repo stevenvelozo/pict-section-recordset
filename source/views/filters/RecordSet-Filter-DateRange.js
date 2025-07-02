@@ -15,8 +15,8 @@ const _DEFAULT_CONFIGURATION_Filter_DateRange =
 			Hash: 'PRSP-Filter-DateRange-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-DateRange-Template] -->
-	{~MTIWHA:Start Date:Context[0].filter.Start:DateTime~}
-	{~MTIWHA:End Date:Context[0].filter.End:DateTime~}
+	{~MTIWHA:Start Date:Record.StartCriterionAddress:DateTime~}
+	{~MTIWHA:End Date:Record.EndCriterionAddress:DateTime~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-DateRange-Template] -->
 `
 		}
@@ -31,8 +31,6 @@ const _DEFAULT_CONFIGURATION_Filter_DateRange =
 			RenderMethod: 'replace'
 		}
 	],
-
-	Manifests: {},
 };
 
 class ViewRecordSetSUBSETFilterDateRange extends ViewRecordSetSUBSETFilterBase
@@ -40,6 +38,17 @@ class ViewRecordSetSUBSETFilterDateRange extends ViewRecordSetSUBSETFilterBase
 	constructor(pFable, pOptions, pServiceHash)
 	{
 		super(pFable, pOptions, pServiceHash);
+	}
+
+	/**
+	 * @param {Record<string, any>} pRecord
+	 */
+	prepareRecord(pRecord)
+	{
+		super.prepareRecord(pRecord);
+
+		pRecord.StartCriterionAddress = pRecord.CriterionValuesAddress + '.Start';
+		pRecord.EndCriterionAddress = pRecord.CriterionValuesAddress + '.End';
 	}
 
 	/**
@@ -53,7 +62,7 @@ class ViewRecordSetSUBSETFilterDateRange extends ViewRecordSetSUBSETFilterBase
 		return super.onBeforeInitializeAsync((pError) =>
 		{
 			/** @type {import('pict/types/source/filters/FilterClauseLocal')} */
-			this.filter = this.addFilterClauseType('DateRange');
+			//this.filter = this.addFilterClauseType('DateRange');
 
 			return fCallback(pError);
 		});

@@ -35,10 +35,11 @@ class PictTemplateFilterViewInstruction extends libPictTemplate
 	 * @param {string} pTemplateHash - The hash contents of the template (what's between the template start and stop tags)
 	 * @param {any} pRecord - The json object to be used as the Record for the template render
 	 * @param {Array<any>} pContextArray - An array of context objects accessible from the template; safe to leave empty
+	 * @param {any} [pScope] - A sticky scope that can be used to carry state and simplify template
 	 *
 	 * @return {string} The rendered template
 	 */
-	render(pTemplateHash, pRecord, pContextArray)
+	render(pTemplateHash, pRecord, pContextArray, pScope)
 	{
 		let [ tmpViewHash, tmpViewContext ] = pTemplateHash.split(':');
 		tmpViewHash = tmpViewHash.trim();
@@ -101,9 +102,10 @@ class PictTemplateFilterViewInstruction extends libPictTemplate
 	 * @param {any} pRecord - The json object to be used as the Record for the template
 	 * @param {(pError?: Error, pResult?: string) => void} fCallback - The callback function to call with the result
 	 * @param {Array<any>} pContextArray - An array of context objects accessible from the template; safe to leave empty
+	 * @param {any} [pScope] - A sticky scope that can be used to carry state and simplify template
 	 * @return {void}
 	 */
-	renderAsync(pTemplateHash, pRecord, fCallback, pContextArray)
+	renderAsync(pTemplateHash, pRecord, fCallback, pContextArray, pScope)
 	{
 		let [ tmpViewHash, tmpViewContext ] = pTemplateHash.split(':');
 		tmpViewHash = tmpViewHash.trim();

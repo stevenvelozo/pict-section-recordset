@@ -1,6 +1,36 @@
 
-const FilterClauseInternalJoin = require('pict/types/source/filters/FilterClauseInternalJoin');
 const ViewRecordSetSUBSETFilterBase = require('./RecordSet-Filter-Base');
+
+/** @type {Record<string, any>} */
+const _DEFAULT_CONFIGURATION_Filter_InternalJoin_NumericMatch =
+{
+	ViewIdentifier: 'PRSP-Filter-InternalJoin-NumericMatch',
+
+	DefaultRenderable: 'PRSP_Renderable_Filter_InternalJoin_NumericMatch',
+	DefaultDestinationAddress: '#PRSP_Renderable_Filter_InternalJoin_NumericMatch',
+
+	Templates:
+	[
+		{
+			Hash: 'PRSP-Filter-InternalJoin-NumericMatch-Template',
+			Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-Filter-InternalJoin-NumericMatch-Template] -->
+	{~MTIWHA:Value:Record.CriterionValueAddress:Number~}
+	<!-- DefaultPackage end view template:	[PRSP-Filter-InternalJoin-NumericMatch-Template] -->
+`
+		}
+	],
+
+	Renderables:
+	[
+		{
+			RenderableHash: 'PRSP_Renderable_Filter_InternalJoin_NumericMatch',
+			TemplateHash: 'PRSP-Filter-InternalJoin-NumericMatch-Template',
+			DestinationAddress: '#PRSP_Filter_InternalJoin_NumericMatch_Container',
+			RenderMethod: 'replace'
+		}
+	],
+};
 
 class ViewRecordSetSUBSETFilterInternalJoinNumericMatch extends ViewRecordSetSUBSETFilterBase
 {
@@ -19,8 +49,8 @@ class ViewRecordSetSUBSETFilterInternalJoinNumericMatch extends ViewRecordSetSUB
 	{
 		return super.onBeforeInitializeAsync((pError) =>
 		{
-			/** @type {FilterClauseInternalJoin} */
-			this.filter = this.addFilterClauseType('InternalJoinNumericMatch');
+			/** @type {import('pict/types/source/filters/FilterClauseInternalJoin')} */
+			//this.filter = this.addFilterClauseType('InternalJoinNumericMatch');
 
 			return fCallback(pError);
 		});
@@ -29,3 +59,4 @@ class ViewRecordSetSUBSETFilterInternalJoinNumericMatch extends ViewRecordSetSUB
 
 module.exports = ViewRecordSetSUBSETFilterInternalJoinNumericMatch;
 
+module.exports.default_configuration = Object.assign({}, ViewRecordSetSUBSETFilterInternalJoinNumericMatch.default_configuration, _DEFAULT_CONFIGURATION_Filter_InternalJoin_NumericMatch);

@@ -14,17 +14,11 @@ declare class ViewRecordSetSUBSETFilterBase extends libPictView {
         };
     };
     /**
-     * @param {import('pict/types/source/filters/Filter.js').FilterType} pType
-     * @param {string} [pColumnName]
+     * Hook to prepare state on the render record before rendering.
      *
-     * FIXME: figure out if we can resolve the string to type using JSDoc
-     * @return {any}
+     * @param {Record<string, any>} pRecord - The record used for view rendering.
      */
-    addFilterClauseType(pType: import("pict/types/source/filters/Filter.js").FilterType, pColumnName?: string): any;
-    /**
-     * @return {Array<import('pict/types/source/filters/FilterClauseBase.js').FilterClauseConfig>}
-     */
-    serializeFilterClauses(): Array<import("pict/types/source/filters/FilterClauseBase.js").FilterClauseConfig>;
+    prepareRecord(pRecord: Record<string, any>): void;
 }
 declare namespace ViewRecordSetSUBSETFilterBase {
     export { _DEFAULT_CONFIGURATION_SUBSET_Filter as default_configuration };

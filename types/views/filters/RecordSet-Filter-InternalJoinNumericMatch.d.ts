@@ -1,8 +1,9 @@
 export = ViewRecordSetSUBSETFilterInternalJoinNumericMatch;
 declare class ViewRecordSetSUBSETFilterInternalJoinNumericMatch extends ViewRecordSetSUBSETFilterBase {
-    /** @type {FilterClauseInternalJoin} */
-    filter: FilterClauseInternalJoin;
+}
+declare namespace ViewRecordSetSUBSETFilterInternalJoinNumericMatch {
+    export { default_configuration };
 }
 import ViewRecordSetSUBSETFilterBase = require("./RecordSet-Filter-Base");
-import FilterClauseInternalJoin = require("pict/types/source/filters/FilterClauseInternalJoin");
+declare const default_configuration: any;
 //# sourceMappingURL=RecordSet-Filter-InternalJoinNumericMatch.d.ts.map

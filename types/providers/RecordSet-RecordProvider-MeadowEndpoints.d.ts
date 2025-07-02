@@ -62,6 +62,10 @@ declare class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase 
     };
     /** @type {Record<string, any>} */
     _Schema: Record<string, any>;
+    /** @type {Record<string, Record<string, any>>} */
+    _Experiences: Record<string, Record<string, any>>;
+    /** @type {Record<string, Record<string, any>>} */
+    _FiltersByField: Record<string, Record<string, any>>;
     /** @return {import('pict/types/source/Pict-Meadow-EntityProvider.js')} */
     get entityProvider(): import("pict/types/source/Pict-Meadow-EntityProvider.js");
     /** @type {import('pict/types/source/Pict-Meadow-EntityProvider.js')} */

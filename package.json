@@ -1,6 +1,6 @@
 {
   "name": "pict-section-recordset",
-  "version": "1.0.25",
+  "version": "1.0.26",
   "description": "Pict dynamic record set management views",
   "main": "source/Pict-Section-RecordSet.js",
   "directories": {
@@ -33,19 +33,19 @@
     "browser-env": "^3.3.0",
     "eslint": "^9.28.0",
     "jquery": "^3.7.1",
-    "pict": "^1.0.275",
+    "pict": "^1.0.276",
     "pict-application": "^1.0.27",
     "pict-service-commandlineutility": "^1.0.15",
-    "quackage": "^1.0.41",
+    "quackage": "^1.0.42",
     "typescript": "^5.8.3"
   },
   "dependencies": {
     "fable-serviceproviderbase": "^3.0.15",
     "pict-provider": "^1.0.6",
     "pict-router": "^1.0.4",
-    "pict-section-form": "^1.0.99",
-    "pict-template": "^1.0.11",
-    "pict-view": "^1.0.61"
+    "pict-section-form": "^1.0.101",
+    "pict-template": "^1.0.12",
+    "pict-view": "^1.0.62"
   },
   "mocha": {
     "diff": true,

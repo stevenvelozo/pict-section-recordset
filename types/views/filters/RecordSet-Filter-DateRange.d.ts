@@ -1,7 +1,5 @@
 export = ViewRecordSetSUBSETFilterDateRange;
 declare class ViewRecordSetSUBSETFilterDateRange extends ViewRecordSetSUBSETFilterBase {
-    /** @type {import('pict/types/source/filters/FilterClauseLocal')} */
-    filter: import("pict/types/source/filters/FilterClauseLocal");
 }
 declare namespace ViewRecordSetSUBSETFilterDateRange {
     export { default_configuration };

@@ -35,7 +35,7 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 		<form id="PRSP_Filter_Form" onsubmit="_Pict.views['PRSP-Filters'].handleSearch(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}'); return false;">
 			{~T:PRSP-SUBSET-Filters-Template-Input-Fieldset~}
 			<div id="PRSP_Filter_Instances">
-				{~TS:PRSP-SUBSET-Filters-Template-Filter-Instance:Context[0].FilterViewHashes~}
+				{~FIV:Record~}
 			</div>
 			{~T:PRSP-SUBSET-Filters-Template-Button-Fieldset~}
 		</form>
@@ -52,16 +52,6 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 		<input type="text" name="filter">
 	</fieldset>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-Input-Fieldset] -->
-`
-		},
-		{
-			Hash: 'PRSP-SUBSET-Filters-Template-Filter-Instance',
-			Template: /*html*/`
-	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-Filter-Instance] -->
-	<div class="PRSP_Filter_Instance">
-		{~FIV:Record.Value~} <!-- Does this exist? don't think so -->
-	</div>
-	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-Filter-Instance] -->
 `
 		},
 		{
@@ -98,32 +88,6 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		super(pFable, tmpOptions, pServiceHash);
 		/** @type {import('fable') & import('pict') & { PictSectionRecordSet: import('../Pict-Section-RecordSet.js') }} */
 		this.pict;
-		/** @type {Array<import('pict-view')>} */
-		this.filterViews = [];
-	}
-
-	addFilterView(pFilterViewPrototype)
-	{
-		//TODO: do we want to do this?
-		const tmpFilterView = this.pict.addView(`PRSP-Filter-${this.pict.getUUID()}`, pFilterViewPrototype.default_configuration, pFilterViewPrototype);
-		this.filterViews.push(tmpFilterView);
-		return tmpFilterView;
-	}
-
-	onAfterRenderAsync(fCallback)
-	{
-		super.onAfterRenderAsync((pError) =>
-		{
-			const tmpAnticipate = this.pict.newAnticipate();
-			for (const tmpFilterView of this.filterViews)
-			{
-				tmpAnticipate.anticipate(tmpFilterView.renderAsync.bind(tmpFilterView));
-			}
-			tmpAnticipate.wait((error) =>
-			{
-				return fCallback(pError);
-			});
-		});
 	}
 
 	/**
@@ -136,7 +100,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		pEvent.preventDefault(); // don't submit the form
 		pEvent.stopPropagation();
 		const tmpSearchString = this.pict.ContentAssignment.readContent(`input[name="filter"]`);
-		this.performSearch(pRecordSet, pViewContext, tmpSearchString ? String(tmpSearchString) : ' ');
+		this.performSearch(pRecordSet, pViewContext, tmpSearchString ? String(tmpSearchString) : '');
 	}
 
 	/**
@@ -180,6 +144,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		{
 			tmpURL = tmpURL.replace(/FilteredTo\//, '');
 		}
+		//FIXME: this doesn't force a re-render if other filters have changes, but aren't in the URL - so we either need to put them in the URL, or force a re-render based on the filter states
 		tmpPictRouter.router.navigate(tmpURL);
 	}
 
@@ -195,10 +160,32 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		this.performSearch(pRecordSet, pViewContext);
 	}
 
-	get FilterViewHashes()
+	/**
+	 * Lifecycle hook that triggers after the view is rendered.
+	 *
+	 * @param {import('pict-view').Renderable} pRenderable - The renderable that was rendered.
+	 * @param {string} pRenderDestinationAddress - The address where the renderable was rendered.
+	 * @param {any} pRecord - The record (data) that was used by the renderable.
+	 * @param {string} pContent - The content that was rendered.
+	 */
+	onAfterRender(pRenderable, pRenderDestinationAddress, pRecord, pContent)
 	{
-		return this.filterViews.map((v) => { return { Value: v.Hash }; });
+		this.pict.views.PictFormMetacontroller?.onMarshalToView();
+		return super.onAfterRender(pRenderable, pRenderDestinationAddress, pRecord, pContent);
 	}
+
+	/**
+	 * Lifecycle hook that triggers after the view is rendered (async flow).
+	 *
+	 * @param {ErrorCallback} fCallback - The callback to call when the async operation is complete.
+	 */
+	onAfterRenderAsync(fCallback)
+	{
+		this.pict.views.PictFormMetacontroller?.onMarshalToView();
+		return super.onAfterRenderAsync(fCallback);
+	}
+
+
 }
 
 module.exports = ViewRecordSetSUBSETFilters;

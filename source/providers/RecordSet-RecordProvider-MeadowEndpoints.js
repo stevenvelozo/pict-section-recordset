@@ -43,6 +43,10 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		//TODO: make this typedef better
 		/** @type {Record<string, any>} */
 		this._Schema = { };
+		/** @type {Record<string, Record<string, any>>} */
+		this._Experiences = { };
+		/** @type {Record<string, Record<string, any>>} */
+		this._FiltersByField = { };
 	}
 
 	/** @return {import('pict/types/source/Pict-Meadow-EntityProvider.js')} */
@@ -129,7 +133,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		const tmpExperience = Object.assign({}, this.pict.Bundle._Filters?.[pOptions.Entity || this.options.Entity]?.Experience || {});
 		if (!tmpExperience.ResultDestinationAddress)
 		{
-			tmpExperience.ResultDestinationAddress = `Bundle._Filters[${this.options.RecordSet}].${pFilterExperienceResultAddress}`;
+			tmpExperience.ResultDestinationAddress = `Bundle._Filters['${this.options.RecordSet}'].${pFilterExperienceResultAddress}`;
 		}
 		if (!tmpExperience.Entity)
 		{
@@ -349,6 +353,74 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 	{
 		super.onInitializeAsync((pError) =>
 		{
+			if (this.options.FilterExperiences && typeof this.options.FilterExperiences === 'object' && !Array.isArray(this.options.FilterExperiences))
+			{
+				this.pict.Bundle._Filters = this.pict.Bundle._Filters || {};
+				this.pict.Bundle._Filters[this.options.RecordSet] = this.pict.Bundle._Filters[this.options.RecordSet] || {};
+				const tmpEntityFilterState = this.pict.Bundle._Filters[this.options.RecordSet];
+				tmpEntityFilterState.Experience = tmpEntityFilterState.Experience || {};
+				for (const tmpKey of Object.keys(this.options.FilterExperiences))
+				{
+					const tmpExperience = this.options.FilterExperiences[tmpKey];
+					if (!tmpExperience.FilterCriteriaHash && !Array.isArray(tmpExperience.Criteria))
+					{
+						this.log.warn(`Filter experience ${tmpKey} does not have valid Criteria`, { Experience: tmpExperience });
+						continue;
+					}
+					if (tmpExperience.FilterCriteriaHash)
+					{
+						// load from hash
+						const tmpFilterCriteria = this.pict.providers.FilterManager.getFilterCriteria(tmpExperience.FilterCriteriaHash);
+						if (!tmpFilterCriteria)
+						{
+							this.pict.log.warn(`Filter experience ${tmpKey} filter criteria hash ${tmpExperience.FilterCriteriaHash} not found`, { Experience: tmpExperience });
+							continue;
+						}
+						//TODO: handle Ordinal / generate if missing
+						this._Experiences[tmpKey] = JSON.parse(JSON.stringify(tmpExperience));
+						this._Experiences[tmpKey].Criteria = JSON.parse(JSON.stringify(tmpFilterCriteria));
+						for (const tmpCriteria of this._Experiences[tmpKey].Criteria)
+						{
+							if (!tmpCriteria.FilterByColumn && !tmpCriteria.CoreConnectionColumn && !tmpCriteria.JoinInternalConnectionColumn)
+							{
+								this.log.warn(`Filter experience ${tmpKey} criteria does not have filter by column configured`, { Criteria: tmpCriteria });
+								continue;
+							}
+							if (tmpCriteria.FilterDefinitionHash)
+							{
+								const tmpFilter = this.pict.providers.FilterManager.getFilter(tmpCriteria.FilterDefinitionHash);
+								if (!tmpFilter)
+								{
+									this.pict.log.warn(`Filter experience ${tmpKey} filter criteria hash ${tmpCriteria.FilterDefinitionHash} not found`, { Experience: tmpExperience });
+									continue;
+								}
+								Object.assign(tmpCriteria, tmpFilter); //TODO: is there a risk of leakage here?
+								if (tmpCriteria.FilterByColumn && typeof tmpCriteria.Type === 'string')
+								{
+									if (tmpCriteria.Type.startsWith('InternalJoin'))
+									{
+										tmpCriteria.JoinInternalConnectionColumn = tmpCriteria.FilterByColumn;
+									}
+									else if (tmpCriteria.Type.startsWith('ExternalJoin'))
+									{
+										tmpCriteria.CoreConnectionColumn = tmpCriteria.FilterByColumn;
+									}
+								}
+							}
+						}
+						if (tmpExperience.Default && !tmpEntityFilterState.Criteria)
+						{
+							tmpEntityFilterState.Criteria = JSON.parse(JSON.stringify(this._Experiences[tmpKey].Criteria));
+						}
+						continue;
+					}
+					this._Experiences[tmpKey] = JSON.parse(JSON.stringify(tmpExperience));
+					if (tmpExperience.Default && !tmpEntityFilterState.Criteria)
+					{
+						tmpEntityFilterState.Criteria = JSON.parse(JSON.stringify(tmpExperience.Criteria));
+					}
+				}
+			}
 			this.initializeEntitySchema(() =>
 			{
 				return fCallback(pError);
