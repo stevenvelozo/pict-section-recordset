@@ -15,7 +15,7 @@ const _DEFAULT_CONFIGURATION_Filter_DateMatch =
 			Hash: 'PRSP-Filter-DateMatch-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-DateMatch-Template] -->
-	{~MTIWHA:Date:Record.CriterionValueAddress:DateTime~}
+	{~IWVDA:PSRSFilterProxyView:Record.CriterionDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-DateMatch-Template] -->
 `
 		}
@@ -40,20 +40,14 @@ class ViewRecordSetSUBSETFilterDateMatch extends ViewRecordSetSUBSETFilterBase
 	}
 
 	/**
-	 * NOTE: example of a subclass setting up filters for that specific filter type: should not be here in the bas class.
+	 * Hook to prepare state on the render record before rendering.
 	 *
-	 * @param {(error?: Error) => void} fCallback
-	 * @return {void}
+	 * @param {Record<string, any>} pRecord - The record used for view rendering.
 	 */
-	onBeforeInitializeAsync(fCallback)
+	prepareRecord(pRecord)
 	{
-		return super.onBeforeInitializeAsync((pError) =>
-		{
-			/** @type {import('pict/types/source/filters/FilterClauseLocal')} */
-			//this.filter = this.addFilterClauseType('DateMatch');
-
-			return fCallback(pError);
-		});
+	//{~IWVDA:PSRSFilterProxyView:Record.CriterionDescriptor~}
+		pRecord.CriterionDescriptor.DataType = 'DateTime';
 	}
 }
 

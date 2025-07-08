@@ -113,8 +113,8 @@ class PictTemplateFilterInstanceViewInstruction extends libPictTemplate
 			}
 
 			const tmpRecord = Object.assign({}, pRecord, tmpCriterion);
-			tmpRecord.CriteriaAddress = `Bundle._Filters['${pRecord.RecordSet}'].Criteria[${i}]`;
-			tmpRecord.CriteriaAddress = `_Filters['${pRecord.RecordSet}'].Criteria[${i}]`;
+			//tmpRecord.CriterionAddress = `Bundle._Filters['${pRecord.RecordSet}'].Criteria[${i}]`;
+			tmpRecord.CriterionAddress = `_Filters['${pRecord.RecordSet}'].Criteria[${i}]`;
 			tmpView.prepareRecord(tmpRecord);
 			tmpView.renderWithScope(tmpCriterion, '__Virtual', `__TemplateOutputCache.${tmpRenderGUID}`, tmpRecord);
 
@@ -191,8 +191,8 @@ class PictTemplateFilterInstanceViewInstruction extends libPictTemplate
 			tmpAnticipate.anticipate((fNext) =>
 			{
 				const tmpRecord = Object.assign({}, pRecord, tmpCriterion);
-				tmpRecord.CriteriaAddress = `Bundle._Filters['${pRecord.RecordSet}'].Criteria[${i}]`;
-				tmpRecord.CriteriaAddress = `_Filters['${pRecord.RecordSet}'].Criteria[${i}]`;
+				//tmpRecord.CriterionAddress = `Bundle._Filters['${pRecord.RecordSet}'].Criteria[${i}]`;
+				tmpRecord.CriterionAddress = `_Filters['${pRecord.RecordSet}'].Criteria[${i}]`;
 				tmpView.prepareRecord(tmpRecord);
 
 				return tmpView.renderWithScopeAsync(tmpCriterion, '__Virtual', `__TemplateOutputCache.${tmpRenderGUID}`, tmpRecord,

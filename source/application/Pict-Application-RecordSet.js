@@ -28,8 +28,9 @@ class PictSectionRecordSetApplication extends libPictApplication
 		this.fable.addProviderSingleton('DynamicRecordsetSolver', libDynamicSolver.default_configuration, libDynamicSolver);
 
 		// Add the pict form metacontroller service, which provides programmaatic view construction from manifests and render/marshal methods.
+		//FIXME: we may not want to create this, but using the dynamic view currently requires it without a pict-section-form refactor.
 		this.pict.addView('PictFormMetacontroller', {}, libPictSectionForm.PictFormMetacontroller);
-		this.pict.views.PictFormMetacontroller.viewMarshalDestination = 'Bundle'; //FIXME: needed for proper informary marshalling of filters, but interferes with the hosting application
+		//this.pict.views.PictFormMetacontroller.viewMarshalDestination = 'Bundle'; //FIXME: needed for proper informary marshalling of filters, but interferes with the hosting application
 	}
 
 	onInitialize()

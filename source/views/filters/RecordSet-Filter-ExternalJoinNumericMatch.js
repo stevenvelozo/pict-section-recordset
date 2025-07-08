@@ -14,7 +14,7 @@ const _DEFAULT_CONFIGURATION_Filter_ExternalJoin_NumericMatch =
 			Hash: 'PRSP-Filter-ExternalJoin-NumericMatch-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-ExternalJoin-NumericMatch-Template] -->
-	{~MTIWHA:Date:Record.CriterionValueAddress:DateTime~}
+	{~IWVDA:PSRSFilterProxyView:Record.CriterionDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-ExternalJoin-NumericMatch-Template] -->
 `
 		}
@@ -39,20 +39,13 @@ class ViewRecordSetSUBSETFilterExternalJoinNumericMatch extends ViewRecordSetSUB
 	}
 
 	/**
-	 * NOTE: example of a subclass setting up filters for that specific filter type: should not be here in the bas class.
-	 *
-	 * @param {(error?: Error) => void} fCallback
-	 * @return {void}
+	 * @param {Record<string, any>} pRecord
 	 */
-	onBeforeInitializeAsync(fCallback)
+	prepareRecord(pRecord)
 	{
-		return super.onBeforeInitializeAsync((pError) =>
-		{
-			/** @type {import('pict/types/source/filters/FilterClauseExternalJoin')} */
-			//this.filter = this.addFilterClauseType('ExternalJoinNumericMatch');
+		super.prepareRecord(pRecord);
 
-			return fCallback(pError);
-		});
+		pRecord.CriterionDescriptor.DataType = 'Number';
 	}
 }
 

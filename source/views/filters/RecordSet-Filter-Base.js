@@ -1,9 +1,5 @@
 const libPictView = require('pict-view');
 
-const libFilterClauseLocal = require('pict').FilterClauseLocal;
-const libFilterClauseInternalJoin = require('pict').FilterClauseInternalJoin;
-const libFilterClauseExternalJoin = require('pict').FilterClauseExternalJoin;
-
 /** @type {Record<string, any>} */
 const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 {
@@ -73,44 +69,16 @@ class ViewRecordSetSUBSETFilterBase extends libPictView
 	{
 		pRecord.CriterionValueAddress = pRecord.CriterionAddress + '.Value';
 		pRecord.CriterionValuesAddress = pRecord.CriterionAddress + '.Values';
-	}
 
-	/*
-	 * @param {import('pict/types/source/filters/Filter.js').FilterType} pType
-	 * @param {string} [pColumnName]
-	 *
-	 * FIXME: figure out if we can resolve the string to type using JSDoc
-	 * @return {any}
-	addFilterClauseType(pType, pColumnName = '')
-	{
-		const tmpFilter = pType.startsWith('InternalJoin') ? new libFilterClauseInternalJoin(this.pict) :
-			pType.startsWith('ExternalJoin') ? new libFilterClauseExternalJoin(this.pict) :
-			new libFilterClauseLocal(this.pict);
-		tmpFilter.type = pType;
-		this.filterClauses.push(tmpFilter);
-		if (tmpFilter instanceof libFilterClauseInternalJoin)
+		pRecord.CriterionDescriptor =
 		{
-			tmpFilter.joinInternalConnectionColumn = pColumnName;
-			return tmpFilter;
-		}
-		if (tmpFilter instanceof libFilterClauseExternalJoin)
-		{
-			tmpFilter.coreConnectionColumn = pColumnName;
-			return tmpFilter;
-		}
-		tmpFilter.filterByColumn = pColumnName;
-		return tmpFilter;
-	}
+			Address: pRecord.CriterionValueAddress,
+			//TODO: figure out a nice pattern for extracting a name for the field from the filter - and allow the filter author to provide the label here
+			Name: pRecord.Label || pRecord.ExternalFilterByColumn || pRecord.ExternalFilterByColumns?.[0] || pRecord.FilterByColumn || pRecord.FilterByColumns?.[0] || 'Value',
+			DataType: 'String',
+		};
 
-	 * @return {Array<import('pict/types/source/filters/FilterClauseBase.js').FilterClauseConfig>}
-	serializeFilterClauses()
-	{
-		return this.filterClauses.map((clause) =>
-		{
-			return clause.generateFilterClauseConfig();
-		});
 	}
-	 */
 }
 
 module.exports = ViewRecordSetSUBSETFilterBase;

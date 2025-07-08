@@ -15,8 +15,7 @@ const _DEFAULT_CONFIGURATION_Filter_ExternalJoinStringMatch =
 			Hash: 'PRSP-Filter-ExternalJoinStringMatch-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-ExternalJoinStringMatch-Template] -->
-	<!--FIXME: how to get the right label in here? -->
-	{~MTIWHA:Value:Record.CriterionValueAddress:String~}
+	{~IWVDA:PSRSFilterProxyView:Record.CriterionDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-ExternalJoinStringMatch-Template] -->
 `
 		}
@@ -38,23 +37,6 @@ class ViewRecordSetSUBSETFilterExternalJoinStringMatch extends ViewRecordSetSUBS
 	constructor(pFable, pOptions, pServiceHash)
 	{
 		super(pFable, pOptions, pServiceHash);
-	}
-
-	/**
-	 * NOTE: example of a subclass setting up filters for that specific filter type: should not be here in the bas class.
-	 *
-	 * @param {(error?: Error) => void} fCallback
-	 * @return {void}
-	 */
-	onBeforeInitializeAsync(fCallback)
-	{
-		return super.onBeforeInitializeAsync((pError) =>
-		{
-			/** @type {import('pict/types/source/filters/FilterClauseExternalJoin')} */
-			//this.filter = this.addFilterClauseType('ExternalJoinStringMatch');
-
-			return fCallback(pError);
-		});
 	}
 }
 

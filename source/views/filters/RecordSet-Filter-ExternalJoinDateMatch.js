@@ -15,7 +15,7 @@ const _DEFAULT_CONFIGURATION_Filter_ExternalJoin_DateMatch =
 			Hash: 'PRSP-Filter-ExternalJoin-DateMatch-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-ExternalJoin-DateMatch-Template] -->
-	{~MTIWHA:Date:Record.CriterionValueAddress:DateTime~}
+	{~IWVDA:PSRSFilterProxyView:Record.CriterionDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-ExternalJoin-DateMatch-Template] -->
 `
 		}
@@ -40,20 +40,13 @@ class ViewRecordSetSUBSETFilterExternalJoinDateMatch extends ViewRecordSetSUBSET
 	}
 
 	/**
-	 * NOTE: example of a subclass setting up filters for that specific filter type: should not be here in the bas class.
+	 * Hook to prepare state on the render record before rendering.
 	 *
-	 * @param {(error?: Error) => void} fCallback
-	 * @return {void}
+	 * @param {Record<string, any>} pRecord - The record used for view rendering.
 	 */
-	onBeforeInitializeAsync(fCallback)
+	prepareRecord(pRecord)
 	{
-		return super.onBeforeInitializeAsync((pError) =>
-		{
-			/** @type {import('pict/types/source/filters/FilterClauseExternalJoin')} */
-			//this.filter = this.addFilterClauseType('ExternalJoinDateMatch');
-
-			return fCallback(pError);
-		});
+		pRecord.CriterionDescriptor.DataType = 'DateTime';
 	}
 }
 

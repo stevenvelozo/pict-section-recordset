@@ -15,7 +15,7 @@ const _DEFAULT_CONFIGURATION_Filter_InternalJoin_DateMatch =
 			Hash: 'PRSP-Filter-InternalJoin-DateMatch-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-InternalJoin-DateMatch-Template] -->
-	{~MTIWHA:Date:Record.CriterionValueAddress:DateTime~}
+	{~IWVDA:PSRSFilterProxyView:Record.CriterionDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-InternalJoin-DateMatch-Template] -->
 `
 		}
@@ -40,20 +40,13 @@ class ViewRecordSetSUBSETFilterInternalJoinDateMatch extends ViewRecordSetSUBSET
 	}
 
 	/**
-	 * NOTE: example of a subclass setting up filters for that specific filter type: should not be here in the bas class.
-	 *
-	 * @param {(error?: Error) => void} fCallback
-	 * @return {void}
+	 * @param {Record<string, any>} pRecord
 	 */
-	onBeforeInitializeAsync(fCallback)
+	prepareRecord(pRecord)
 	{
-		return super.onBeforeInitializeAsync((pError) =>
-		{
-			/** @type {import('pict/types/source/filters/FilterClauseInternalJoin')} */
-			//this.filter = this.addFilterClauseType('InternalJoinDateMatch');
+		super.prepareRecord(pRecord);
 
-			return fCallback(pError);
-		});
+		pRecord.CriterionDescriptor.DataType = 'DateTime';
 	}
 }
 

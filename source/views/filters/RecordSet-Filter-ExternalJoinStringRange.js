@@ -1,5 +1,5 @@
 
-const ViewRecordSetSUBSETFilterBase = require('./RecordSet-Filter-Base');
+const ViewRecordSetSUBSETFilterBaseRange = require('./RecordSet-Filter-Base-Range.js');
 
 /** @type {Record<string, any>} */
 const _DEFAULT_CONFIGURATION_Filter_ExternalJoin_StringRange =
@@ -15,8 +15,8 @@ const _DEFAULT_CONFIGURATION_Filter_ExternalJoin_StringRange =
 			Hash: 'PRSP-Filter-ExternalJoin-StringRange-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-ExternalJoin-StringRange-Template] -->
-	{~MTIWHA:Start Value:Record.StartCriterionAddress:String~}
-	{~MTIWHA:End Value:Record.EndCriterionAddress:String~}
+	{~IWVDA:PSRSFilterProxyView:Record.StartCriterionDescriptor~}
+	{~IWVDA:PSRSFilterProxyView:Record.EndCriterionDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-ExternalJoin-StringRange-Template] -->
 `
 		}
@@ -33,39 +33,11 @@ const _DEFAULT_CONFIGURATION_Filter_ExternalJoin_StringRange =
 	],
 };
 
-class ViewRecordSetSUBSETFilterExternalJoinStringRange extends ViewRecordSetSUBSETFilterBase
+class ViewRecordSetSUBSETFilterExternalJoinStringRange extends ViewRecordSetSUBSETFilterBaseRange
 {
 	constructor(pFable, pOptions, pServiceHash)
 	{
 		super(pFable, pOptions, pServiceHash);
-	}
-
-	/**
-	 * @param {Record<string, any>} pRecord
-	 */
-	prepareRecord(pRecord)
-	{
-		super.prepareRecord(pRecord);
-
-		pRecord.StartCriterionAddress = pRecord.CriterionValuesAddress + '.Start';
-		pRecord.EndCriterionAddress = pRecord.CriterionValuesAddress + '.End';
-	}
-
-	/**
-	 * NOTE: example of a subclass setting up filters for that specific filter type: should not be here in the bas class.
-	 *
-	 * @param {(error?: Error) => void} fCallback
-	 * @return {void}
-	 */
-	onBeforeInitializeAsync(fCallback)
-	{
-		return super.onBeforeInitializeAsync((pError) =>
-		{
-			/** @type {import('pict/types/source/filters/FilterClauseExternalJoin')} */
-			//this.filter = this.addFilterClauseType('ExternalJoinStringRange');
-
-			return fCallback(pError);
-		});
 	}
 }
 

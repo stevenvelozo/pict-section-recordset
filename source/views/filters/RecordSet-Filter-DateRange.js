@@ -1,5 +1,5 @@
 
-const ViewRecordSetSUBSETFilterBase = require('./RecordSet-Filter-Base');
+const ViewRecordSetSUBSETFilterBaseRange = require('./RecordSet-Filter-Base-Range.js');
 
 /** @type {Record<string, any>} */
 const _DEFAULT_CONFIGURATION_Filter_DateRange =
@@ -15,8 +15,8 @@ const _DEFAULT_CONFIGURATION_Filter_DateRange =
 			Hash: 'PRSP-Filter-DateRange-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-DateRange-Template] -->
-	{~MTIWHA:Start Date:Record.StartCriterionAddress:DateTime~}
-	{~MTIWHA:End Date:Record.EndCriterionAddress:DateTime~}
+	{~IWVDA:PSRSFilterProxyView:Record.StartCriterionDescriptor~}
+	{~IWVDA:PSRSFilterProxyView:Record.EndCriterionDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-DateRange-Template] -->
 `
 		}
@@ -33,7 +33,7 @@ const _DEFAULT_CONFIGURATION_Filter_DateRange =
 	],
 };
 
-class ViewRecordSetSUBSETFilterDateRange extends ViewRecordSetSUBSETFilterBase
+class ViewRecordSetSUBSETFilterDateRange extends ViewRecordSetSUBSETFilterBaseRange
 {
 	constructor(pFable, pOptions, pServiceHash)
 	{
@@ -47,8 +47,8 @@ class ViewRecordSetSUBSETFilterDateRange extends ViewRecordSetSUBSETFilterBase
 	{
 		super.prepareRecord(pRecord);
 
-		pRecord.StartCriterionAddress = pRecord.CriterionValuesAddress + '.Start';
-		pRecord.EndCriterionAddress = pRecord.CriterionValuesAddress + '.End';
+		pRecord.StartCriterionDescriptor.DataType = 'DateTime';
+		pRecord.EndCriterionDescriptor.DataType = 'DateTime';
 	}
 
 	/**

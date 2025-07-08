@@ -15,7 +15,7 @@ const _DEFAULT_CONFIGURATION_Filter_InternalJoin_StringMatch =
 			Hash: 'PRSP-Filter-InternalJoin-StringMatch-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-InternalJoin-StringMatch-Template] -->
-	{~MTIWHA:Value:Record.CriterionValueAddress:String~}
+	{~IWVDA:PSRSFilterProxyView:Record.CriterionDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-InternalJoin-StringMatch-Template] -->
 `
 		}
@@ -37,23 +37,6 @@ class ViewRecordSetSUBSETFilterInternalJoinStringMatch extends ViewRecordSetSUBS
 	constructor(pFable, pOptions, pServiceHash)
 	{
 		super(pFable, pOptions, pServiceHash);
-	}
-
-	/**
-	 * NOTE: example of a subclass setting up filters for that specific filter type: should not be here in the bas class.
-	 *
-	 * @param {(error?: Error) => void} fCallback
-	 * @return {void}
-	 */
-	onBeforeInitializeAsync(fCallback)
-	{
-		return super.onBeforeInitializeAsync((pError) =>
-		{
-			/** @type {import('pict/types/source/filters/FilterClauseInternalJoin')} */
-			//this.filter = this.addFilterClauseType('InternalJoinStringMatch');
-
-			return fCallback(pError);
-		});
 	}
 }
 

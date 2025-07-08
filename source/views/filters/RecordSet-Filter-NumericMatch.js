@@ -15,7 +15,7 @@ const _DEFAULT_CONFIGURATION_Filter_NumericMatch =
 			Hash: 'PRSP-Filter-NumericMatch-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-NumericMatch-Template] -->
-	{~MTIWHA:Value:Record.CriterionValueAddress:Number~}
+	{~IWVDA:PSRSFilterProxyView:Record.CriterionDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-NumericMatch-Template] -->
 `
 		}
@@ -40,20 +40,13 @@ class ViewRecordSetSUBSETFilterNumericMatch extends ViewRecordSetSUBSETFilterBas
 	}
 
 	/**
-	 * NOTE: example of a subclass setting up filters for that specific filter type: should not be here in the bas class.
-	 *
-	 * @param {(error?: Error) => void} fCallback
-	 * @return {void}
+	 * @param {Record<string, any>} pRecord
 	 */
-	onBeforeInitializeAsync(fCallback)
+	prepareRecord(pRecord)
 	{
-		return super.onBeforeInitializeAsync((pError) =>
-		{
-			/** @type {import('pict/types/source/filters/FilterClauseLocal')} */
-			//this.filter = this.addFilterClauseType('NumericMatch');
+		super.prepareRecord(pRecord);
 
-			return fCallback(pError);
-		});
+		pRecord.CriterionDescriptor.DataType = 'Number';
 	}
 }
 

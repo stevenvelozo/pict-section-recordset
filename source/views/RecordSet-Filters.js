@@ -80,6 +80,9 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 	Manifests: {},
 };
 
+//FIXME: export this from PSF?
+const libPictViewDynamicForm = require('pict-section-form/source/views/Pict-View-DynamicForm.js');
+
 class ViewRecordSetSUBSETFilters extends libPictView
 {
 	constructor(pFable, pOptions, pServiceHash)
@@ -88,6 +91,47 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		super(pFable, tmpOptions, pServiceHash);
 		/** @type {import('fable') & import('pict') & { PictSectionRecordSet: import('../Pict-Section-RecordSet.js') }} */
 		this.pict;
+
+		const tmpDynamicInputViewSection = (
+		{
+			"Hash": "PSRSDynamicInputs",
+			"Name": "Custom Dynamic Inputs",
+			"ViewHash": "PSRSFilterProxyView",
+
+			"AutoMarshalDataOnSolve": true,
+			"IncludeInMetatemplateSectionGeneration": false,
+
+			"Manifests": {
+				"Section": {
+					"Scope": "PSRSDynamic",
+					"Sections": [
+						{
+							"Hash": "PSRSDynamicInputs",
+							"Name": "Dynamic Inputs"
+						}
+					],
+					"Descriptors": {
+						"PSRS.DynamicInputPlaceholder": {
+							"Name": "DynamicInputPlaceholder",
+							"Hash": "DynamicInputPlaceholder",
+							"DataType": "String",
+							"Macro": {
+								"HTMLSelector": ""
+							},
+							"PictForm": {
+								"Section": "PSRSDynamicInputs"
+							}
+						}
+					}
+				}
+			}
+		});
+		if (!this.pict.views[tmpDynamicInputViewSection.ViewHash])
+		{
+			const tmpViewConfiguration = Object.assign({}, tmpDynamicInputViewSection);
+			this.pict.addView(tmpViewConfiguration.ViewHash, tmpViewConfiguration, libPictViewDynamicForm);
+			this.pict.views[tmpDynamicInputViewSection.ViewHash].viewMarshalDestination = 'Bundle';
+		}
 	}
 
 	/**
@@ -170,7 +214,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	 */
 	onAfterRender(pRenderable, pRenderDestinationAddress, pRecord, pContent)
 	{
-		this.pict.views.PictFormMetacontroller?.onMarshalToView();
+		//this.pict.views.PictFormMetacontroller?.onMarshalToView();
 		return super.onAfterRender(pRenderable, pRenderDestinationAddress, pRecord, pContent);
 	}
 
@@ -181,7 +225,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	 */
 	onAfterRenderAsync(fCallback)
 	{
-		this.pict.views.PictFormMetacontroller?.onMarshalToView();
+		//this.pict.views.PictFormMetacontroller?.onMarshalToView();
 		return super.onAfterRenderAsync(fCallback);
 	}
 

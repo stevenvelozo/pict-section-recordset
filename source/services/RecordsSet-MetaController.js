@@ -20,6 +20,8 @@ const _DEFAULT_CONFIGURATION =
 		DefaultMeadowURLPrefix: '/1.0/'
 	};
 
+const libFormsTemplateProvider = require('pict-section-form').PictFormTemplateProvider;
+
 class RecordSetMetacontroller extends libFableServiceProviderBase
 {
 	constructor(pFable, pOptions, pServiceHash)
@@ -61,6 +63,9 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		this.manifests = { Default: this.pict.manifest };
 
 		this.has_initialized = false;
+
+		//FIXME: this duplicates a behavior in pict-section-form - figure out how we want this coupled dependency to work.
+		this.fable.addProviderSingleton('PictFormSectionDefaultTemplateProvider', libFormsTemplateProvider.default_configuration, libFormsTemplateProvider);
 	}
 
 	/*

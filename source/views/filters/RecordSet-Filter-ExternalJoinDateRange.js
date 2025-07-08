@@ -1,5 +1,5 @@
 
-const ViewRecordSetSUBSETFilterBase = require('./RecordSet-Filter-Base');
+const ViewRecordSetSUBSETFilterBaseRange = require('./RecordSet-Filter-Base-Range.js');
 
 /** @type {Record<string, any>} */
 const _DEFAULT_CONFIGURATION_Filter_ExternalJoin_DateRange =
@@ -15,8 +15,8 @@ const _DEFAULT_CONFIGURATION_Filter_ExternalJoin_DateRange =
 			Hash: 'PRSP-Filter-ExternalJoin-DateRange-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-ExternalJoin-DateRange-Template] -->
-	{~MTIWHA:Start Date:Record.StartCriterionAddress:DateTime~}
-	{~MTIWHA:End Date:Record.EndCriterionAddress:DateTime~}
+	{~IWVDA:PSRSFilterProxyView:Record.StartCriterionDescriptor~}
+	{~IWVDA:PSRSFilterProxyView:Record.EndCriterionDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-ExternalJoin-DateRange-Template] -->
 `
 		}
@@ -33,7 +33,7 @@ const _DEFAULT_CONFIGURATION_Filter_ExternalJoin_DateRange =
 	],
 };
 
-class ViewRecordSetSUBSETFilterExternalJoinDateRange extends ViewRecordSetSUBSETFilterBase
+class ViewRecordSetSUBSETFilterExternalJoinDateRange extends ViewRecordSetSUBSETFilterBaseRange
 {
 	constructor(pFable, pOptions, pServiceHash)
 	{
@@ -47,25 +47,8 @@ class ViewRecordSetSUBSETFilterExternalJoinDateRange extends ViewRecordSetSUBSET
 	{
 		super.prepareRecord(pRecord);
 
-		pRecord.StartCriterionAddress = pRecord.CriterionValuesAddress + '.Start';
-		pRecord.EndCriterionAddress = pRecord.CriterionValuesAddress + '.End';
-	}
-
-	/**
-	 * NOTE: example of a subclass setting up filters for that specific filter type: should not be here in the bas class.
-	 *
-	 * @param {(error?: Error) => void} fCallback
-	 * @return {void}
-	 */
-	onBeforeInitializeAsync(fCallback)
-	{
-		return super.onBeforeInitializeAsync((pError) =>
-		{
-			/** @type {import('pict/types/source/filters/FilterClauseExternalJoin')} */
-			//this.filter = this.addFilterClauseType('ExternalJoinDateRange');
-
-			return fCallback(pError);
-		});
+		pRecord.StartCriterionDescriptor.DataType = 'DateTime';
+		pRecord.EndCriterionDescriptor.DataType = 'DateTime';
 	}
 }
 

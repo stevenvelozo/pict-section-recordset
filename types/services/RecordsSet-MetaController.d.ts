@@ -33,7 +33,7 @@ declare class RecordSetMetacontroller {
     /** @type {Record<string, Record<string, any>>} */
     manifestDefinitions: Record<string, Record<string, any>>;
     /** @type {Record<string, import('manyfest')>} */
-    manifests: Record<string, any>;
+    manifests: Record<string, import("manyfest")>;
     has_initialized: boolean;
     /**
      * @return {Record<string, any>} - The registered configuration for the RecordSet
@@ -47,7 +47,7 @@ declare class RecordSetMetacontroller {
     checkSession(pCapability: any): Promise<boolean>;
     addRecordLinkTemplate(pNameTemplate: any, pURLTemplate: any, pDefault: any): any;
     initialize(): true | this;
-    getManifest(pScope: any): any;
+    getManifest(pScope: any): import("manyfest");
     /**
      * @param {Record<string, any>} pManifest - The manifest to generate table cells for.
      */

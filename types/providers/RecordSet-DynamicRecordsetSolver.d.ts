@@ -53,13 +53,13 @@ declare class RecordSetDynamicRecordsetSolver extends libPictProvider {
      * @param {number} pOrdinal - The ordinal value to filter to.  Optional.
      * @param {Array<Record<string, any>>} pRecords - The records to solve against.
      */
-    executeCellSolvers(pManifest: any, pCellSolverArray: any[], pOrdinal: number, pRecords: Array<Record<string, any>>): void;
+    executeCellSolvers(pManifest: import("manyfest"), pCellSolverArray: any[], pOrdinal: number, pRecords: Array<Record<string, any>>): void;
     /**
      * @param {Record<string, any>} pRecord - The record to build the context for.
      * @param {Array<Record<string, any>>} pRecords - The records to build the context from.
      * @param {import('manyfest')} pManifest - The manifest for the RecordSet.
      */
-    buildCellContextRecord(pRecord: Record<string, any>, pRecords: Array<Record<string, any>>, pManifest: any): Record<string, any> & {
+    buildCellContextRecord(pRecord: Record<string, any>, pRecords: Array<Record<string, any>>, pManifest: import("manyfest")): Record<string, any> & {
         Pict: import("pict") & {
             instantiateServiceProviderIfNotExists: (hash: string) => any;
             ExpressionParser: any;
@@ -74,13 +74,13 @@ declare class RecordSetDynamicRecordsetSolver extends libPictProvider {
         AppData: Record<string, any>;
         Bundle: Record<string, any>;
         RecordSubset: Record<string, any>[];
-        Manifest: any;
+        Manifest: import("manyfest");
     };
     /**
      * @param {Array<Record<string, any>>} pRecords - The records to build the context from.
      * @param {import('manyfest')} pManifest - The manifest for the RecordSet.
      */
-    buildGlobalContextRecord(pRecords: Array<Record<string, any>>, pManifest: any): {
+    buildGlobalContextRecord(pRecords: Array<Record<string, any>>, pManifest: import("manyfest")): {
         Pict: import("pict") & {
             instantiateServiceProviderIfNotExists: (hash: string) => any;
             ExpressionParser: any;
@@ -95,7 +95,7 @@ declare class RecordSetDynamicRecordsetSolver extends libPictProvider {
         AppData: Record<string, any>;
         Bundle: Record<string, any>;
         RecordSubset: Record<string, any>[];
-        Manifest: any;
+        Manifest: import("manyfest");
     };
     /**
      * Executes the section solvers at a given ordinal (or all if no ordinal is passed).
@@ -105,7 +105,7 @@ declare class RecordSetDynamicRecordsetSolver extends libPictProvider {
      * @param {number} pOrdinal - The ordinal value.
      * @param {Array<Record<string, any>>} pRecords - The records to solve against.
      */
-    executeDashboardSolvers(pManifest: any, pGlobalSolverArray: any[], pOrdinal: number, pRecords: Array<Record<string, any>>): void;
+    executeDashboardSolvers(pManifest: import("manyfest"), pGlobalSolverArray: any[], pOrdinal: number, pRecords: Array<Record<string, any>>): void;
     /**
      * Checks if the given ordinal exists in the provided ordinal set.
      *

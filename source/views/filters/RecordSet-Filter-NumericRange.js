@@ -1,5 +1,5 @@
 
-const ViewRecordSetSUBSETFilterBase = require('./RecordSet-Filter-Base');
+const ViewRecordSetSUBSETFilterBaseRange = require('./RecordSet-Filter-Base-Range.js');
 
 /** @type {Record<string, any>} */
 const _DEFAULT_CONFIGURATION_Filter_NumericRange =
@@ -15,8 +15,8 @@ const _DEFAULT_CONFIGURATION_Filter_NumericRange =
 			Hash: 'PRSP-Filter-NumericRange-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-NumericRange-Template] -->
-	{~MTIWHA:Start Value:Record.StartCriterionAddress:Number~}
-	{~MTIWHA:End Value:Record.EndCriterionAddress:Number~}
+	{~IWVDA:PSRSFilterProxyView:Record.StartCriterionDescriptor~}
+	{~IWVDA:PSRSFilterProxyView:Record.EndCriterionDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-NumericRange-Template] -->
 `
 		}
@@ -33,7 +33,7 @@ const _DEFAULT_CONFIGURATION_Filter_NumericRange =
 	],
 };
 
-class ViewRecordSetSUBSETFilterNumericRange extends ViewRecordSetSUBSETFilterBase
+class ViewRecordSetSUBSETFilterNumericRange extends ViewRecordSetSUBSETFilterBaseRange
 {
 	constructor(pFable, pOptions, pServiceHash)
 	{
@@ -47,25 +47,8 @@ class ViewRecordSetSUBSETFilterNumericRange extends ViewRecordSetSUBSETFilterBas
 	{
 		super.prepareRecord(pRecord);
 
-		pRecord.StartCriterionAddress = pRecord.CriterionValuesAddress + '.Start';
-		pRecord.EndCriterionAddress = pRecord.CriterionValuesAddress + '.End';
-	}
-
-	/**
-	 * NOTE: example of a subclass setting up filters for that specific filter type: should not be here in the bas class.
-	 *
-	 * @param {(error?: Error) => void} fCallback
-	 * @return {void}
-	 */
-	onBeforeInitializeAsync(fCallback)
-	{
-		return super.onBeforeInitializeAsync((pError) =>
-		{
-			/** @type {import('pict/types/source/filters/FilterClauseLocal')} */
-			//this.filter = this.addFilterClauseType('NumericRange');
-
-			return fCallback(pError);
-		});
+		pRecord.StartCriterionDescriptor.DataType = 'Number';
+		pRecord.EndCriterionDescriptor.DataType = 'Number';
 	}
 }
 
