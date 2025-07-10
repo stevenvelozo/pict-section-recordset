@@ -12,6 +12,18 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
         };
     };
     /**
+     * Marshals data from the view to the model, usually AppData (or configured data store).
+     *
+     * @returns {any} The result of the superclass's onMarshalFromView method.
+     */
+    onMarshalFromView(): any;
+    /**
+     * Marshals the data to the view from the model, usually AppData (or configured data store).
+     *
+     * @returns {any} The result of the super.onMarshalToView() method.
+     */
+    onMarshalToView(): any;
+    /**
      * @param {Event} pEvent - The DOM event that triggered the search
      * @param {string} pRecordSet - The record set being filtered
      * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
@@ -29,12 +41,8 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
      * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
      */
     handleReset(pEvent: Event, pRecordSet: string, pViewContext: string): void;
-    /**
-     * Lifecycle hook that triggers after the view is rendered (async flow).
-     *
-     * @param {ErrorCallback} fCallback - The callback to call when the async operation is complete.
-     */
-    onAfterRenderAsync(fCallback: ErrorCallback): void;
+    serializeFilterExperience(pExperience: any): string;
+    deserializeFilterExperience(pExperience: any): any;
 }
 declare namespace ViewRecordSetSUBSETFilters {
     export { _DEFAULT_CONFIGURATION_SUBSET_Filter as default_configuration };

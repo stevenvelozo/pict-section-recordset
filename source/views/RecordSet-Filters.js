@@ -134,6 +134,45 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		}
 	}
 
+	//NOTE: two methods below copied from the pict-section-form metacontroller
+	//TODO: consider subclassing the dynamic view to somehow mark these as filter views so we can only operate on those views
+
+	/**
+	 * Marshals data from the view to the model, usually AppData (or configured data store).
+	 *
+	 * @returns {any} The result of the superclass's onMarshalFromView method.
+	 */
+	onMarshalFromView()
+	{
+		let tmpViewList = Object.keys(this.fable.views);
+		for (let i = 0; i < tmpViewList.length; i++)
+		{
+			if (this.fable.views[tmpViewList[i]].isPictSectionForm)
+			{
+				this.fable.views[tmpViewList[i]].marshalFromView();
+			}
+		}
+		return super.onMarshalFromView();
+	}
+
+	/**
+	 * Marshals the data to the view from the model, usually AppData (or configured data store).
+	 *
+	 * @returns {any} The result of the super.onMarshalToView() method.
+	 */
+	onMarshalToView()
+	{
+		let tmpViewList = Object.keys(this.fable.views);
+		for (let i = 0; i < tmpViewList.length; i++)
+		{
+			if (this.fable.views[tmpViewList[i]].isPictSectionForm)
+			{
+				this.fable.views[tmpViewList[i]].marshalToView();
+			}
+		}
+		return super.onMarshalToView();
+	}
+
 	/**
 	 * @param {Event} pEvent - The DOM event that triggered the search
 	 * @param {string} pRecordSet - The record set being filtered
@@ -186,7 +225,12 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		}
 		if (tmpURL.endsWith('FilteredTo/') || tmpURL.includes('FilteredTo//'))
 		{
-			tmpURL = tmpURL.replace(/FilteredTo\//, '');
+			tmpURL = tmpURL.replace(/\/FilteredTo\//, '');
+		}
+		const tmpFilterExperienceSerialized = this.serializeFilterExperience(this.pict.Bundle._Filters[pRecordSet]?.Criteria);
+		if (tmpFilterExperienceSerialized)
+		{
+			tmpURL += `/FilterExperience/${encodeURIComponent(tmpFilterExperienceSerialized)}`;
 		}
 		//FIXME: this doesn't force a re-render if other filters have changes, but aren't in the URL - so we either need to put them in the URL, or force a re-render based on the filter states
 		tmpPictRouter.router.navigate(tmpURL);
@@ -214,22 +258,58 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	 */
 	onAfterRender(pRenderable, pRenderDestinationAddress, pRecord, pContent)
 	{
-		//this.pict.views.PictFormMetacontroller?.onMarshalToView();
+		//FIXME: since this is rendering to the DOM indirectly, can't marshal right after render; need to fix this better, if this even works
+		setTimeout(() =>
+		{
+			this.onMarshalToView();
+		}, 1);
 		return super.onAfterRender(pRenderable, pRenderDestinationAddress, pRecord, pContent);
 	}
 
 	/**
 	 * Lifecycle hook that triggers after the view is rendered (async flow).
 	 *
-	 * @param {ErrorCallback} fCallback - The callback to call when the async operation is complete.
+	 * @param {import('pict-view').ErrorCallback} fCallback - The callback to call when the async operation is complete.
 	 */
 	onAfterRenderAsync(fCallback)
 	{
-		//this.pict.views.PictFormMetacontroller?.onMarshalToView();
-		return super.onAfterRenderAsync(fCallback);
+		return super.onAfterRenderAsync((pError) =>
+		{
+			//FIXME: since this is rendering to the DOM indirectly, can't marshal right after render; need to fix this better, if this even works
+			setTimeout(() =>
+			{
+				this.onMarshalToView();
+			}, 1);
+			fCallback(pError);
+		});
 	}
 
+	serializeFilterExperience(pExperience)
+	{
+		for (const tmpClause of pExperience)
+		{
+			//FIXME: hack because scalar not always supported
+			if (typeof tmpClause.Value !== undefined && !tmpClause.Type.includes('Range'))
+			{
+				tmpClause.Values = [ tmpClause.Value ];
+			}
+		}
+		if (!pExperience || typeof pExperience !== 'object')
+		{
+			return '';
+		}
+		return JSON.stringify(pExperience);
+	}
 
+	deserializeFilterExperience(pExperience)
+	{
+		if (!pExperience || typeof pExperience !== 'string')
+		{
+			//TODO: if the default filters expand, how we wanna handle that?
+			return null;
+		}
+		return JSON.parse(pExperience);
+	}
 }
 
 module.exports = ViewRecordSetSUBSETFilters;

@@ -108,17 +108,22 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		const tmpProviderHash = `RSP-Provider-${pRoutePayload.data.RecordSet}`;
 
 		const tmpFilterString = pRoutePayload.data.FilterString || '';
+		const tmpFilterExperience = pRoutePayload.data.FilterExperience || '';
 
 		const tmpOffset = pRoutePayload.data.Offset ? pRoutePayload.data.Offset : 0;
 		const tmpPageSize = pRoutePayload.data.PageSize ? pRoutePayload.data.PageSize : 100;
 
-		return this.renderList(tmpProviderConfiguration, tmpProviderHash, tmpFilterString, tmpOffset, tmpPageSize);
+		return this.renderList(tmpProviderConfiguration, tmpProviderHash, tmpFilterString, tmpFilterExperience, tmpOffset, tmpPageSize);
 	}
 
 	addRoutes(pPictRouter)
 	{
+		pPictRouter.router.on('/PSRS/:RecordSet/List/FilterExperience/:FilterExperience', this.handleRecordSetListRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/List/FilteredTo/:FilterString/:Offset/:PageSize/FilterExperience/:FilterExperience', this.handleRecordSetListRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/List/FilteredTo/:FilterString/:Offset/:PageSize', this.handleRecordSetListRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/List/FilteredTo/:FilterString/FilterExperience/:FilterExperience', this.handleRecordSetListRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/List/FilteredTo/:FilterString', this.handleRecordSetListRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/List/:Offset/:PageSize/FilterExperience/:FilterExperience', this.handleRecordSetListRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/List/:Offset/:PageSize', this.handleRecordSetListRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/List/:Offset', this.handleRecordSetListRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/List', this.handleRecordSetListRoute.bind(this));
@@ -167,13 +172,23 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		return pRecordListData;
 	}
 
-	async renderList(pRecordSetConfiguration, pProviderHash, pFilterString, pOffset, pPageSize)
+	async renderList(pRecordSetConfiguration, pProviderHash, pFilterString, pFilterExperience, pOffset, pPageSize)
 	{
 		// Get the records
 		if (!(pProviderHash in this.pict.providers))
 		{
 			this.pict.log.error(`RecordSetList: No provider found for ${pProviderHash} in ${pRecordSetConfiguration.RecordSet}.  List Render failed.`);
 			return false;
+		}
+
+		if (pFilterExperience)
+		{
+			// shove filter xp into the active filters for this recordset
+			const tmpExperienceFromURL = this.pict.views['PRSP-Filters'].deserializeFilterExperience(pFilterExperience);
+			if (tmpExperienceFromURL)
+			{
+				this.pict.manifest.setValueByHash(this.pict.Bundle, `_Filters[${pRecordSetConfiguration.RecordSet}].Criteria`, tmpExperienceFromURL);
+			}
 		}
 
 		let tmpRecordListData =

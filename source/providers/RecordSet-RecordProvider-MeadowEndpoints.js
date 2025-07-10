@@ -133,7 +133,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		const tmpExperience = Object.assign({}, this.pict.Bundle._Filters?.[pOptions.Entity || this.options.Entity]?.Experience || {});
 		if (!tmpExperience.ResultDestinationAddress)
 		{
-			tmpExperience.ResultDestinationAddress = `Bundle._Filters['${this.options.RecordSet}'].${pFilterExperienceResultAddress}`;
+			tmpExperience.ResultDestinationAddress = `Bundle._Filters[\`${this.options.RecordSet}\`].${pFilterExperienceResultAddress}`;
 		}
 		if (!tmpExperience.Entity)
 		{
