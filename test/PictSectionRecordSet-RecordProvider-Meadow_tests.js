@@ -198,6 +198,17 @@ suite
 						Expect(schema).to.be.an('object', 'Schema should be an object.');
 						Expect(Object.keys(schema).length).to.be.greaterThan(0, 'Schema should have properties.');
 					});
+
+					test('temp', async () =>
+					{
+						const libPictDynamicFormDependencyManager = require('pict-section-form').PictDynamicFormDependencyManager;
+						_Pict.addAndInstantiateSingletonService('PictDynamicFormDependencyManager', libPictDynamicFormDependencyManager.default_configuration, libPictDynamicFormDependencyManager);
+						const filterView = new (require('../source/views/RecordSet-Filters.js'))(_Pict);
+						const ser = await filterView.serializeFilterExperience([ { Type: 'fake', Value: 'valyou' } ]);
+						const deser = await filterView.deserializeFilterExperience(ser);
+						Expect(deser).to.be.an('array', 'Deserialized filter experience should be an array.');
+						Expect(deser).to.deep.equal([ { Type: 'fake', Value: 'valyou' } ], 'Deserialized filter experience should match the original.');
+					});
 				});
 	}
 );

@@ -184,7 +184,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		if (pFilterExperience)
 		{
 			// shove filter xp into the active filters for this recordset
-			const tmpExperienceFromURL = this.pict.views['PRSP-Filters'].deserializeFilterExperience(pFilterExperience);
+			const tmpExperienceFromURL = await this.pict.views['PRSP-Filters'].deserializeFilterExperience(pFilterExperience);
 			if (tmpExperienceFromURL)
 			{
 				this.pict.manifest.setValueByHash(this.pict.Bundle, `_Filters[${pRecordSetConfiguration.RecordSet}].Criteria`, tmpExperienceFromURL);

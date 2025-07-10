@@ -101,24 +101,31 @@ class ViewRecordSetSUBSETFilters extends libPictView
 			"AutoMarshalDataOnSolve": true,
 			"IncludeInMetatemplateSectionGeneration": false,
 
-			"Manifests": {
-				"Section": {
+			"Manifests":
+			{
+				"Section":
+				{
 					"Scope": "PSRSDynamic",
-					"Sections": [
+					"Sections":
+					[
 						{
 							"Hash": "PSRSDynamicInputs",
 							"Name": "Dynamic Inputs"
 						}
 					],
-					"Descriptors": {
-						"PSRS.DynamicInputPlaceholder": {
+					"Descriptors":
+					{
+						"PSRS.DynamicInputPlaceholder":
+						{
 							"Name": "DynamicInputPlaceholder",
 							"Hash": "DynamicInputPlaceholder",
 							"DataType": "String",
-							"Macro": {
+							"Macro":
+							{
 								"HTMLSelector": ""
 							},
-							"PictForm": {
+							"PictForm":
+							{
 								"Section": "PSRSDynamicInputs"
 							}
 						}
@@ -131,6 +138,14 @@ class ViewRecordSetSUBSETFilters extends libPictView
 			const tmpViewConfiguration = Object.assign({}, tmpDynamicInputViewSection);
 			this.pict.addView(tmpViewConfiguration.ViewHash, tmpViewConfiguration, libPictViewDynamicForm);
 			this.pict.views[tmpDynamicInputViewSection.ViewHash].viewMarshalDestination = 'Bundle';
+		}
+		this.chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+		// Use a lookup table to find the index.
+		this.lookup = typeof Uint8Array === 'undefined' ? [] : new Uint8Array(256);
+		for (let i = 0; i < this.chars.length; i++)
+		{
+			this.lookup[this.chars.charCodeAt(i)] = i;
 		}
 	}
 
@@ -227,13 +242,15 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		{
 			tmpURL = tmpURL.replace(/\/FilteredTo\//, '');
 		}
-		const tmpFilterExperienceSerialized = this.serializeFilterExperience(this.pict.Bundle._Filters[pRecordSet]?.Criteria);
-		if (tmpFilterExperienceSerialized)
+		this.serializeFilterExperience(this.pict.Bundle._Filters[pRecordSet]?.Criteria).then((pFilterExperienceSerialized) =>
 		{
-			tmpURL += `/FilterExperience/${encodeURIComponent(tmpFilterExperienceSerialized)}`;
-		}
-		//FIXME: this doesn't force a re-render if other filters have changes, but aren't in the URL - so we either need to put them in the URL, or force a re-render based on the filter states
-		tmpPictRouter.router.navigate(tmpURL);
+			if (pFilterExperienceSerialized)
+			{
+				tmpURL += `/FilterExperience/${encodeURIComponent(pFilterExperienceSerialized)}`;
+			}
+			//FIXME: this doesn't force a re-render if other filters have changes, but aren't in the URL - so we either need to put them in the URL, or force a re-render based on the filter states
+			tmpPictRouter.router.navigate(tmpURL);
+		});
 	}
 
 	/**
@@ -245,6 +262,15 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	{
 		pEvent.preventDefault();
 		this.pict.ContentAssignment.assignContent('input[name="filter"]', '');
+		const tmpFilterExperienceClauses = this.pict.Bundle._Filters[pRecordSet]?.Criteria;
+		if (Array.isArray(tmpFilterExperienceClauses))
+		{
+			for (const tmpClause of tmpFilterExperienceClauses)
+			{
+				delete tmpClause.Value;
+				delete tmpClause.Values;
+			}
+		}
 		this.performSearch(pRecordSet, pViewContext);
 	}
 
@@ -284,32 +310,166 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		});
 	}
 
-	serializeFilterExperience(pExperience)
+	async serializeFilterExperience(pExperience)
 	{
-		for (const tmpClause of pExperience)
-		{
-			//FIXME: hack because scalar not always supported
-			if (typeof tmpClause.Value !== undefined && !tmpClause.Type.includes('Range'))
-			{
-				tmpClause.Values = [ tmpClause.Value ];
-			}
-		}
 		if (!pExperience || typeof pExperience !== 'object')
 		{
 			return '';
 		}
-		return JSON.stringify(pExperience);
+		//FIXME: hacks to adjust data problem to work around issues in pict and elsewhere
+		if (Array.isArray(pExperience))
+		{
+			for (const tmpClause of pExperience)
+			{
+				//FIXME: hack because scalar not always supported
+				if (!tmpClause.Type.includes('Range'))
+				{
+					if (tmpClause.Value != '' && tmpClause.Value != null)
+					{
+						tmpClause.Values = [ tmpClause.Value ];
+					}
+					else
+					{
+						delete tmpClause.Values;
+					}
+				}
+				else if (tmpClause.Values)
+				{
+					if (tmpClause.Values.Start == '0')
+					{
+						delete tmpClause.Values.Start;
+					}
+					if (tmpClause.Values.End == '0')
+					{
+						delete tmpClause.Values.End;
+					}
+				}
+			}
+		}
+		return this.encode(await this.compress(JSON.stringify(pExperience)));
 	}
 
-	deserializeFilterExperience(pExperience)
+	/**
+	 * @param {string} pExperience - The serialized filter experience as a string.
+	 *
+	 * @return {Promise<Record<string, any>>} - The serialized filter experience as a string.
+	 */
+	async deserializeFilterExperience(pExperience)
 	{
 		if (!pExperience || typeof pExperience !== 'string')
 		{
 			//TODO: if the default filters expand, how we wanna handle that?
 			return null;
 		}
-		return JSON.parse(pExperience);
+		return JSON.parse(await this.decompress(new Uint8Array(this.decode(pExperience))));
 	}
+
+	/**
+	 * @param {string} string - The string to compress.
+	 * @param {CompressionFormat} [encoding='gzip'] - The encoding to use for compression, defaults to 'gzip'.
+	 *
+	 * @return {Promise<ArrayBuffer>} - The compressed byte array.
+	 */
+	async compress(string, encoding = 'gzip')
+	{
+		const byteArray = new TextEncoder().encode(string);
+		const cs = new CompressionStream(encoding);
+		const writer = cs.writable.getWriter();
+		writer.write(byteArray);
+		writer.close();
+		return new Response(cs.readable).arrayBuffer();
+	}
+
+	/**
+	 * @param {Uint8Array} byteArray - The byte array to decompress.
+	 * @param {CompressionFormat} [encoding='gzip'] - The encoding to use for compression, defaults to 'gzip'.
+	 */
+	async decompress(byteArray, encoding = 'gzip')
+	{
+		const cs = new DecompressionStream(encoding);
+		const writer = cs.writable.getWriter();
+		writer.write(byteArray);
+		writer.close();
+		return new Response(cs.readable).arrayBuffer().then((arrayBuffer) =>
+		{
+			return new TextDecoder().decode(arrayBuffer);
+		});
+	}
+
+	/**
+	 * @param {ArrayBuffer} arraybuffer - The ArrayBuffer to encode to Base64.
+	 *
+	 * @return {string} - The Base64 encoded string.
+	 */
+	encode(arraybuffer)
+	{
+		let bytes = new Uint8Array(arraybuffer),
+			i,
+			len = bytes.length,
+			base64 = '';
+
+		for (i = 0; i < len; i += 3)
+		{
+			base64 += this.chars[bytes[i] >> 2];
+			base64 += this.chars[((bytes[i] & 3) << 4) | (bytes[i + 1] >> 4)];
+			base64 += this.chars[((bytes[i + 1] & 15) << 2) | (bytes[i + 2] >> 6)];
+			base64 += this.chars[bytes[i + 2] & 63];
+		}
+
+		if (len % 3 === 2)
+		{
+			base64 = base64.substring(0, base64.length - 1) + '=';
+		}
+		else if (len % 3 === 1)
+		{
+			base64 = base64.substring(0, base64.length - 2) + '==';
+		}
+
+		return base64;
+	};
+
+	/**
+	 * @param {string} base64 - The Base64 encoded string to decode to an ArrayBuffer.
+	 *
+	 * @return {ArrayBuffer} - The decoded ArrayBuffer.
+	 */
+	decode(base64)
+	{
+		let bufferLength = base64.length * 0.75,
+			len = base64.length,
+			i,
+			p = 0,
+			encoded1,
+			encoded2,
+			encoded3,
+			encoded4;
+
+		if (base64[base64.length - 1] === '=')
+		{
+			bufferLength--;
+			if (base64[base64.length - 2] === '=')
+			{
+				bufferLength--;
+			}
+		}
+
+		const arraybuffer = new ArrayBuffer(bufferLength),
+			bytes = new Uint8Array(arraybuffer);
+
+		for (i = 0; i < len; i += 4)
+		{
+			encoded1 = this.lookup[base64.charCodeAt(i)];
+			encoded2 = this.lookup[base64.charCodeAt(i + 1)];
+			encoded3 = this.lookup[base64.charCodeAt(i + 2)];
+			encoded4 = this.lookup[base64.charCodeAt(i + 3)];
+
+			bytes[p++] = (encoded1 << 2) | (encoded2 >> 4);
+			bytes[p++] = ((encoded2 & 15) << 4) | (encoded3 >> 2);
+			bytes[p++] = ((encoded3 & 3) << 6) | (encoded4 & 63);
+		}
+
+		return arraybuffer;
+	};
 }
 
 module.exports = ViewRecordSetSUBSETFilters;

@@ -11,6 +11,8 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
             RecordSetProviderMeadowEndpoints: typeof import("../providers/RecordSet-RecordProvider-MeadowEndpoints.js");
         };
     };
+    chars: string;
+    lookup: any[] | Uint8Array<ArrayBuffer>;
     /**
      * Marshals data from the view to the model, usually AppData (or configured data store).
      *
@@ -41,8 +43,37 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
      * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
      */
     handleReset(pEvent: Event, pRecordSet: string, pViewContext: string): void;
-    serializeFilterExperience(pExperience: any): string;
-    deserializeFilterExperience(pExperience: any): any;
+    serializeFilterExperience(pExperience: any): Promise<string>;
+    /**
+     * @param {string} pExperience - The serialized filter experience as a string.
+     *
+     * @return {Promise<Record<string, any>>} - The serialized filter experience as a string.
+     */
+    deserializeFilterExperience(pExperience: string): Promise<Record<string, any>>;
+    /**
+     * @param {string} string - The string to compress.
+     * @param {CompressionFormat} [encoding='gzip'] - The encoding to use for compression, defaults to 'gzip'.
+     *
+     * @return {Promise<ArrayBuffer>} - The compressed byte array.
+     */
+    compress(string: string, encoding?: CompressionFormat): Promise<ArrayBuffer>;
+    /**
+     * @param {Uint8Array} byteArray - The byte array to decompress.
+     * @param {CompressionFormat} [encoding='gzip'] - The encoding to use for compression, defaults to 'gzip'.
+     */
+    decompress(byteArray: Uint8Array, encoding?: CompressionFormat): Promise<string>;
+    /**
+     * @param {ArrayBuffer} arraybuffer - The ArrayBuffer to encode to Base64.
+     *
+     * @return {string} - The Base64 encoded string.
+     */
+    encode(arraybuffer: ArrayBuffer): string;
+    /**
+     * @param {string} base64 - The Base64 encoded string to decode to an ArrayBuffer.
+     *
+     * @return {ArrayBuffer} - The decoded ArrayBuffer.
+     */
+    decode(base64: string): ArrayBuffer;
 }
 declare namespace ViewRecordSetSUBSETFilters {
     export { _DEFAULT_CONFIGURATION_SUBSET_Filter as default_configuration };
