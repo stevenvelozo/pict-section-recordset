@@ -119,16 +119,16 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		const tmpProviderHash = `RSP-Provider-${pRoutePayload.data.RecordSet}`;
 
 		const tmpFilterString = pRoutePayload.data.FilterString || '';
-		const tmpFilterExperience = pRoutePayload.data.FilterExperience || '';
+		const tmpSerializedFilterExperience = pRoutePayload.data.FilterExperience || '';
 
 		const tmpOffset = pRoutePayload.data.Offset ? pRoutePayload.data.Offset : 0;
 		const tmpPageSize = pRoutePayload.data.PageSize ? pRoutePayload.data.PageSize : 100;
 
 		if (pRoutePayload.data.DashboardHash)
 		{
-			return this.renderSpecificDashboard(pRoutePayload.data.DashboardHash, tmpProviderConfiguration, tmpProviderHash, tmpFilterString, tmpFilterExperience, tmpOffset, tmpPageSize);
+			return this.renderSpecificDashboard(pRoutePayload.data.DashboardHash, tmpProviderConfiguration, tmpProviderHash, tmpFilterString, tmpSerializedFilterExperience, tmpOffset, tmpPageSize);
 		}
-		return this.renderDashboard(tmpProviderConfiguration, tmpProviderHash, tmpFilterString, tmpFilterExperience, tmpOffset, tmpPageSize);
+		return this.renderDashboard(tmpProviderConfiguration, tmpProviderHash, tmpFilterString, tmpSerializedFilterExperience, tmpOffset, tmpPageSize);
 	}
 
 	/**
@@ -210,13 +210,13 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 	 * @param {Record<string, any>} pRecordSetConfiguration
 	 * @param {string} pProviderHash
 	 * @param {string} pFilterString
-	 * @param {string} pFilterExperience
+	 * @param {string} pSerializedFilterExperience
 	 * @param {number} pOffset
 	 * @param {number} pPageSize
 	 *
 	 * @return {Promise<void>}
 	 */
-	async renderSpecificDashboard(pDashboardHash, pRecordSetConfiguration, pProviderHash, pFilterString, pFilterExperience, pOffset, pPageSize)
+	async renderSpecificDashboard(pDashboardHash, pRecordSetConfiguration, pProviderHash, pFilterString, pSerializedFilterExperience, pOffset, pPageSize)
 	{
 		if (!pRecordSetConfiguration)
 		{
@@ -241,10 +241,11 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 			tmpTitle = this.pict.parseTemplate(tmpManifestDefinition.TitleTemplate, pRecordSetConfiguration);
 		}
 
-		if (pFilterExperience)
+		const tmpEncodedFilterExperience = pSerializedFilterExperience && encodeURIComponent(pSerializedFilterExperience);
+		if (tmpEncodedFilterExperience)
 		{
 			// shove filter xp into the active filters for this recordset
-			const tmpExperienceFromURL = await this.pict.views['PRSP-Filters'].deserializeFilterExperience(pFilterExperience);
+			const tmpExperienceFromURL = await this.pict.views['PRSP-Filters'].deserializeFilterExperience(pSerializedFilterExperience);
 			if (tmpExperienceFromURL)
 			{
 				this.pict.manifest.setValueByHash(this.pict.Bundle, `_ActiveFilterState[${pRecordSetConfiguration.RecordSet}].FilterClauses`, tmpExperienceFromURL);
@@ -282,7 +283,7 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		tmpRecordDashboardData.GUIDAddress = `GUID${this.pict.providers[pProviderHash].options.Entity}`;
 
 		// Get the "page end record number" for the current page (e.g. for messaging like Record 700 to 800 of 75,000)
-		const tmpOffset = typeof(tmpRecordDashboardData.Offset) === 'number' ? tmpRecordDashboardData.Offset : parseInt(tmpRecordDashboardData.Offset);
+		const tmpOffset = Number(tmpRecordDashboardData.Offset);
 		tmpRecordDashboardData.PageEnd = tmpOffset + tmpRecordDashboardData.Records.Records.length;
 
 		// Compute the number of pages total
@@ -316,6 +317,10 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 						URL: `#/PSRS/${tmpRecordDashboardData.RecordSet}/SpecificDashboard/${pDashboardHash}/${i * tmpRecordDashboardData.PageSize}/${tmpRecordDashboardData.PageSize}`
 					});
 			}
+			if (tmpEncodedFilterExperience)
+			{
+				tmpRecordDashboardData.PageLinks[tmpRecordDashboardData.PageLinks.length - 1].URL += `/FilterExperience/${tmpEncodedFilterExperience}`;
+			}
 		}
 
 		//FIXME: short-term workaround to not blow up the tempplate rendering with way too many links
@@ -342,6 +347,10 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 						URL: `#/PSRS/${tmpRecordDashboardData.RecordSet}/SpecificDashboard/${pDashboardHash}/0/${tmpRecordDashboardData.PageSize}`
 					});
 			}
+			if (tmpEncodedFilterExperience)
+			{
+				tmpRecordDashboardData.PageLinksLimited[tmpRecordDashboardData.PageLinksLimited.length - 1].URL += `/FilterExperience/${tmpEncodedFilterExperience}`;
+			}
 		}
 		if (linkRangeEnd < tmpRecordDashboardData.PageLinks.length)
 		{
@@ -362,6 +371,10 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 						RelativeOffset: (tmpRecordDashboardData.PageCount - 1) - tmpRecordDashboardData.PageLinkBookmarks.Current,
 						URL: `#/PSRS/${tmpRecordDashboardData.RecordSet}/SpecificDashboard/${pDashboardHash}/${(tmpRecordDashboardData.PageCount - 1) * tmpRecordDashboardData.PageSize}/${tmpRecordDashboardData.PageSize}`
 					});
+			}
+			if (tmpEncodedFilterExperience)
+			{
+				tmpRecordDashboardData.PageLinksLimited[tmpRecordDashboardData.PageLinksLimited.length - 1].URL += `/FilterExperience/${tmpEncodedFilterExperience}`;
 			}
 		}
 
@@ -478,13 +491,13 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 	 * @param {Record<string, any>} pRecordSetConfiguration
 	 * @param {string} pProviderHash
 	 * @param {string} pFilterString
-	 * @param {string} pFilterExperience
+	 * @param {string} pSerializedFilterExperience
 	 * @param {number} pOffset
 	 * @param {number} pPageSize
 	 *
 	 * @return {Promise<void>}
 	 */
-	async renderDashboard(pRecordSetConfiguration, pProviderHash, pFilterString, pFilterExperience, pOffset, pPageSize)
+	async renderDashboard(pRecordSetConfiguration, pProviderHash, pFilterString, pSerializedFilterExperience, pOffset, pPageSize)
 	{
 		if (!pRecordSetConfiguration)
 		{
@@ -507,14 +520,15 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 			}
 			else
 			{
-				return this.renderSpecificDashboard(tmpManifestHash, pRecordSetConfiguration, pProviderHash, pFilterString, pFilterExperience, pOffset, pPageSize);
+				return this.renderSpecificDashboard(tmpManifestHash, pRecordSetConfiguration, pProviderHash, pFilterString, pSerializedFilterExperience, pOffset, pPageSize);
 			}
 		}
 
-		if (pFilterExperience)
+		const tmpEncodedFilterExperience = pSerializedFilterExperience && encodeURIComponent(pSerializedFilterExperience);
+		if (tmpEncodedFilterExperience)
 		{
 			// shove filter xp into the active filters for this recordset
-			const tmpExperienceFromURL = await this.pict.views['PRSP-Filters'].deserializeFilterExperience(pFilterExperience);
+			const tmpExperienceFromURL = await this.pict.views['PRSP-Filters'].deserializeFilterExperience(pSerializedFilterExperience);
 			if (tmpExperienceFromURL)
 			{
 				this.pict.manifest.setValueByHash(this.pict.Bundle, `_ActiveFilterState[${pRecordSetConfiguration.RecordSet}].FilterClauses`, tmpExperienceFromURL);
@@ -556,7 +570,7 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		tmpRecordDashboardData.GUIDAddress = `GUID${this.pict.providers[pProviderHash].options.Entity}`;
 
 		// Get the "page end record number" for the current page (e.g. for messaging like Record 700 to 800 of 75,000)
-		const tmpOffset = typeof(tmpRecordDashboardData.Offset) === 'number' ? tmpRecordDashboardData.Offset : parseInt(tmpRecordDashboardData.Offset);
+		const tmpOffset = Number(tmpRecordDashboardData.Offset);
 		tmpRecordDashboardData.PageEnd = tmpOffset + tmpRecordDashboardData.Records.Records.length;
 
 		// Compute the number of pages total
@@ -590,6 +604,10 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 						URL: `#/PSRS/${tmpRecordDashboardData.RecordSet}/Dashboard/${i * tmpRecordDashboardData.PageSize}/${tmpRecordDashboardData.PageSize}`
 					});
 			}
+			if (tmpEncodedFilterExperience)
+			{
+				tmpRecordDashboardData.PageLinks[tmpRecordDashboardData.PageLinks.length - 1].URL += `/FilterExperience/${tmpEncodedFilterExperience}`;
+			}
 		}
 
 		//FIXME: short-term workaround to not blow up the tempplate rendering with way too many links
@@ -616,6 +634,10 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 						URL: `#/PSRS/${tmpRecordDashboardData.RecordSet}/Dashboard/${0}/${tmpRecordDashboardData.PageSize}`
 					});
 			}
+			if (tmpEncodedFilterExperience)
+			{
+				tmpRecordDashboardData.PageLinksLimited[tmpRecordDashboardData.PageLinksLimited.length - 1].URL += `/FilterExperience/${tmpEncodedFilterExperience}`;
+			}
 		}
 		if (linkRangeEnd < tmpRecordDashboardData.PageLinks.length)
 		{
@@ -636,6 +658,10 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 						RelativeOffset: (tmpRecordDashboardData.PageCount - 1) - tmpRecordDashboardData.PageLinkBookmarks.Current,
 						URL: `#/PSRS/${tmpRecordDashboardData.RecordSet}/Dashboard/${(tmpRecordDashboardData.PageCount - 1) * tmpRecordDashboardData.PageSize}/${tmpRecordDashboardData.PageSize}`
 					});
+			}
+			if (tmpEncodedFilterExperience)
+			{
+				tmpRecordDashboardData.PageLinksLimited[tmpRecordDashboardData.PageLinksLimited.length - 1].URL += `/FilterExperience/${tmpEncodedFilterExperience}`;
 			}
 		}
 

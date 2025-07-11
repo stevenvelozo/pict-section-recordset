@@ -172,19 +172,30 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		return pRecordListData;
 	}
 
-	async renderList(pRecordSetConfiguration, pProviderHash, pFilterString, pFilterExperience, pOffset, pPageSize)
+	/**
+	 * @param {Record<string, any>} pRecordSetConfiguration
+	 * @param {string} pProviderHash
+	 * @param {string} pFilterString
+	 * @param {string} pSerializedFilterExperience
+	 * @param {number} pOffset
+	 * @param {number} pPageSize
+	 *
+	 * @return {Promise<void>}
+	 */
+	async renderList(pRecordSetConfiguration, pProviderHash, pFilterString, pSerializedFilterExperience, pOffset, pPageSize)
 	{
 		// Get the records
 		if (!(pProviderHash in this.pict.providers))
 		{
 			this.pict.log.error(`RecordSetList: No provider found for ${pProviderHash} in RecordSet ${(pRecordSetConfiguration || {}).RecordSet}.  List Render failed.`);
-			return false;
+			return;
 		}
 
-		if (pFilterExperience)
+		const tmpEncodedFilterExperience = pSerializedFilterExperience && encodeURIComponent(pSerializedFilterExperience);
+		if (tmpEncodedFilterExperience)
 		{
 			// shove filter xp into the active filters for this recordset
-			const tmpExperienceFromURL = await this.pict.views['PRSP-Filters'].deserializeFilterExperience(pFilterExperience);
+			const tmpExperienceFromURL = await this.pict.views['PRSP-Filters'].deserializeFilterExperience(pSerializedFilterExperience);
 			if (tmpExperienceFromURL)
 			{
 				this.pict.manifest.setValueByHash(this.pict.Bundle, `_ActiveFilterState[${pRecordSetConfiguration.RecordSet}].FilterClauses`, tmpExperienceFromURL);
@@ -226,7 +237,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		tmpRecordListData.GUIDAddress = `GUID${this.pict.providers[pProviderHash].options.Entity}`;
 
 		// Get the "page end record number" for the current page (e.g. for messaging like Record 700 to 800 of 75,000)
-		tmpRecordListData.PageEnd = parseInt(tmpRecordListData.Offset) + tmpRecordListData.Records.Records.length;
+		tmpRecordListData.PageEnd = Number(tmpRecordListData.Offset) + tmpRecordListData.Records.Records.length;
 
 		// Compute the number of pages total
 		tmpRecordListData.PageCount = Math.ceil(tmpRecordListData.TotalRecordCount.Count / tmpRecordListData.PageSize);
@@ -259,6 +270,10 @@ class viewRecordSetList extends libPictRecordSetRecordView
 						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/${i * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
 					});
 			}
+			if (tmpEncodedFilterExperience)
+			{
+				tmpRecordListData.PageLinks[tmpRecordListData.PageLinks.length - 1].URL += `/FilterExperience/${tmpEncodedFilterExperience}`;
+			}
 		}
 
 		//FIXME: short-term workaround to not blow up the tempplate rendering with way too many links
@@ -285,6 +300,10 @@ class viewRecordSetList extends libPictRecordSetRecordView
 						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/${0}/${tmpRecordListData.PageSize}`
 					});
 			}
+			if (tmpEncodedFilterExperience)
+			{
+				tmpRecordListData.PageLinksLimited[tmpRecordListData.PageLinksLimited.length - 1].URL += `/FilterExperience/${tmpEncodedFilterExperience}`;
+			}
 		}
 		if (linkRangeEnd < tmpRecordListData.PageLinks.length)
 		{
@@ -305,6 +324,10 @@ class viewRecordSetList extends libPictRecordSetRecordView
 						RelativeOffset: (tmpRecordListData.PageCount - 1) - tmpRecordListData.PageLinkBookmarks.Current,
 						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/${(tmpRecordListData.PageCount - 1) * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
 					});
+			}
+			if (tmpEncodedFilterExperience)
+			{
+				tmpRecordListData.PageLinksLimited[tmpRecordListData.PageLinksLimited.length - 1].URL += `/FilterExperience/${tmpEncodedFilterExperience}`;
 			}
 		}
 
