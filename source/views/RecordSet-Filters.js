@@ -317,36 +317,6 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		{
 			return '';
 		}
-		//FIXME: hacks to adjust data problem to work around issues in pict and elsewhere
-		if (Array.isArray(pExperience))
-		{
-			for (const tmpClause of pExperience)
-			{
-				//FIXME: hack because scalar not always supported
-				if (!tmpClause.Type.includes('Range'))
-				{
-					if (tmpClause.Value != '' && tmpClause.Value != null)
-					{
-						tmpClause.Values = [ tmpClause.Value ];
-					}
-					else
-					{
-						delete tmpClause.Values;
-					}
-				}
-				else if (tmpClause.Values)
-				{
-					if (tmpClause.Values.Start == '0')
-					{
-						delete tmpClause.Values.Start;
-					}
-					if (tmpClause.Values.End == '0')
-					{
-						delete tmpClause.Values.End;
-					}
-				}
-			}
-		}
 		return this.encode(await this.compress(JSON.stringify(pExperience)));
 	}
 
