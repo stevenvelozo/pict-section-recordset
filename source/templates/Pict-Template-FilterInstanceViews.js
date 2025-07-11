@@ -30,17 +30,17 @@ class PictTemplateFilterInstanceViewInstruction extends libPictTemplate
 		}
 	}
 
-	_getViewForFilterCriteria(pCriteria)
+	_getViewForFilterClauses(pClauses)
 	{
-		const tmpViewHash =`PSRS-FilterType-${pCriteria.Type}`; 
+		const tmpViewHash =`PSRS-FilterType-${pClauses.Type}`; 
 		/** @type {import('../views/filters/RecordSet-Filter-Base.js')} */
 		let tmpView = this.pict.views[tmpViewHash];
 		if (!tmpView)
 		{
-			const tmpViewPrototype = libFilterViews[pCriteria.Type] || libFilterViews.Base;
+			const tmpViewPrototype = libFilterViews[pClauses.Type] || libFilterViews.Base;
 			if (!tmpViewPrototype)
 			{
-				this.pict.log.error(`Pict: Filter Instance Views Template Render: No view prototype found for filter type [${pCriteria.Type}]`);
+				this.pict.log.error(`Pict: Filter Instance Views Template Render: No view prototype found for filter type [${pClauses.Type}]`);
 				return null;
 			}
 			//FIXME: is this safe? will this view get rendered at other times?
@@ -99,24 +99,24 @@ class PictTemplateFilterInstanceViewInstruction extends libPictTemplate
 		let tmpRenderGUID = this.pict.getUUID();
 		let tmpResult = '';
 
-		const tmpCriteria = this.pict.Bundle._Filters?.[pRecord.RecordSet]?.Criteria || [];
+		const tmpClauses = this.pict.Bundle._ActiveFilterState?.[pRecord.RecordSet]?.FilterClauses || [];
 		//FIXME: lookup by hash instead?
-		for (let i = 0; i < tmpCriteria.length; i++)
-		//for (const tmpCriteria of this.pict.Bundle._Filters?.[pRecord.RecordSet]?.Criteria || [])
+		for (let i = 0; i < tmpClauses.length; i++)
+		//for (const tmpClauses of this.pict.Bundle._ActiveFilterState?.[pRecord.RecordSet]?.FilterClauses || [])
 		{
-			const tmpCriterion = tmpCriteria[i];
+			const tmpClause = tmpClauses[i];
 			/** @type {import('../views/filters/RecordSet-Filter-Base.js')} */
-			const tmpView = this._getViewForFilterCriteria(tmpCriterion);
+			const tmpView = this._getViewForFilterClauses(tmpClause);
 			if (!tmpView)
 			{
 				continue;
 			}
 
-			const tmpRecord = Object.assign({}, pRecord, tmpCriterion);
-			//tmpRecord.CriterionAddress = `Bundle._Filters['${pRecord.RecordSet}'].Criteria[${i}]`;
-			tmpRecord.CriterionAddress = `_Filters[\`${pRecord.RecordSet}\`].Criteria[${i}]`;
+			const tmpRecord = Object.assign({}, pRecord, tmpClause);
+			//tmpRecord.ClauseAddress = `Bundle._ActiveFilterState['${pRecord.RecordSet}'].FilterClauses[${i}]`;
+			tmpRecord.ClauseAddress = `_ActiveFilterState[\`${pRecord.RecordSet}\`].FilterClauses[${i}]`;
 			tmpView.prepareRecord(tmpRecord);
-			tmpView.renderWithScope(tmpCriterion, '__Virtual', `__TemplateOutputCache.${tmpRenderGUID}`, tmpRecord);
+			tmpView.renderWithScope(tmpClause, '__Virtual', `__TemplateOutputCache.${tmpRenderGUID}`, tmpRecord);
 
 			tmpResult += this.pict.__TemplateOutputCache[tmpRenderGUID];
 			// TODO: Uncomment this when we like how it's working
@@ -174,14 +174,13 @@ class PictTemplateFilterInstanceViewInstruction extends libPictTemplate
 		const tmpAnticipate = this.pict.newAnticipate();
 		let tmpResult = '';
 
-		const tmpCriteria = this.pict.Bundle._Filters?.[pRecord.RecordSet]?.Criteria || [];
+		const tmpClauses = this.pict.Bundle._ActiveFilterState?.[pRecord.RecordSet]?.FilterClauses || [];
 		//FIXME: lookup by hash instead?
-		for (let i = 0; i < tmpCriteria.length; i++)
-		//for (const tmpCriteria of this.pict.Bundle._Filters?.[pRecord.RecordSet]?.Criteria || [])
+		for (let i = 0; i < tmpClauses.length; i++)
 		{
-			const tmpCriterion = tmpCriteria[i];
+			const tmpClause = tmpClauses[i];
 			/** @type {import('../views/filters/RecordSet-Filter-Base.js')} */
-			const tmpView = this._getViewForFilterCriteria(tmpCriterion);
+			const tmpView = this._getViewForFilterClauses(tmpClause);
 			if (!tmpView)
 			{
 				continue;
@@ -190,11 +189,11 @@ class PictTemplateFilterInstanceViewInstruction extends libPictTemplate
 			const tmpRenderGUID = this.pict.getUUID();
 			tmpAnticipate.anticipate((fNext) =>
 			{
-				const tmpRecord = Object.assign({}, pRecord, tmpCriterion);
-				tmpRecord.CriterionAddress = `_Filters[${pRecord.RecordSet}].Criteria[${i}]`;
+				const tmpRecord = Object.assign({}, pRecord, tmpClause);
+				tmpRecord.ClauseAddress = `_ActiveFilterState[${pRecord.RecordSet}].FilterClauses[${i}]`;
 				tmpView.prepareRecord(tmpRecord);
 
-				return tmpView.renderWithScopeAsync(tmpCriterion, '__Virtual', `__TemplateOutputCache.${tmpRenderGUID}`, tmpRecord,
+				return tmpView.renderWithScopeAsync(tmpClause, '__Virtual', `__TemplateOutputCache.${tmpRenderGUID}`, tmpRecord,
 					(pError, pResult) =>
 					{
 						if (pError)

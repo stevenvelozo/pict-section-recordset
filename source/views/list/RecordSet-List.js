@@ -119,9 +119,9 @@ class viewRecordSetList extends libPictRecordSetRecordView
 	addRoutes(pPictRouter)
 	{
 		pPictRouter.router.on('/PSRS/:RecordSet/List/FilterExperience/:FilterExperience', this.handleRecordSetListRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/List/FilteredTo/:FilterString/FilterExperience/:FilterExperience', this.handleRecordSetListRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/List/FilteredTo/:FilterString/:Offset/:PageSize/FilterExperience/:FilterExperience', this.handleRecordSetListRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/List/FilteredTo/:FilterString/:Offset/:PageSize', this.handleRecordSetListRoute.bind(this));
-		pPictRouter.router.on('/PSRS/:RecordSet/List/FilteredTo/:FilterString/FilterExperience/:FilterExperience', this.handleRecordSetListRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/List/FilteredTo/:FilterString', this.handleRecordSetListRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/List/:Offset/:PageSize/FilterExperience/:FilterExperience', this.handleRecordSetListRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/List/:Offset/:PageSize', this.handleRecordSetListRoute.bind(this));
@@ -187,7 +187,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 			const tmpExperienceFromURL = await this.pict.views['PRSP-Filters'].deserializeFilterExperience(pFilterExperience);
 			if (tmpExperienceFromURL)
 			{
-				this.pict.manifest.setValueByHash(this.pict.Bundle, `_Filters[${pRecordSetConfiguration.RecordSet}].Criteria`, tmpExperienceFromURL);
+				this.pict.manifest.setValueByHash(this.pict.Bundle, `_ActiveFilterState[${pRecordSetConfiguration.RecordSet}].FilterClauses`, tmpExperienceFromURL);
 			}
 		}
 

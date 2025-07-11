@@ -15,7 +15,7 @@ const _DEFAULT_CONFIGURATION_Filter_InternalJoin_DateMatch =
 			Hash: 'PRSP-Filter-InternalJoin-DateMatch-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-InternalJoin-DateMatch-Template] -->
-	{~IWVDA:PSRSFilterProxyView:Record.CriterionDescriptor~}
+	{~IWVDA:PSRSFilterProxyView:Record.ClauseDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-InternalJoin-DateMatch-Template] -->
 `
 		}
@@ -46,7 +46,7 @@ class ViewRecordSetSUBSETFilterInternalJoinDateMatch extends ViewRecordSetSUBSET
 	{
 		super.prepareRecord(pRecord);
 
-		pRecord.CriterionDescriptor.DataType = 'DateTime';
+		pRecord.ClauseDescriptor.DataType = 'DateTime';
 	}
 }
 

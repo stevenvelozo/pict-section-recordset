@@ -15,7 +15,7 @@ const _DEFAULT_CONFIGURATION_Filter_StringMatch =
 			Hash: 'PRSP-Filter-StringMatch-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-StringMatch-Template] -->
-	{~IWVDA:PSRSFilterProxyView:Record.CriterionDescriptor~}
+	{~IWVDA:PSRSFilterProxyView:Record.ClauseDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-StringMatch-Template] -->
 `
 		}

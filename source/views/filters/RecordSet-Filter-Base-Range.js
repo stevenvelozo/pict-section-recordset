@@ -15,20 +15,20 @@ class ViewRecordSetSUBSETFilterBaseRange extends ViewRecordSetSUBSETFilterBase
 	{
 		super.prepareRecord(pRecord);
 
-		pRecord.StartCriterionAddress = pRecord.CriterionValuesAddress + '.Start';
-		pRecord.EndCriterionAddress = pRecord.CriterionValuesAddress + '.End';
+		pRecord.StartClauseAddress = pRecord.ClauseValuesAddress + '.Start';
+		pRecord.EndClauseAddress = pRecord.ClauseValuesAddress + '.End';
 
-		pRecord.StartCriterionDescriptor =
+		pRecord.StartClauseDescriptor =
 		{
-			Address: pRecord.StartCriterionAddress,
+			Address: pRecord.StartClauseAddress,
 			//TODO: figure out a nice pattern for extracting a name for the field from the filter - and allow the filter author to provide the label here
 			Name: pRecord.MinimumLabel || `Minimum ${pRecord.ExternalFilterByColumn || pRecord.ExternalFilterByColumns?.[0] || pRecord.FilterByColumn || pRecord.FilterByColumns?.[0] || 'Value'}`,
 			DataType: 'String',
 		};
 
-		pRecord.EndCriterionDescriptor =
+		pRecord.EndClauseDescriptor =
 		{
-			Address: pRecord.EndCriterionAddress,
+			Address: pRecord.EndClauseAddress,
 			Name: pRecord.MaximumLabel || `Maximum ${pRecord.ExternalFilterByColumn || pRecord.ExternalFilterByColumns?.[0] || pRecord.FilterByColumn || pRecord.FilterByColumns?.[0] || 'Value'}`,
 			DataType: 'String',
 		};

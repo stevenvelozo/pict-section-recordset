@@ -14,7 +14,7 @@ const _DEFAULT_CONFIGURATION_Filter_ExternalJoin_NumericMatch =
 			Hash: 'PRSP-Filter-ExternalJoin-NumericMatch-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-ExternalJoin-NumericMatch-Template] -->
-	{~IWVDA:PSRSFilterProxyView:Record.CriterionDescriptor~}
+	{~IWVDA:PSRSFilterProxyView:Record.ClauseDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-ExternalJoin-NumericMatch-Template] -->
 `
 		}
@@ -45,7 +45,7 @@ class ViewRecordSetSUBSETFilterExternalJoinNumericMatch extends ViewRecordSetSUB
 	{
 		super.prepareRecord(pRecord);
 
-		pRecord.CriterionDescriptor.DataType = 'Number';
+		pRecord.ClauseDescriptor.DataType = 'Number';
 	}
 }
 

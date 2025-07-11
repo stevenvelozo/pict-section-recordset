@@ -15,8 +15,8 @@ const _DEFAULT_CONFIGURATION_Filter_DateRange =
 			Hash: 'PRSP-Filter-DateRange-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-DateRange-Template] -->
-	{~IWVDA:PSRSFilterProxyView:Record.StartCriterionDescriptor~}
-	{~IWVDA:PSRSFilterProxyView:Record.EndCriterionDescriptor~}
+	{~IWVDA:PSRSFilterProxyView:Record.StartClauseDescriptor~}
+	{~IWVDA:PSRSFilterProxyView:Record.EndClauseDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-DateRange-Template] -->
 `
 		}
@@ -47,8 +47,8 @@ class ViewRecordSetSUBSETFilterDateRange extends ViewRecordSetSUBSETFilterBaseRa
 	{
 		super.prepareRecord(pRecord);
 
-		pRecord.StartCriterionDescriptor.DataType = 'DateTime';
-		pRecord.EndCriterionDescriptor.DataType = 'DateTime';
+		pRecord.StartClauseDescriptor.DataType = 'DateTime';
+		pRecord.EndClauseDescriptor.DataType = 'DateTime';
 	}
 
 	/**

@@ -67,13 +67,13 @@ class ViewRecordSetSUBSETFilterBase extends libPictView
 	 */
 	prepareRecord(pRecord)
 	{
-		pRecord.CriterionValueAddress = pRecord.CriterionAddress + '.Value';
-		pRecord.CriterionValuesAddress = pRecord.CriterionAddress + '.Values';
+		pRecord.ClauseValueAddress = pRecord.ClauseAddress + '.Value';
+		pRecord.ClauseValuesAddress = pRecord.ClauseAddress + '.Values';
 
-		pRecord.CriterionDescriptor =
+		pRecord.ClauseDescriptor =
 		{
-			Address: pRecord.CriterionValueAddress,
-			Hash: this.fable.DataFormat.cleanNonAlphaCharacters(pRecord.CriterionValueAddress),
+			Address: pRecord.ClauseValueAddress,
+			Hash: this.fable.DataFormat.cleanNonAlphaCharacters(pRecord.ClauseValueAddress),
 			//TODO: figure out a nice pattern for extracting a name for the field from the filter - and allow the filter author to provide the label here
 			Name: pRecord.Label || pRecord.ExternalFilterByColumn || pRecord.ExternalFilterByColumns?.[0] || pRecord.FilterByColumn || pRecord.FilterByColumns?.[0] || 'Value',
 			DataType: 'String',

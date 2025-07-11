@@ -15,7 +15,7 @@ const _DEFAULT_CONFIGURATION_Filter_ExternalJoin_DateMatch =
 			Hash: 'PRSP-Filter-ExternalJoin-DateMatch-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-ExternalJoin-DateMatch-Template] -->
-	{~IWVDA:PSRSFilterProxyView:Record.CriterionDescriptor~}
+	{~IWVDA:PSRSFilterProxyView:Record.ClauseDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-ExternalJoin-DateMatch-Template] -->
 `
 		}
@@ -46,7 +46,7 @@ class ViewRecordSetSUBSETFilterExternalJoinDateMatch extends ViewRecordSetSUBSET
 	 */
 	prepareRecord(pRecord)
 	{
-		pRecord.CriterionDescriptor.DataType = 'DateTime';
+		pRecord.ClauseDescriptor.DataType = 'DateTime';
 	}
 }
 

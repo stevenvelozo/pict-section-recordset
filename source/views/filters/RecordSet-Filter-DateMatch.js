@@ -15,7 +15,7 @@ const _DEFAULT_CONFIGURATION_Filter_DateMatch =
 			Hash: 'PRSP-Filter-DateMatch-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-DateMatch-Template] -->
-	{~IWVDA:PSRSFilterProxyView:Record.CriterionDescriptor~}
+	{~IWVDA:PSRSFilterProxyView:Record.ClauseDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-DateMatch-Template] -->
 `
 		}
@@ -46,8 +46,8 @@ class ViewRecordSetSUBSETFilterDateMatch extends ViewRecordSetSUBSETFilterBase
 	 */
 	prepareRecord(pRecord)
 	{
-	//{~IWVDA:PSRSFilterProxyView:Record.CriterionDescriptor~}
-		pRecord.CriterionDescriptor.DataType = 'DateTime';
+	//{~IWVDA:PSRSFilterProxyView:Record.ClauseDescriptor~}
+		pRecord.ClauseDescriptor.DataType = 'DateTime';
 	}
 }
 

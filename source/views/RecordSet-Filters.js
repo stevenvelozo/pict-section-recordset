@@ -197,6 +197,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	{
 		pEvent.preventDefault(); // don't submit the form
 		pEvent.stopPropagation();
+		//FIXME: store this filter string in the bundle so we can re-apply it on re-render
 		const tmpSearchString = this.pict.ContentAssignment.readContent(`input[name="filter"]`);
 		this.performSearch(pRecordSet, pViewContext, tmpSearchString ? String(tmpSearchString) : '');
 	}
@@ -242,7 +243,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		{
 			tmpURL = tmpURL.replace(/\/FilteredTo\//, '');
 		}
-		this.serializeFilterExperience(this.pict.Bundle._Filters[pRecordSet]?.Criteria).then((pFilterExperienceSerialized) =>
+		this.serializeFilterExperience(this.pict.Bundle._ActiveFilterState[pRecordSet]?.FilterClauses).then((pFilterExperienceSerialized) =>
 		{
 			if (pFilterExperienceSerialized)
 			{
@@ -262,7 +263,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	{
 		pEvent.preventDefault();
 		this.pict.ContentAssignment.assignContent('input[name="filter"]', '');
-		const tmpFilterExperienceClauses = this.pict.Bundle._Filters[pRecordSet]?.Criteria;
+		const tmpFilterExperienceClauses = this.pict.Bundle._ActiveFilterState[pRecordSet]?.FilterClauses;
 		if (Array.isArray(tmpFilterExperienceClauses))
 		{
 			for (const tmpClause of tmpFilterExperienceClauses)

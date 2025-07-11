@@ -129,11 +129,11 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 
 	_prepareFilterState(pEntity, pOptions, pFilterExperienceResultAddress = 'Records')
 	{
-		const tmpCriteria = [].concat(this.pict.Bundle._Filters?.[pOptions.Entity || this.options.Entity]?.Criteria || []);
-		const tmpExperience = Object.assign({}, this.pict.Bundle._Filters?.[pOptions.Entity || this.options.Entity]?.Experience || {});
+		const tmpClauses = [].concat(this.pict.Bundle._ActiveFilterState?.[pOptions.Entity || this.options.Entity]?.FilterClauses || []);
+		const tmpExperience = Object.assign({}, this.pict.Bundle._ActiveFilterState?.[pOptions.Entity || this.options.Entity]?.Experience || {});
 		if (!tmpExperience.ResultDestinationAddress)
 		{
-			tmpExperience.ResultDestinationAddress = `Bundle._Filters[\`${this.options.RecordSet}\`].${pFilterExperienceResultAddress}`;
+			tmpExperience.ResultDestinationAddress = `Bundle._ActiveFilterState[\`${this.options.RecordSet}\`].${pFilterExperienceResultAddress}`;
 		}
 		if (!tmpExperience.Entity)
 		{
@@ -141,9 +141,9 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		}
 		if (pOptions.FilterString && typeof pOptions.FilterString === 'string' && pOptions.FilterString.trim().length > 0)
 		{
-			tmpCriteria.push({ Type: 'RawFilter', Value: pOptions.FilterString });
+			tmpClauses.push({ Type: 'RawFilter', Value: pOptions.FilterString });
 		}
-		return [ tmpCriteria, tmpExperience ];
+		return [ tmpClauses, tmpExperience ];
 	}
 
 	/**
@@ -165,8 +165,8 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		}
 		return new Promise((resolve, reject) =>
 		{
-			const [ tmpCriteria, tmpExperience ] = this._prepareFilterState(tmpEntity, pOptions);
-			this.pict.providers.FilterManager.loadRecordPageByFilter(tmpCriteria, tmpExperience, pOptions.Offset || 0, pOptions.PageSize || 250, (pError) =>
+			const [ tmpClauses, tmpExperience ] = this._prepareFilterState(tmpEntity, pOptions);
+			this.pict.providers.FilterManager.loadRecordPageByFilter(tmpClauses, tmpExperience, pOptions.Offset || 0, pOptions.PageSize || 250, (pError) =>
 			{
 				if (pError)
 				{
@@ -210,8 +210,8 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		//TODO: lite support / other variants?
 		return new Promise((resolve, reject) =>
 		{
-			const [ tmpCriteria, tmpExperience ] = this._prepareFilterState(tmpEntity, pOptions, 'Count');
-			this.pict.providers.FilterManager.countRecordsByFilter(tmpCriteria, tmpExperience, (pError) =>
+			const [ tmpClauses, tmpExperience ] = this._prepareFilterState(tmpEntity, pOptions, 'Count');
+			this.pict.providers.FilterManager.countRecordsByFilter(tmpClauses, tmpExperience, (pError) =>
 			{
 				if (pError)
 				{
@@ -355,69 +355,69 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		{
 			if (this.options.FilterExperiences && typeof this.options.FilterExperiences === 'object' && !Array.isArray(this.options.FilterExperiences))
 			{
-				this.pict.Bundle._Filters = this.pict.Bundle._Filters || {};
-				this.pict.Bundle._Filters[this.options.RecordSet] = this.pict.Bundle._Filters[this.options.RecordSet] || {};
-				const tmpEntityFilterState = this.pict.Bundle._Filters[this.options.RecordSet];
+				this.pict.Bundle._ActiveFilterState = this.pict.Bundle._ActiveFilterState || {};
+				this.pict.Bundle._ActiveFilterState[this.options.RecordSet] = this.pict.Bundle._ActiveFilterState[this.options.RecordSet] || {};
+				const tmpEntityFilterState = this.pict.Bundle._ActiveFilterState[this.options.RecordSet];
 				tmpEntityFilterState.Experience = tmpEntityFilterState.Experience || {};
 				for (const tmpKey of Object.keys(this.options.FilterExperiences))
 				{
 					const tmpExperience = this.options.FilterExperiences[tmpKey];
-					if (!tmpExperience.FilterCriteriaHash && !Array.isArray(tmpExperience.Criteria))
+					if (!tmpExperience.FilterCriteriaHash && !Array.isArray(tmpExperience.FilterClauses))
 					{
-						this.log.warn(`Filter experience ${tmpKey} does not have valid Criteria`, { Experience: tmpExperience });
+						this.log.warn(`Filter experience ${tmpKey} has invalid Criteria`, { Experience: tmpExperience });
 						continue;
 					}
 					if (tmpExperience.FilterCriteriaHash)
 					{
 						// load from hash
-						const tmpFilterCriteria = this.pict.providers.FilterManager.getFilterCriteria(tmpExperience.FilterCriteriaHash);
-						if (!tmpFilterCriteria)
+						const tmpClauses = this.pict.providers.FilterManager.getFilterCriteria(tmpExperience.FilterCriteriaHash);
+						if (!tmpClauses)
 						{
 							this.pict.log.warn(`Filter experience ${tmpKey} filter criteria hash ${tmpExperience.FilterCriteriaHash} not found`, { Experience: tmpExperience });
 							continue;
 						}
 						//TODO: handle Ordinal / generate if missing
 						this._Experiences[tmpKey] = JSON.parse(JSON.stringify(tmpExperience));
-						this._Experiences[tmpKey].Criteria = JSON.parse(JSON.stringify(tmpFilterCriteria));
-						for (const tmpCriteria of this._Experiences[tmpKey].Criteria)
+						this._Experiences[tmpKey].FilterClauses = JSON.parse(JSON.stringify(tmpClauses));
+						for (const tmpClause of this._Experiences[tmpKey].FilterClauses)
 						{
-							if (!tmpCriteria.FilterByColumn && !tmpCriteria.CoreConnectionColumn && !tmpCriteria.JoinInternalConnectionColumn)
+							if (!tmpClause.FilterByColumn && !tmpClause.CoreConnectionColumn && !tmpClause.JoinInternalConnectionColumn)
 							{
-								this.log.warn(`Filter experience ${tmpKey} criteria does not have filter by column configured`, { Criteria: tmpCriteria });
+								this.log.warn(`Filter experience ${tmpKey} clause does not have filter by column configured`, { Clause: tmpClause });
 								continue;
 							}
-							if (tmpCriteria.FilterDefinitionHash)
+							if (tmpClause.FilterDefinitionHash)
 							{
-								const tmpFilter = this.pict.providers.FilterManager.getFilter(tmpCriteria.FilterDefinitionHash);
+								const tmpFilter = this.pict.providers.FilterManager.getFilter(tmpClause.FilterDefinitionHash);
 								if (!tmpFilter)
 								{
-									this.pict.log.warn(`Filter experience ${tmpKey} filter criteria hash ${tmpCriteria.FilterDefinitionHash} not found`, { Experience: tmpExperience });
+									this.pict.log.warn(`Filter experience ${tmpKey} filter criteria hash ${tmpClause.FilterDefinitionHash} not found`, { Experience: tmpExperience });
 									continue;
 								}
-								Object.assign(tmpCriteria, tmpFilter); //TODO: is there a risk of leakage here?
-								if (tmpCriteria.FilterByColumn && typeof tmpCriteria.Type === 'string')
+								Object.assign(tmpClause, tmpFilter); //TODO: is there a risk of leakage here?
+								if (tmpClause.FilterByColumn && typeof tmpClause.Type === 'string')
 								{
-									if (tmpCriteria.Type.startsWith('InternalJoin'))
+									if (tmpClause.Type.startsWith('InternalJoin'))
 									{
-										tmpCriteria.JoinInternalConnectionColumn = tmpCriteria.FilterByColumn;
+										tmpClause.JoinInternalConnectionColumn = tmpClause.FilterByColumn;
 									}
-									else if (tmpCriteria.Type.startsWith('ExternalJoin'))
+									else if (tmpClause.Type.startsWith('ExternalJoin'))
 									{
-										tmpCriteria.CoreConnectionColumn = tmpCriteria.FilterByColumn;
+										tmpClause.CoreConnectionColumn = tmpClause.FilterByColumn;
 									}
 								}
 							}
 						}
-						if (tmpExperience.Default && !tmpEntityFilterState.Criteria)
+						if (tmpExperience.Default && !tmpEntityFilterState.FilterClauses)
 						{
-							tmpEntityFilterState.Criteria = JSON.parse(JSON.stringify(this._Experiences[tmpKey].Criteria));
+							tmpEntityFilterState.FilterClauses = JSON.parse(JSON.stringify(this._Experiences[tmpKey].FilterClauses));
 						}
 						continue;
 					}
 					this._Experiences[tmpKey] = JSON.parse(JSON.stringify(tmpExperience));
-					if (tmpExperience.Default && !tmpEntityFilterState.Criteria)
+					if (tmpExperience.Default && !tmpEntityFilterState.FilterClauses)
 					{
-						tmpEntityFilterState.Criteria = JSON.parse(JSON.stringify(tmpExperience.Criteria));
+						tmpEntityFilterState.FilterClauses = JSON.parse(JSON.stringify(tmpExperience.FilterClauses));
 					}
 				}
 			}

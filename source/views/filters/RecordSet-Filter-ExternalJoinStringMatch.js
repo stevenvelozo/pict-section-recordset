@@ -15,7 +15,7 @@ const _DEFAULT_CONFIGURATION_Filter_ExternalJoinStringMatch =
 			Hash: 'PRSP-Filter-ExternalJoinStringMatch-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-ExternalJoinStringMatch-Template] -->
-	{~IWVDA:PSRSFilterProxyView:Record.CriterionDescriptor~}
+	{~IWVDA:PSRSFilterProxyView:Record.ClauseDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-ExternalJoinStringMatch-Template] -->
 `
 		}

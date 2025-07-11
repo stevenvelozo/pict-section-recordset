@@ -15,7 +15,7 @@ const _DEFAULT_CONFIGURATION_Filter_InternalJoin_NumericMatch =
 			Hash: 'PRSP-Filter-InternalJoin-NumericMatch-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-InternalJoin-NumericMatch-Template] -->
-	{~IWVDA:PSRSFilterProxyView:Record.CriterionDescriptor~}
+	{~IWVDA:PSRSFilterProxyView:Record.ClauseDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-InternalJoin-NumericMatch-Template] -->
 `
 		}
@@ -46,7 +46,7 @@ class ViewRecordSetSUBSETFilterInternalJoinNumericMatch extends ViewRecordSetSUB
 	{
 		super.prepareRecord(pRecord);
 
-		pRecord.CriterionDescriptor.DataType = 'Number';
+		pRecord.ClauseDescriptor.DataType = 'Number';
 	}
 }
 

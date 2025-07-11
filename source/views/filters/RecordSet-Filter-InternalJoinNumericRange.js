@@ -15,8 +15,8 @@ const _DEFAULT_CONFIGURATION_Filter_InternalJoin_NumericRange =
 			Hash: 'PRSP-Filter-InternalJoin-NumericRange-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-InternalJoin-NumericRange-Template] -->
-	{~IWVDA:PSRSFilterProxyView:Record.StartCriterionDescriptor~}
-	{~IWVDA:PSRSFilterProxyView:Record.EndCriterionDescriptor~}
+	{~IWVDA:PSRSFilterProxyView:Record.StartClauseDescriptor~}
+	{~IWVDA:PSRSFilterProxyView:Record.EndClauseDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-InternalJoin-NumericRange-Template] -->
 `
 		},
@@ -47,8 +47,8 @@ class ViewRecordSetSUBSETFilterInternalJoinNumericRange extends ViewRecordSetSUB
 	{
 		super.prepareRecord(pRecord);
 
-		pRecord.StartCriterionDescriptor.DataType = 'Number';
-		pRecord.EndCriterionDescriptor.DataType = 'Number';
+		pRecord.StartClauseDescriptor.DataType = 'Number';
+		pRecord.EndClauseDescriptor.DataType = 'Number';
 	}
 }
 

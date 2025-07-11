@@ -15,7 +15,7 @@ const _DEFAULT_CONFIGURATION_Filter_NumericMatch =
 			Hash: 'PRSP-Filter-NumericMatch-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-NumericMatch-Template] -->
-	{~IWVDA:PSRSFilterProxyView:Record.CriterionDescriptor~}
+	{~IWVDA:PSRSFilterProxyView:Record.ClauseDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-NumericMatch-Template] -->
 `
 		}
@@ -46,7 +46,7 @@ class ViewRecordSetSUBSETFilterNumericMatch extends ViewRecordSetSUBSETFilterBas
 	{
 		super.prepareRecord(pRecord);
 
-		pRecord.CriterionDescriptor.DataType = 'Number';
+		pRecord.ClauseDescriptor.DataType = 'Number';
 	}
 }
 

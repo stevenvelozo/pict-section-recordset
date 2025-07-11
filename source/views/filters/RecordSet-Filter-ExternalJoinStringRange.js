@@ -15,8 +15,8 @@ const _DEFAULT_CONFIGURATION_Filter_ExternalJoin_StringRange =
 			Hash: 'PRSP-Filter-ExternalJoin-StringRange-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-ExternalJoin-StringRange-Template] -->
-	{~IWVDA:PSRSFilterProxyView:Record.StartCriterionDescriptor~}
-	{~IWVDA:PSRSFilterProxyView:Record.EndCriterionDescriptor~}
+	{~IWVDA:PSRSFilterProxyView:Record.StartClauseDescriptor~}
+	{~IWVDA:PSRSFilterProxyView:Record.EndClauseDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-ExternalJoin-StringRange-Template] -->
 `
 		}

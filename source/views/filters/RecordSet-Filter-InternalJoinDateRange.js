@@ -15,8 +15,8 @@ const _DEFAULT_CONFIGURATION_Filter_InternalJoin_DateRange =
 			Hash: 'PRSP-Filter-InternalJoin-DateRange-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-InternalJoin-DateRange-Template] -->
-	{~IWVDA:PSRSFilterProxyView:Record.StartCriterionDescriptor~}
-	{~IWVDA:PSRSFilterProxyView:Record.EndCriterionDescriptor~}
+	{~IWVDA:PSRSFilterProxyView:Record.StartClauseDescriptor~}
+	{~IWVDA:PSRSFilterProxyView:Record.EndClauseDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-InternalJoin-DateRange-Template] -->
 `
 		}
@@ -47,8 +47,8 @@ class ViewRecordSetSUBSETFilterInternalJoinDateRange extends ViewRecordSetSUBSET
 	{
 		super.prepareRecord(pRecord);
 
-		pRecord.StartCriterionDescriptor.DataType = 'DateTime';
-		pRecord.EndCriterionDescriptor.DataType = 'DateTime';
+		pRecord.StartClauseDescriptor.DataType = 'DateTime';
+		pRecord.EndClauseDescriptor.DataType = 'DateTime';
 	}
 }
 
