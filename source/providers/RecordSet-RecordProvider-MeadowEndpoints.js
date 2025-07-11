@@ -381,6 +381,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 						this._Experiences[tmpKey].FilterClauses = JSON.parse(JSON.stringify(tmpClauses));
 						for (const tmpClause of this._Experiences[tmpKey].FilterClauses)
 						{
+							tmpClause.FilterCriteriaHash = tmpExperience.FilterCriteriaHash;
 							if (!tmpClause.FilterByColumn && !tmpClause.CoreConnectionColumn && !tmpClause.JoinInternalConnectionColumn)
 							{
 								this.log.warn(`Filter experience ${tmpKey} clause does not have filter by column configured`, { Clause: tmpClause });

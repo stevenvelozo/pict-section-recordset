@@ -119,15 +119,16 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		const tmpProviderHash = `RSP-Provider-${pRoutePayload.data.RecordSet}`;
 
 		const tmpFilterString = pRoutePayload.data.FilterString || '';
+		const tmpFilterExperience = pRoutePayload.data.FilterExperience || '';
 
 		const tmpOffset = pRoutePayload.data.Offset ? pRoutePayload.data.Offset : 0;
 		const tmpPageSize = pRoutePayload.data.PageSize ? pRoutePayload.data.PageSize : 100;
 
 		if (pRoutePayload.data.DashboardHash)
 		{
-			return this.renderSpecificDashboard(pRoutePayload.data.DashboardHash, tmpProviderConfiguration, tmpProviderHash, tmpFilterString, tmpOffset, tmpPageSize);
+			return this.renderSpecificDashboard(pRoutePayload.data.DashboardHash, tmpProviderConfiguration, tmpProviderHash, tmpFilterString, tmpFilterExperience, tmpOffset, tmpPageSize);
 		}
-		return this.renderDashboard(tmpProviderConfiguration, tmpProviderHash, tmpFilterString, tmpOffset, tmpPageSize);
+		return this.renderDashboard(tmpProviderConfiguration, tmpProviderHash, tmpFilterString, tmpFilterExperience, tmpOffset, tmpPageSize);
 	}
 
 	/**
@@ -135,14 +136,22 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 	 */
 	addRoutes(pPictRouter)
 	{
+		pPictRouter.router.on('/PSRS/:RecordSet/Dashboard/FilterExperience/:FilterExperience', this.handleRecordSetDashboardRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/Dashboard/FilteredTo/:FilterString/FilterExperience/:FilterExperience', this.handleRecordSetDashboardRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/Dashboard/FilteredTo/:FilterString/:Offset/:PageSize/FilterExperience/:FilterExperience', this.handleRecordSetDashboardRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/Dashboard/FilteredTo/:FilterString/:Offset/:PageSize', this.handleRecordSetDashboardRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/Dashboard/FilteredTo/:FilterString', this.handleRecordSetDashboardRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/Dashboard/:Offset/:PageSize/FilterExperience/:FilterExperience', this.handleRecordSetDashboardRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/Dashboard/:Offset/:PageSize', this.handleRecordSetDashboardRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/Dashboard/:Offset', this.handleRecordSetDashboardRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/Dashboard', this.handleRecordSetDashboardRoute.bind(this));
 
+		pPictRouter.router.on('/PSRS/:RecordSet/SpecificDashboard/:DashboardHash/FilterExperience/:FilterExperience', this.handleRecordSetDashboardRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/SpecificDashboard/:DashboardHash/FilteredTo/:FilterString/FilterExperience/:FilterExperience', this.handleRecordSetDashboardRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/SpecificDashboard/:DashboardHash/FilteredTo/:FilterString/:Offset/:PageSize/FilterExperience/:FilterExperience', this.handleRecordSetDashboardRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/SpecificDashboard/:DashboardHash/FilteredTo/:FilterString/:Offset/:PageSize', this.handleRecordSetDashboardRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/SpecificDashboard/:DashboardHash/FilteredTo/:FilterString', this.handleRecordSetDashboardRoute.bind(this));
+		pPictRouter.router.on('/PSRS/:RecordSet/SpecificDashboard/:DashboardHash/:Offset/:PageSize/FilterExperience/:FilterExperience', this.handleRecordSetDashboardRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/SpecificDashboard/:DashboardHash/:Offset/:PageSize', this.handleRecordSetDashboardRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/SpecificDashboard/:DashboardHash/:Offset', this.handleRecordSetDashboardRoute.bind(this));
 		pPictRouter.router.on('/PSRS/:RecordSet/SpecificDashboard/:DashboardHash', this.handleRecordSetDashboardRoute.bind(this));
@@ -201,12 +210,13 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 	 * @param {Record<string, any>} pRecordSetConfiguration
 	 * @param {string} pProviderHash
 	 * @param {string} pFilterString
+	 * @param {string} pFilterExperience
 	 * @param {number} pOffset
 	 * @param {number} pPageSize
 	 *
 	 * @return {Promise<void>}
 	 */
-	async renderSpecificDashboard(pDashboardHash, pRecordSetConfiguration, pProviderHash, pFilterString, pOffset, pPageSize)
+	async renderSpecificDashboard(pDashboardHash, pRecordSetConfiguration, pProviderHash, pFilterString, pFilterExperience, pOffset, pPageSize)
 	{
 		if (!pRecordSetConfiguration)
 		{
@@ -229,6 +239,16 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		if (tmpManifestDefinition && tmpManifestDefinition.TitleTemplate)
 		{
 			tmpTitle = this.pict.parseTemplate(tmpManifestDefinition.TitleTemplate, pRecordSetConfiguration);
+		}
+
+		if (pFilterExperience)
+		{
+			// shove filter xp into the active filters for this recordset
+			const tmpExperienceFromURL = await this.pict.views['PRSP-Filters'].deserializeFilterExperience(pFilterExperience);
+			if (tmpExperienceFromURL)
+			{
+				this.pict.manifest.setValueByHash(this.pict.Bundle, `_ActiveFilterState[${pRecordSetConfiguration.RecordSet}].FilterClauses`, tmpExperienceFromURL);
+			}
 		}
 
 		let tmpRecordDashboardData =
@@ -458,12 +478,13 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 	 * @param {Record<string, any>} pRecordSetConfiguration
 	 * @param {string} pProviderHash
 	 * @param {string} pFilterString
+	 * @param {string} pFilterExperience
 	 * @param {number} pOffset
 	 * @param {number} pPageSize
 	 *
 	 * @return {Promise<void>}
 	 */
-	async renderDashboard(pRecordSetConfiguration, pProviderHash, pFilterString, pOffset, pPageSize)
+	async renderDashboard(pRecordSetConfiguration, pProviderHash, pFilterString, pFilterExperience, pOffset, pPageSize)
 	{
 		if (!pRecordSetConfiguration)
 		{
@@ -486,7 +507,17 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 			}
 			else
 			{
-				return this.renderSpecificDashboard(tmpManifestHash, pRecordSetConfiguration, pProviderHash, pFilterString, pOffset, pPageSize);
+				return this.renderSpecificDashboard(tmpManifestHash, pRecordSetConfiguration, pProviderHash, pFilterString, pFilterExperience, pOffset, pPageSize);
+			}
+		}
+
+		if (pFilterExperience)
+		{
+			// shove filter xp into the active filters for this recordset
+			const tmpExperienceFromURL = await this.pict.views['PRSP-Filters'].deserializeFilterExperience(pFilterExperience);
+			if (tmpExperienceFromURL)
+			{
+				this.pict.manifest.setValueByHash(this.pict.Bundle, `_ActiveFilterState[${pRecordSetConfiguration.RecordSet}].FilterClauses`, tmpExperienceFromURL);
 			}
 		}
 

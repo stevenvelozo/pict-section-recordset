@@ -177,7 +177,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		// Get the records
 		if (!(pProviderHash in this.pict.providers))
 		{
-			this.pict.log.error(`RecordSetList: No provider found for ${pProviderHash} in ${pRecordSetConfiguration.RecordSet}.  List Render failed.`);
+			this.pict.log.error(`RecordSetList: No provider found for ${pProviderHash} in RecordSet ${(pRecordSetConfiguration || {}).RecordSet}.  List Render failed.`);
 			return false;
 		}
 

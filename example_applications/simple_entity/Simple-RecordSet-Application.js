@@ -5,59 +5,6 @@ const libPictRecordSetLocalDateRangeFilterView = require('../../source/views/fil
 
 class SimpleApplication extends libPictRecordSet.PictRecordSetApplication
 {
-
-	onBeforeInitialize()
-	{
-		/*
-		this.pict.Bundle._Filters =
-		{
-			Book:
-			{
-				Criteria:
-				[
-					{
-						"UUID": "1",
-						"FilterHash": "FilterBookByAuthor[Name]",
-						"Type": "ExternalJoinStringMatch",
-						"Values": [ "John", "Jane" ],
-						"ExternalFilterByColumns": [ "Name" ],
-
-						"CoreConnectionColumn": "IDBook",
-
-						"JoinTable": "BookAuthorJoin",
-						"JoinTableExternalConnectionColumn": "IDAuthor",
-						"JoinTableCoreConnectionColumn": "IDBook",
-
-						"ExternalFilterByTable": "Author",
-						"ExternalFilterByTableConnectionColumn": "IDAuthor"
-					},
-					{
-						"UUID": "2",
-						"Type": "DateRange",
-						"Values":
-						{
-							"Start": "2023-01-01T00:00:00Z",
-							"End": "2024-01-01T00:00:00Z"
-						},
-						"FilterByColumn": "CreateDate"
-					},
-					{
-						"Type": "RawFilter",
-						"Value": "FBV~IDBook~LT~50"
-					}
-				]
-			}
-		};
-		*/
-		return super.onBeforeInitialize();
-	}
-
-	onAfterInitialize()
-	{
-		//this.pict.views['PRSP-Filters'].newFilterExperience([ 'DateRange' ]);
-		//this.pict.views['PRSP-Filters'].addFilterView(libPictRecordSetLocalDateRangeFilterView);
-		return super.onAfterInitialize();
-	}
 }
 
 module.exports = SimpleApplication;
