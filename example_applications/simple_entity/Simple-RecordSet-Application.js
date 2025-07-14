@@ -1,7 +1,4 @@
-const { ajax } = require('jquery');
 const libPictRecordSet = require('../../source/Pict-Section-RecordSet.js');
-//const libPictSectionForm = require('pict-section-recordset');
-const libPictRecordSetLocalDateRangeFilterView = require('../../source/views/filters/RecordSet-Filter-DateRange.js');
 
 class SimpleApplication extends libPictRecordSet.PictRecordSetApplication
 {
@@ -209,6 +206,10 @@ module.exports.default_configuration.pict_configuration = (
 				{
 					"Type": "DateRange",
 					"FilterByColumn": "CreateDate"
+				},
+				{
+					"Type": "StringMatch",
+					"FilterByColumn": "Genre"
 				}
 			],
 			"FilterRecordsetByTitle":
