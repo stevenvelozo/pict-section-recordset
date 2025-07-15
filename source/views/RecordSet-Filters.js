@@ -82,7 +82,7 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-AddFilter-Dropdown] -->
 	<div>
-		<select onchange="event.preventDefault(); _Pict.views['PRSP-Filters'].render('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown', undefined,
+		<select id="PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select" onchange="event.preventDefault(); _Pict.views['PRSP-Filters'].render('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown', undefined,
 		{
 			RecordSet: event.target.querySelector('option:checked').getAttribute('data-i-recordset'),
 			FilterKey: event.target.querySelector('option:checked').getAttribute('data-i-filter-key'),
@@ -100,7 +100,7 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Hash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown] -->
-	<select>
+	<select id="PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown-Select">
 		{~TS:PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Entry:Record.AvailableClauses~}
 	</select>
 	<button type="button" id="PRSP_Filter_Button_ConfirmAdd" onclick="_Pict.views['PRSP-Filters'].addFilter(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}',
@@ -382,7 +382,36 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		//FIXME: since this is rendering to the DOM indirectly, can't marshal right after render; need to fix this better, if this even works
 		setTimeout(() =>
 		{
-			this.onMarshalToView();
+			if (!pRecord)
+			{
+				pRecord = {};
+			}
+			if (!Array.isArray(pRecord.AvailableClauses))
+			{
+				const tmpSelect = document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select');
+				if (tmpSelect)
+				{
+					const tmpActiveOption = document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select')?.querySelector('option:checked')
+					const tmpRecordSet = tmpActiveOption?.getAttribute('data-i-recordset');
+					const tmpFilterKey = tmpActiveOption?.getAttribute('data-i-filter-key');
+					if (tmpRecordSet && tmpFilterKey)
+					{
+						const tmpProvider = this.pict.providers[`RSP-Provider-${tmpRecordSet}`];
+						if (tmpProvider)
+						{
+							pRecord.AvailableClauses = tmpProvider.getFilterClauseSchemaForKey(tmpFilterKey).AvailableClauses;
+							if (Array.isArray(pRecord.AvailableClauses))
+							{
+								this.render('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown', undefined, pRecord);
+							}
+						}
+					}
+				}
+			}
+			setTimeout(() =>
+			{
+				this.onMarshalToView();
+			}, 1);
 		}, 1);
 		return super.onAfterRender(pRenderable, pRenderDestinationAddress, pRecord, pContent);
 	}
