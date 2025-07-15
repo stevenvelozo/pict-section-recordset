@@ -424,9 +424,179 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 			}
 			this.initializeEntitySchema(() =>
 			{
+				const tmpSchema = this._Schema;
+				if (!tmpSchema || !tmpSchema.properties)
+				{
+					return fCallback(pError);
+				}
+				const tmpProperties = tmpSchema?.properties;
+				// loop throught the schema and add the columns to the tableCells
+				let tmpOrdinal = 0;
+				for (const tmpSchemaField in tmpProperties)
+				{
+					++tmpOrdinal;
+					if (tmpSchemaField === 'Deleted' || tmpSchemaField === 'DeletingIDUser')
+					{
+						continue;
+					}
+					const tmpColumn = tmpProperties[tmpSchemaField];
+					let tmpFieldFilterSchema = this._FilterSchema[tmpSchemaField];
+					if (!tmpFieldFilterSchema)
+					{
+						this._FilterSchema[tmpSchemaField] = tmpFieldFilterSchema = { };
+					}
+					if (!tmpFieldFilterSchema.FilterKey)
+					{
+						tmpFieldFilterSchema.FilterKey = tmpSchemaField;
+					}
+					if (!tmpFieldFilterSchema.DisplayName)
+					{
+						tmpFieldFilterSchema.DisplayName = this._getHumanReadableFieldName(tmpSchemaField);
+					}
+					if (!tmpFieldFilterSchema.Description)
+					{
+						tmpFieldFilterSchema.Description = `Filter by ${tmpFieldFilterSchema.DisplayName}`;
+					}
+					if (!tmpFieldFilterSchema.HelpText)
+					{
+						tmpFieldFilterSchema.HelpText = `Filter by ${tmpFieldFilterSchema.DisplayName} for the ${this._getHumanReadbleEntityName(this.options.Entity)} entity.`;
+					}
+					if (tmpFieldFilterSchema.Ordinal == null)
+					{
+						tmpFieldFilterSchema.Ordinal = tmpOrdinal;
+					}
+					if (!Array.isArray(tmpFieldFilterSchema.AvailableClauses))
+					{
+						tmpFieldFilterSchema.AvailableClauses = [];
+					}
+					const tmpFieldHumanName = this._getHumanReadableFieldName(tmpSchemaField);
+					switch (tmpColumn.type)
+					{
+						case 'string':
+							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'StringMatch', FilterByColumn: tmpSchemaField, ExactMatch: true, Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
+							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'StringMatch', FilterByColumn: tmpSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
+							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'StringRange', FilterByColumn: tmpSchemaField , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
+							break;
+						case 'date':
+						case 'datetime':
+							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'DateMatch', FilterByColumn: tmpSchemaField, ExactMatch: true , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
+							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'DateMatch', FilterByColumn: tmpSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
+							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'DateRange', FilterByColumn: tmpSchemaField , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
+							break;
+						case 'boolean': //TODO: we didn't add filters for this - they are just numeric but it's weird for the user, maybe we should add views for this that account for the difference
+						case 'integer':
+							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'NumberMatch', FilterByColumn: tmpSchemaField, ExactMatch: true , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
+							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'NumberMatch', FilterByColumn: tmpSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
+							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'NumberRange', FilterByColumn: tmpSchemaField , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
+							break;
+						default:
+							this.pict.log.warn(`Unsupported field type ${tmpColumn.type} for field ${tmpSchemaField}`, { Schema: tmpColumn });
+					}
+				}
+				if (typeof this.pict.providers.FilterManager.filters === 'object')
+				{
+					for (const tmpFilterKey of Object.keys(this.pict.providers.FilterManager.filters))
+					{
+						const tmpFilterClause = this.pict.providers.FilterManager.filters[tmpFilterKey];
+						if (tmpFilterClause.CoreConnectionColumn === `ID${this.options.Entity}`)
+						{
+							//FIXME: I don't think using filter key is right here
+							let tmpFieldFilterSchema = this._FilterSchema[tmpFilterKey];
+							if (!tmpFieldFilterSchema)
+							{
+								this._FilterSchema[tmpFilterKey] = tmpFieldFilterSchema = { };
+							}
+							if (!tmpFieldFilterSchema.FilterKey)
+							{
+								tmpFieldFilterSchema.FilterKey = tmpFilterKey;
+							}
+							if (!tmpFieldFilterSchema.DisplayName)
+							{
+								tmpFieldFilterSchema.DisplayName = tmpFilterClause.DisplayName || this._getHumanReadableFieldName(tmpFilterKey);
+							}
+							if (!tmpFieldFilterSchema.Description)
+							{
+								tmpFieldFilterSchema.Description = tmpFilterClause.Description || `Filter by ${tmpFieldFilterSchema.DisplayName}`;
+							}
+							if (!tmpFieldFilterSchema.HelpText)
+							{
+								tmpFieldFilterSchema.HelpText = tmpFilterClause.HelpText || `Filter by ${tmpFieldFilterSchema.DisplayName} for the ${this._getHumanReadbleEntityName(this.options.Entity)} entity.`;
+							}
+							if (tmpFieldFilterSchema.Ordinal == null)
+							{
+								tmpFieldFilterSchema.Ordinal = tmpOrdinal;
+							}
+							if (!Array.isArray(tmpFieldFilterSchema.AvailableClauses))
+							{
+								tmpFieldFilterSchema.AvailableClauses = [];
+							}
+							const tmpFieldHumanName = this._getHumanReadableFieldName(tmpFilterKey);
+							tmpFieldFilterSchema.AvailableClauses.push(tmpFilterClause);
+							if (!tmpFilterClause.FilterKey)
+							{
+								tmpFilterClause.FilterKey = tmpFilterKey;
+							}
+							if (!tmpFilterClause.ClauseKey)
+							{
+								tmpFilterClause.ClauseKey = tmpFilterKey;
+							}
+							if (!tmpFilterClause.DisplayName)
+							{	
+								tmpFilterClause.DisplayName = tmpFieldHumanName;
+							}
+							tmpFilterClause.Ordinal = tmpFieldFilterSchema.AvailableClauses.length + 1;
+						}
+					}
+				}
 				return fCallback(pError);
 			});
 		});
+	}
+
+	/**
+	 * @param {string} pEntity - The schema field name.
+	 * @return {string} - The human-readable name for the entity.
+	 */
+	_getHumanReadbleEntityName(pEntity)
+	{
+		return pEntity.replace(/([a-z])([A-Z])/g, '$1 $2'); // Add space before capital letters
+	}
+
+	/**
+	 * @param {string} pSchemaField - The schema field name.
+	 * @return {string} - The human-readable name for the schema field.
+	 */
+	_getHumanReadableFieldName(pSchemaField)
+	{
+		if (!this._Schema || !this._Schema.properties || !this._Schema.properties[pSchemaField])
+		{
+			return pSchemaField;
+		}
+		if (pSchemaField === `ID${this.options.Entity}`)
+		{
+			return `${this._getHumanReadbleEntityName(this.options.Entity)} Unique Database ID`;
+		}
+		if (pSchemaField === `GUID${this.options.Entity}`)
+		{
+			return `${this._getHumanReadbleEntityName(this.options.Entity)} Unique Identifier`;
+		}
+		if (pSchemaField === 'CreatingIDUser')
+		{
+			return 'Created By User';
+		}
+		if (pSchemaField === 'CreateDate')
+		{
+			return 'Date Created';
+		}
+		if (pSchemaField === 'UpdatingIDUser')
+		{
+			return 'Last Updated By User';
+		}
+		if (pSchemaField === 'UpdateDate')
+		{
+			return 'Date Last Updated';
+		}
+		return pSchemaField.replace(/([a-z])([A-Z])/g, '$1 $2') // Add space before capital letters
 	}
 
 	/**
@@ -446,7 +616,9 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 			{
 				if (error)
 				{
-					throw error;
+					this.fable.log.error('Error fetching schema', error);
+					this._Schema = null;
+					return fCallback(error);
 				}
 				this._Schema = result;
 				return fCallback(null);

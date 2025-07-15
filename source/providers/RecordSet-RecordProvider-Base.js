@@ -68,6 +68,9 @@ class RecordSetProviderBase extends libPictProvider
 		this.fable;
 		/** @type {import('pict')} */
 		this.pict;
+
+		/** @type {Record<string, any>} */
+		this._FilterSchema = { };
 	}
 
 	/**
@@ -245,6 +248,156 @@ class RecordSetProviderBase extends libPictProvider
 	 */
 	async decorateCoreRecords(pRecords)
 	{
+	}
+
+	getFilterSchemaKeys()
+	{
+		return Object.keys(this._FilterSchema);
+	}
+
+	/**
+	 * @param {string} pFilterKey - The filter key to get the schema for.
+	 *
+	 * @return {Record<string, any>} The schema for the filter clause.
+	 */
+	getFilterClauseSchemaForKey(pFilterKey)
+	{
+		return this._FilterSchema?.[pFilterKey];
+	}
+
+	/**
+	 * @return {Record<string, Record<string, any>>} The schema for the filter clauses.
+	 */
+	getFilterSchema()
+	{
+		/** @type {Record<string, Record<string, any>>} */
+		const tmpSchema = {};
+		for (const tmpKey of this.getFilterSchemaKeys())
+		{
+			tmpSchema[tmpKey] = this.getFilterClauseSchemaForKey(tmpKey);
+		}
+		return tmpSchema;
+	}
+
+	/**
+	 * @param {string} pFilterKey - The filter key to add the clause for.
+	 * @param {string} pClauseKey - The clause key to add.
+	 */
+	addFilterClause(pFilterKey, pClauseKey)
+	{
+		let tmpClause = this.getFilterClauseSchemaForKey(pFilterKey)?.AvailableClauses?.find?.((c) => c.Key == pClauseKey);
+		if (!tmpClause)
+		{
+			this.pict.log.error(`RecordSetProviderBase.addFilterClause() - No filter clause schema found for key ${pFilterKey} and clause ${pClauseKey}.`);
+			return;
+		}
+		tmpClause = JSON.parse(JSON.stringify(tmpClause));
+		tmpClause.Hash = `${pFilterKey}-${pClauseKey}-${this.pict.getUUID()}`;
+		const tmpClauses = this.getFilterClauses();
+		tmpClauses.push();
+	}
+
+	/**
+	 */
+	clearFilterClauses()
+	{
+		const tmpClauses = this.pict.Bundle._ActiveFilterState?.[this.options.RecordSet]?.FilterClauses;
+		if (!Array.isArray(tmpClauses))
+		{
+			return;
+		}
+		tmpClauses.length = 0; // Clear the array
+	}
+
+	/**
+	 * @param {string} pSpecificFilterClauseHash - The hash of the specific filter clause to remove.
+	 */
+	removeFilterClause(pSpecificFilterClauseHash)
+	{
+		const tmpClauses = this.pict.Bundle._ActiveFilterState?.[this.options.RecordSet]?.FilterClauses;
+		if (!Array.isArray(tmpClauses))
+		{
+			this.pict.log.error('RecordSetProviderBase.removeFilterClause() - No filter clauses found.');
+			return;
+		}
+		const tmpClauseIndex = tmpClauses.findIndex((c) => pSpecificFilterClauseHash == c.Hash);
+		if (tmpClauseIndex < 0)
+		{
+			this.pict.log.error(`RecordSetProviderBase.removeFilterClause() - Filter clause with hash ${pSpecificFilterClauseHash} not found.`);
+			return;
+		}
+		tmpClauses.splice(tmpClauseIndex, 1);
+	}
+
+	/**
+	 * @return {Array<Record<string, any>>} The filter clauses.
+	 */
+	getFilterClauses()
+	{
+		let tmpClauses = this.pict.Bundle._ActiveFilterState?.[this.options.RecordSet]?.FilterClauses;
+		if (!Array.isArray(tmpClauses))
+		{
+			tmpClauses = [];
+			this.pict.Bundle._ActiveFilterState = this.pict.Bundle._ActiveFilterState || {};
+			this.pict.Bundle._ActiveFilterState[this.options.RecordSet] = this.pict.Bundle._ActiveFilterState[this.options.RecordSet] || {};
+			this.pict.Bundle._ActiveFilterState[this.options.RecordSet].FilterClauses = tmpClauses;
+		}
+		return tmpClauses;
+	}
+
+	/**
+	 * @param {string} pSpecificFilterClauseHash - The hash of the specific filter clause to move.
+	 * @param {number} pOrdinal - The ordinal position to move the filter clause to.
+	 */
+	moveFilterClauseTo(pSpecificFilterClauseHash, pOrdinal)
+	{
+		const tmpClauses = this.pict.Bundle._ActiveFilterState?.[this.options.RecordSet]?.FilterClauses;
+		if (!Array.isArray(tmpClauses))
+		{
+			this.pict.log.error('RecordSetProviderBase.moveFilterClauseTo() - No filter clauses found.');
+			return;
+		}
+		if (pOrdinal < 0 || pOrdinal >= tmpClauses.length)
+		{
+			this.pict.log.error(`RecordSetProviderBase.moveFilterClauseTo() - Invalid ordinal ${pOrdinal}.`);
+			return;
+		}
+		const tmpClauseIndex = tmpClauses.indexOf((c) => pSpecificFilterClauseHash == c.Hash);
+		if (tmpClauseIndex < 0)
+		{
+			this.pict.log.error(`RecordSetProviderBase.moveFilterClauseTo() - Filter clause with hash ${pSpecificFilterClauseHash} not found.`);
+			return;
+		}
+		const tmpClause = tmpClauses.splice(tmpClauseIndex, 1)[0];
+		tmpClauses.splice(pOrdinal, 0, tmpClause);
+	}
+
+	/**
+	 * @param {string} pSpecificFilterClauseHash - The hash of the specific filter clause to move.
+	 * @param {number} pOrdinalOffset - The ordinal offset to move the filter clause by.
+	 */
+	moveFilterClauseBy(pSpecificFilterClauseHash, pOrdinalOffset)
+	{
+		const tmpClauses = this.pict.Bundle._ActiveFilterState?.[this.options.RecordSet]?.FilterClauses;
+		if (!Array.isArray(tmpClauses))
+		{
+			this.pict.log.error('RecordSetProviderBase.moveFilterClauseBy() - No filter clauses found.');
+			return;
+		}
+		const tmpClauseIndex = tmpClauses.indexOf((c) => pSpecificFilterClauseHash == c.Hash);
+		if (tmpClauseIndex < 0)
+		{
+			this.pict.log.error(`RecordSetProviderBase.moveFilterClauseBy() - Filter clause with hash ${pSpecificFilterClauseHash} not found.`);
+			return;
+		}
+		const tmpNewOrdinal = tmpClauseIndex + pOrdinalOffset;
+		if (tmpNewOrdinal < 0 || tmpNewOrdinal >= tmpClauses.length)
+		{
+			this.pict.log.error(`RecordSetProviderBase.moveFilterClauseBy() - Invalid new ordinal ${tmpNewOrdinal} (offset of ${pOrdinalOffset} for original ordinal ${tmpClauseIndex}).`);
+			return;
+		}
+		const tmpClause = tmpClauses.splice(tmpClauseIndex, 1)[0];
+		tmpClauses.splice(tmpNewOrdinal, 0, tmpClause);
 	}
 }
 

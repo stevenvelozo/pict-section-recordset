@@ -182,6 +182,7 @@ module.exports.default_configuration.pict_configuration = (
 		{
 			"ExternalJoinBookByAuthor":
 			{
+				"DisplayName": "Author's Name",
 				"Type": "ExternalJoinStringMatch",
 				"ExternalFilterByColumns": [ "Name" ],
 
