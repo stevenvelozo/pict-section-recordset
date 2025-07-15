@@ -6,9 +6,6 @@ const _DEFAULT_CONFIGURATION_Filter_InternalJoin_DateMatch =
 {
 	ViewIdentifier: 'PRSP-Filter-InternalJoin-DateMatch',
 
-	DefaultRenderable: 'PRSP_Renderable_Filter_InternalJoin_DateMatch',
-	DefaultDestinationAddress: '#PRSP_Renderable_Filter_InternalJoin_DateMatch',
-
 	Templates:
 	[
 		{
@@ -18,16 +15,6 @@ const _DEFAULT_CONFIGURATION_Filter_InternalJoin_DateMatch =
 	{~IWVDA:PSRSFilterProxyView:Record.ClauseDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-InternalJoin-DateMatch-Template] -->
 `
-		}
-	],
-
-	Renderables:
-	[
-		{
-			RenderableHash: 'PRSP_Renderable_Filter_InternalJoin_DateMatch',
-			TemplateHash: 'PRSP-Filter-InternalJoin-DateMatch-Template',
-			DestinationAddress: '#PRSP_Filter_InternalJoin_DateMatch_Container',
-			RenderMethod: 'replace'
 		}
 	],
 };
@@ -47,6 +34,11 @@ class ViewRecordSetSUBSETFilterInternalJoinDateMatch extends ViewRecordSetSUBSET
 		super.prepareRecord(pRecord);
 
 		pRecord.ClauseDescriptor.DataType = 'DateTime';
+	}
+
+	getFilterFormTemplate()
+	{
+		return 'PRSP-Filter-InternalJoin-DateMatch-Template';
 	}
 }
 

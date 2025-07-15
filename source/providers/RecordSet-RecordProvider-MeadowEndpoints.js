@@ -449,6 +449,10 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 					{
 						tmpFieldFilterSchema.FilterKey = tmpSchemaField;
 					}
+					if (!tmpFieldFilterSchema.RecordSet)
+					{
+						tmpFieldFilterSchema.RecordSet = this.options.RecordSet;
+					}
 					if (!tmpFieldFilterSchema.DisplayName)
 					{
 						tmpFieldFilterSchema.DisplayName = this._getHumanReadableFieldName(tmpSchemaField);
@@ -510,6 +514,10 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 							{
 								tmpFieldFilterSchema.FilterKey = tmpFilterKey;
 							}
+							if (!tmpFieldFilterSchema.RecordSet)
+							{
+								tmpFieldFilterSchema.RecordSet = this.options.RecordSet;
+							}
 							if (!tmpFieldFilterSchema.DisplayName)
 							{
 								tmpFieldFilterSchema.DisplayName = tmpFilterClause.DisplayName || this._getHumanReadableFieldName(tmpFilterKey);
@@ -541,7 +549,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 								tmpFilterClause.ClauseKey = tmpFilterKey;
 							}
 							if (!tmpFilterClause.DisplayName)
-							{	
+							{
 								tmpFilterClause.DisplayName = tmpFieldHumanName;
 							}
 							tmpFilterClause.Ordinal = tmpFieldFilterSchema.AvailableClauses.length + 1;

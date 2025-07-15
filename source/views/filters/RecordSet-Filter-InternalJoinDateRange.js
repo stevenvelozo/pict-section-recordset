@@ -6,9 +6,6 @@ const _DEFAULT_CONFIGURATION_Filter_InternalJoin_DateRange =
 {
 	ViewIdentifier: 'PRSP-Filter-InternalJoin-DateRange',
 
-	DefaultRenderable: 'PRSP_Renderable_Filter_InternalJoin_DateRange',
-	DefaultDestinationAddress: '#PRSP_Renderable_Filter_InternalJoin_DateRange',
-
 	Templates:
 	[
 		{
@@ -19,16 +16,6 @@ const _DEFAULT_CONFIGURATION_Filter_InternalJoin_DateRange =
 	{~IWVDA:PSRSFilterProxyView:Record.EndClauseDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-InternalJoin-DateRange-Template] -->
 `
-		}
-	],
-
-	Renderables:
-	[
-		{
-			RenderableHash: 'PRSP_Renderable_Filter_InternalJoin_DateRange',
-			TemplateHash: 'PRSP-Filter-InternalJoin-DateRange-Template',
-			DestinationAddress: '#PRSP_Filter_InternalJoin_DateRange_Container',
-			RenderMethod: 'replace'
 		}
 	],
 };
@@ -49,6 +36,11 @@ class ViewRecordSetSUBSETFilterInternalJoinDateRange extends ViewRecordSetSUBSET
 
 		pRecord.StartClauseDescriptor.DataType = 'DateTime';
 		pRecord.EndClauseDescriptor.DataType = 'DateTime';
+	}
+
+	getFilterFormTemplate()
+	{
+		return 'PRSP-Filter-InternalJoin-DateRange-Template';
 	}
 }
 

@@ -43,6 +43,14 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
      * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
      */
     handleReset(pEvent: Event, pRecordSet: string, pViewContext: string): void;
+    /**
+     * @param {Event} pEvent - The DOM event that triggered the search
+     * @param {string} pRecordSet - The record set being filtered
+     * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
+     */
+    selectFilterToAdd(pEvent: Event, pRecordSet: string, pViewContext: string): void;
+    addFilter(pEvent: any, pRecordSet: any, pViewContext: any, pFilterKey: any, pClauseKey: any): void;
+    getFilterSchema(pRecordSet: any): any[];
     serializeFilterExperience(pExperience: any): Promise<string>;
     /**
      * @param {string} pExperience - The serialized filter experience as a string.

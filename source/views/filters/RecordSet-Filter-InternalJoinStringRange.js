@@ -6,9 +6,6 @@ const _DEFAULT_CONFIGURATION_Filter_InternalJoin_StringRange =
 {
 	ViewIdentifier: 'PRSP-Filter-InternalJoin-StringRange',
 
-	DefaultRenderable: 'PRSP_Renderable_Filter_InternalJoin_StringRange',
-	DefaultDestinationAddress: '#PRSP_Renderable_Filter_InternalJoin_StringRange',
-
 	Templates:
 	[
 		{
@@ -21,16 +18,6 @@ const _DEFAULT_CONFIGURATION_Filter_InternalJoin_StringRange =
 `
 		}
 	],
-
-	Renderables:
-	[
-		{
-			RenderableHash: 'PRSP_Renderable_Filter_InternalJoin_StringRange',
-			TemplateHash: 'PRSP-Filter-InternalJoin-StringRange-Template',
-			DestinationAddress: '#PRSP_Filter_InternalJoin_StringRange_Container',
-			RenderMethod: 'replace'
-		}
-	],
 };
 
 class ViewRecordSetSUBSETFilterInternalJoinStringRange extends ViewRecordSetSUBSETFilterBaseRange
@@ -38,6 +25,11 @@ class ViewRecordSetSUBSETFilterInternalJoinStringRange extends ViewRecordSetSUBS
 	constructor(pFable, pOptions, pServiceHash)
 	{
 		super(pFable, pOptions, pServiceHash);
+	}
+
+	getFilterFormTemplate()
+	{
+		return 'PRSP-Filter-InternalJoin-StringRange-Template';
 	}
 }
 

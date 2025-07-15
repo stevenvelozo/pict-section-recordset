@@ -312,6 +312,7 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		// Add the subviews internally and externally
 		this.pict.addTemplate(require('../templates/Pict-Template-FilterView.js'));
 		this.pict.addTemplate(require('../templates/Pict-Template-FilterInstanceViews.js'));
+		this.pict.addTemplate(require('../views/filters').Base);
 		this.childViews.errorNotFound = this.fable.addView('RSP-RecordSet-Error-NotFound', ViewDefinitionRecordSetErrorNotFound);
 		this.childViews.list = this.fable.addView('RSP-RecordSet-List', this.options, ViewRecordSetList);
 		this.childViews.edit = this.fable.addView('RSP-RecordSet-Edit', this.options, ViewRecordSetEdit);

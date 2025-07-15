@@ -6,9 +6,6 @@ const _DEFAULT_CONFIGURATION_Filter_ExternalJoinStringMatch =
 {
 	ViewIdentifier: 'PRSP-Filter-ExternalJoinStringMatch',
 
-	DefaultRenderable: 'PRSP_Renderable_Filter_ExternalJoinStringMatch',
-	DefaultDestinationAddress: '#PRSP_Renderable_Filter_ExternalJoinStringMatch',
-
 	Templates:
 	[
 		{
@@ -20,16 +17,6 @@ const _DEFAULT_CONFIGURATION_Filter_ExternalJoinStringMatch =
 `
 		}
 	],
-
-	Renderables:
-	[
-		{
-			RenderableHash: 'PRSP_Renderable_Filter_ExternalJoinStringMatch',
-			TemplateHash: 'PRSP-Filter-ExternalJoinStringMatch-Template',
-			DestinationAddress: '#PRSP_Filter_ExternalJoinStringMatch_Container',
-			RenderMethod: 'replace'
-		}
-	],
 };
 
 class ViewRecordSetSUBSETFilterExternalJoinStringMatch extends ViewRecordSetSUBSETFilterBase
@@ -37,6 +24,11 @@ class ViewRecordSetSUBSETFilterExternalJoinStringMatch extends ViewRecordSetSUBS
 	constructor(pFable, pOptions, pServiceHash)
 	{
 		super(pFable, pOptions, pServiceHash);
+	}
+
+	getFilterFormTemplate()
+	{
+		return 'PRSP-Filter-ExternalJoinStringMatch-Template';
 	}
 }
 

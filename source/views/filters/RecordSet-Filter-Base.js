@@ -30,13 +30,23 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 	Templates:
 	[
 		{
-			Hash: 'PRSP-Filter-DateRange-Template',
+			Hash: 'PRSP-Filter-Base-Form',
+			Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-Filter-Base-Form] -->
+	{~JD:Record~}
+	<!-- DefaultPackage end view template:	[PRSP-Filter-Base-Form] -->
+`
+		},
+		{
+			Hash: 'PRSP-Filter-Base-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-Base-Template] -->
-	{~JD:Record~}
+	<div>
+		{~TBR:Context[0].getFilterFormTemplate()~}
+	</div>
 	<!-- DefaultPackage end view template:	[PRSP-Filter-Base-Template] -->
 `
-		}
+		},
 	],
 
 	Renderables:
@@ -78,7 +88,11 @@ class ViewRecordSetSUBSETFilterBase extends libPictView
 			Name: pRecord.Label || pRecord.ExternalFilterByColumn || pRecord.ExternalFilterByColumns?.[0] || pRecord.FilterByColumn || pRecord.FilterByColumns?.[0] || 'Value',
 			DataType: 'String',
 		};
+	}
 
+	getFilterFormTemplate()
+	{
+		return 'PRSP-Filter-Base-Form';
 	}
 }
 

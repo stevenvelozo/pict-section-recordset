@@ -285,7 +285,7 @@ class RecordSetProviderBase extends libPictProvider
 	 */
 	addFilterClause(pFilterKey, pClauseKey)
 	{
-		let tmpClause = this.getFilterClauseSchemaForKey(pFilterKey)?.AvailableClauses?.find?.((c) => c.Key == pClauseKey);
+		let tmpClause = this.getFilterClauseSchemaForKey(pFilterKey)?.AvailableClauses?.find?.((c) => c.ClauseKey == pClauseKey);
 		if (!tmpClause)
 		{
 			this.pict.log.error(`RecordSetProviderBase.addFilterClause() - No filter clause schema found for key ${pFilterKey} and clause ${pClauseKey}.`);
@@ -293,8 +293,9 @@ class RecordSetProviderBase extends libPictProvider
 		}
 		tmpClause = JSON.parse(JSON.stringify(tmpClause));
 		tmpClause.Hash = `${pFilterKey}-${pClauseKey}-${this.pict.getUUID()}`;
+		tmpClause.Label = tmpClause.Label || tmpClause.DisplayName;
 		const tmpClauses = this.getFilterClauses();
-		tmpClauses.push();
+		tmpClauses.push(tmpClause);
 	}
 
 	/**

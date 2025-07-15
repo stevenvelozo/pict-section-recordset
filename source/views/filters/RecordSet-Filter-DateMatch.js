@@ -6,9 +6,6 @@ const _DEFAULT_CONFIGURATION_Filter_DateMatch =
 {
 	ViewIdentifier: 'PRSP-Filter-DateMatch',
 
-	DefaultRenderable: 'PRSP_Renderable_Filter_DateMatch',
-	DefaultDestinationAddress: '#PRSP_Renderable_Filter_DateMatch',
-
 	Templates:
 	[
 		{
@@ -18,16 +15,6 @@ const _DEFAULT_CONFIGURATION_Filter_DateMatch =
 	{~IWVDA:PSRSFilterProxyView:Record.ClauseDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-DateMatch-Template] -->
 `
-		}
-	],
-
-	Renderables:
-	[
-		{
-			RenderableHash: 'PRSP_Renderable_Filter_DateMatch',
-			TemplateHash: 'PRSP-Filter-DateMatch-Template',
-			DestinationAddress: '#PRSP_Filter_DateMatch_Container',
-			RenderMethod: 'replace'
 		}
 	],
 };
@@ -48,6 +35,11 @@ class ViewRecordSetSUBSETFilterDateMatch extends ViewRecordSetSUBSETFilterBase
 	{
 	//{~IWVDA:PSRSFilterProxyView:Record.ClauseDescriptor~}
 		pRecord.ClauseDescriptor.DataType = 'DateTime';
+	}
+
+	getFilterFormTemplate()
+	{
+		return 'PRSP-Filter-DateMatch-Template';
 	}
 }
 

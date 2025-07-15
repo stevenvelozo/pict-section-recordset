@@ -6,9 +6,6 @@ const _DEFAULT_CONFIGURATION_Filter_NumericMatch =
 {
 	ViewIdentifier: 'PRSP-Filter-NumericMatch',
 
-	DefaultRenderable: 'PRSP_Renderable_Filter_NumericMatch',
-	DefaultDestinationAddress: '#PRSP_Renderable_Filter_NumericMatch',
-
 	Templates:
 	[
 		{
@@ -18,16 +15,6 @@ const _DEFAULT_CONFIGURATION_Filter_NumericMatch =
 	{~IWVDA:PSRSFilterProxyView:Record.ClauseDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-NumericMatch-Template] -->
 `
-		}
-	],
-
-	Renderables:
-	[
-		{
-			RenderableHash: 'PRSP_Renderable_Filter_NumericMatch',
-			TemplateHash: 'PRSP-Filter-NumericMatch-Template',
-			DestinationAddress: '#PRSP_Filter_NumericMatch_Container',
-			RenderMethod: 'replace'
 		}
 	],
 };
@@ -47,6 +34,11 @@ class ViewRecordSetSUBSETFilterNumericMatch extends ViewRecordSetSUBSETFilterBas
 		super.prepareRecord(pRecord);
 
 		pRecord.ClauseDescriptor.DataType = 'Number';
+	}
+
+	getFilterFormTemplate()
+	{
+		return 'PRSP-Filter-NumericMatch-Template';
 	}
 }
 

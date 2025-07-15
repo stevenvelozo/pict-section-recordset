@@ -6,9 +6,6 @@ const _DEFAULT_CONFIGURATION_Filter_NumericRange =
 {
 	ViewIdentifier: 'PRSP-Filter-NumericRange',
 
-	DefaultRenderable: 'PRSP_Renderable_Filter_NumericRange',
-	DefaultDestinationAddress: '#PRSP_Renderable_Filter_NumericRange',
-
 	Templates:
 	[
 		{
@@ -19,16 +16,6 @@ const _DEFAULT_CONFIGURATION_Filter_NumericRange =
 	{~IWVDA:PSRSFilterProxyView:Record.EndClauseDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-NumericRange-Template] -->
 `
-		}
-	],
-
-	Renderables:
-	[
-		{
-			RenderableHash: 'PRSP_Renderable_Filter_NumericRange',
-			TemplateHash: 'PRSP-Filter-NumericRange-Template',
-			DestinationAddress: '#PRSP_Filter_NumericRange_Container',
-			RenderMethod: 'replace'
 		}
 	],
 };
@@ -49,6 +36,11 @@ class ViewRecordSetSUBSETFilterNumericRange extends ViewRecordSetSUBSETFilterBas
 
 		pRecord.StartClauseDescriptor.DataType = 'Number';
 		pRecord.EndClauseDescriptor.DataType = 'Number';
+	}
+
+	getFilterFormTemplate()
+	{
+		return 'PRSP-Filter-NumericRange-Template';
 	}
 }
 

@@ -6,9 +6,6 @@ const _DEFAULT_CONFIGURATION_Filter_InternalJoin_StringMatch =
 {
 	ViewIdentifier: 'PRSP-Filter-InternalJoin-StringMatch',
 
-	DefaultRenderable: 'PRSP_Renderable_Filter_InternalJoin_StringMatch',
-	DefaultDestinationAddress: '#PRSP_Renderable_Filter_InternalJoin_StringMatch',
-
 	Templates:
 	[
 		{
@@ -20,16 +17,6 @@ const _DEFAULT_CONFIGURATION_Filter_InternalJoin_StringMatch =
 `
 		}
 	],
-
-	Renderables:
-	[
-		{
-			RenderableHash: 'PRSP_Renderable_Filter_InternalJoin_StringMatch',
-			TemplateHash: 'PRSP-Filter-InternalJoin-StringMatch-Template',
-			DestinationAddress: '#PRSP_Filter_InternalJoin_StringMatch_Container',
-			RenderMethod: 'replace'
-		}
-	],
 };
 
 class ViewRecordSetSUBSETFilterInternalJoinStringMatch extends ViewRecordSetSUBSETFilterBase
@@ -37,6 +24,11 @@ class ViewRecordSetSUBSETFilterInternalJoinStringMatch extends ViewRecordSetSUBS
 	constructor(pFable, pOptions, pServiceHash)
 	{
 		super(pFable, pOptions, pServiceHash);
+	}
+
+	getFilterFormTemplate()
+	{
+		return 'PRSP-Filter-InternalJoin-StringMatch-Template';
 	}
 }
 

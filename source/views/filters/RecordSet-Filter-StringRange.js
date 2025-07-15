@@ -6,9 +6,6 @@ const _DEFAULT_CONFIGURATION_Filter_StringRange =
 {
 	ViewIdentifier: 'PRSP-Filter-StringRange',
 
-	DefaultRenderable: 'PRSP_Renderable_Filter_StringRange',
-	DefaultDestinationAddress: '#PRSP_Renderable_Filter_StringRange',
-
 	Templates:
 	[
 		{
@@ -21,16 +18,6 @@ const _DEFAULT_CONFIGURATION_Filter_StringRange =
 `
 		}
 	],
-
-	Renderables:
-	[
-		{
-			RenderableHash: 'PRSP_Renderable_Filter_StringRange',
-			TemplateHash: 'PRSP-Filter-StringRange-Template',
-			DestinationAddress: '#PRSP_Filter_StringRange_Container',
-			RenderMethod: 'replace'
-		}
-	],
 };
 
 class ViewRecordSetSUBSETFilterStringRange extends ViewRecordSetSUBSETFilterBaseRange
@@ -38,6 +25,11 @@ class ViewRecordSetSUBSETFilterStringRange extends ViewRecordSetSUBSETFilterBase
 	constructor(pFable, pOptions, pServiceHash)
 	{
 		super(pFable, pOptions, pServiceHash);
+	}
+
+	getFilterFormTemplate()
+	{
+		return 'PRSP-Filter-StringRange-Template';
 	}
 }
 

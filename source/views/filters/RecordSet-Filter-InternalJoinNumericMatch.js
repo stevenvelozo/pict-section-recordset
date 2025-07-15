@@ -6,9 +6,6 @@ const _DEFAULT_CONFIGURATION_Filter_InternalJoin_NumericMatch =
 {
 	ViewIdentifier: 'PRSP-Filter-InternalJoin-NumericMatch',
 
-	DefaultRenderable: 'PRSP_Renderable_Filter_InternalJoin_NumericMatch',
-	DefaultDestinationAddress: '#PRSP_Renderable_Filter_InternalJoin_NumericMatch',
-
 	Templates:
 	[
 		{
@@ -18,16 +15,6 @@ const _DEFAULT_CONFIGURATION_Filter_InternalJoin_NumericMatch =
 	{~IWVDA:PSRSFilterProxyView:Record.ClauseDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-InternalJoin-NumericMatch-Template] -->
 `
-		}
-	],
-
-	Renderables:
-	[
-		{
-			RenderableHash: 'PRSP_Renderable_Filter_InternalJoin_NumericMatch',
-			TemplateHash: 'PRSP-Filter-InternalJoin-NumericMatch-Template',
-			DestinationAddress: '#PRSP_Filter_InternalJoin_NumericMatch_Container',
-			RenderMethod: 'replace'
 		}
 	],
 };
@@ -47,6 +34,11 @@ class ViewRecordSetSUBSETFilterInternalJoinNumericMatch extends ViewRecordSetSUB
 		super.prepareRecord(pRecord);
 
 		pRecord.ClauseDescriptor.DataType = 'Number';
+	}
+
+	getFilterFormTemplate()
+	{
+		return 'PRSP-Filter-InternalJoin-NumericMatch-Template';
 	}
 }
 

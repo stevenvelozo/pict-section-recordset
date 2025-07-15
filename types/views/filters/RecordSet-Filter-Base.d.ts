@@ -19,6 +19,7 @@ declare class ViewRecordSetSUBSETFilterBase extends libPictView {
      * @param {Record<string, any>} pRecord - The record used for view rendering.
      */
     prepareRecord(pRecord: Record<string, any>): void;
+    getFilterFormTemplate(): string;
 }
 declare namespace ViewRecordSetSUBSETFilterBase {
     export { _DEFAULT_CONFIGURATION_SUBSET_Filter as default_configuration };

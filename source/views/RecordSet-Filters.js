@@ -38,6 +38,7 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 				{~FIV:Record~}
 			</div>
 			{~T:PRSP-SUBSET-Filters-Template-Button-Fieldset~}
+			{~T:PRSP-SUBSET-Filters-Template-AddFilter-Fieldset~}
 		</form>
 	</section>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template] -->
@@ -65,6 +66,60 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-Button-Fieldset] -->
 `
 		},
+		{
+			Hash: 'PRSP-SUBSET-Filters-Template-AddFilter-Fieldset',
+			Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-AddFilter-Fieldset] -->
+	<fieldset>
+		<button type="button" id="PRSP_Filter_Button_Add" onclick="_Pict.views['PRSP-Filters'].selectFilterToAdd(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">+</button>
+		<div id="PRSP-SUBSET-Filters-Template-AddFilter-Dropdown"></div>
+	</fieldset>
+	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-AddFilter-Fieldset] -->
+`
+		},
+		{
+			Hash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown',
+			Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-AddFilter-Dropdown] -->
+	<div>
+		<select onchange="event.preventDefault(); _Pict.views['PRSP-Filters'].render('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown', undefined,
+		{
+			RecordSet: event.target.querySelector('option:checked').getAttribute('data-i-recordset'),
+			FilterKey: event.target.querySelector('option:checked').getAttribute('data-i-filter-key'),
+			AvailableClauses: _Pict.providers[\`RSP-Provider-\${event.target.querySelector('option:checked').getAttribute('data-i-recordset')}\`].getFilterClauseSchemaForKey(event.target.querySelector('option:checked').getAttribute('data-i-filter-key')).AvailableClauses,
+		});">
+			{~TS:PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Entry:Scope.getFilterSchema()~}
+		</select>
+		<div id="PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown">
+		</div>
+	</div>
+	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-AddFilter-Dropdown] -->
+`
+		},
+		{
+			Hash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown',
+			Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown] -->
+	<select>
+		{~TS:PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Entry:Record.AvailableClauses~}
+	</select>
+	<button type="button" id="PRSP_Filter_Button_ConfirmAdd" onclick="_Pict.views['PRSP-Filters'].addFilter(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}',
+		document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown').querySelector('option:checked').getAttribute('data-i-filter-key'),
+		document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown').querySelector('option:checked').getAttribute('data-i-clause-key'),
+	)">Add Filter</button>
+	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown] -->
+`
+		},
+		{
+			Hash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Entry',
+			Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Entry] -->
+	<option value="{~D:Record.FilterKey~}|{~D:Record.ClauseKey~}" data-i-recordset="{~D:Record.RecordSet~}" data-i-filter-key="{~D:Record.FilterKey~}" data-i-clause-key="{~D:Record.ClauseKey~}">
+		{~D:Record.DisplayName~}
+	</option>
+	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Entry] -->
+`
+		},
 	],
 
 	Renderables:
@@ -74,6 +129,18 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			TemplateHash: 'PRSP-SUBSET-Filters-Template',
 			DestinationAddress: '#PRSP_Filters_Container',
 			RenderMethod: 'replace'
+		},
+		{
+			RenderableHash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown',
+			TemplateHash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown',
+			ContentDestinationAddress: '#PRSP-SUBSET-Filters-Template-AddFilter-Dropdown',
+			RenderMethod: 'replace',
+		},
+		{
+			RenderableHash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown',
+			TemplateHash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown',
+			ContentDestinationAddress: '#PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown',
+			RenderMethod: 'replace',
 		},
 	],
 
@@ -273,6 +340,33 @@ class ViewRecordSetSUBSETFilters extends libPictView
 			}
 		}
 		this.performSearch(pRecordSet, pViewContext);
+	}
+
+	/**
+	 * @param {Event} pEvent - The DOM event that triggered the search
+	 * @param {string} pRecordSet - The record set being filtered
+	 * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
+	 */
+	selectFilterToAdd(pEvent, pRecordSet, pViewContext)
+	{
+		pEvent.preventDefault();
+		//const tmpRecordsetProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
+		//this.pict.log.info(`Selecting filter to add for record set: ${pRecordSet} in view context: ${pViewContext}`, tmpRecordsetProvider.getFilterSchema())
+		this.renderWithScope(this.pict.providers[`RSP-Provider-${pRecordSet}`], 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown');
+	}
+
+	addFilter(pEvent, pRecordSet, pViewContext, pFilterKey, pClauseKey)
+	{
+		this.pict.log.info(`Adding filter: ${pFilterKey} with clause: ${pClauseKey} to record set: ${pRecordSet} in view context: ${pViewContext}`);
+		this.pict.providers[`RSP-Provider-${pRecordSet}`].addFilterClause(pFilterKey, pClauseKey);
+		//FIXME: we need the record from the original render here but no longer have it...
+		//this.render();
+	}
+
+	getFilterSchema(pRecordSet)
+	{
+		const tmpRecordsetProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
+		return Object.values(tmpRecordsetProvider.getFilterSchema()).flatMap((pFilter) => pFilter.AvailableClauses || []);
 	}
 
 	/**

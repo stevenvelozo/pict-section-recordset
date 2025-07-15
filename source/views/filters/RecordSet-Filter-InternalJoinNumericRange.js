@@ -6,9 +6,6 @@ const _DEFAULT_CONFIGURATION_Filter_InternalJoin_NumericRange =
 {
 	ViewIdentifier: 'PRSP-Filter-InternalJoin-NumericRange',
 
-	DefaultRenderable: 'PRSP_Renderable_Filter_InternalJoin_NumericRange',
-	DefaultDestinationAddress: '#PRSP_Renderable_Filter_InternalJoin_NumericRange',
-
 	Templates:
 	[
 		{
@@ -20,16 +17,6 @@ const _DEFAULT_CONFIGURATION_Filter_InternalJoin_NumericRange =
 	<!-- DefaultPackage end view template:	[PRSP-Filter-InternalJoin-NumericRange-Template] -->
 `
 		},
-	],
-
-	Renderables:
-	[
-		{
-			RenderableHash: 'PRSP_Renderable_Filter_InternalJoin_NumericRange',
-			TemplateHash: 'PRSP-Filter-InternalJoin-NumericRange-Template',
-			DestinationAddress: '#PRSP_Filter_InternalJoin_NumericRange_Container',
-			RenderMethod: 'replace'
-		}
 	],
 };
 
@@ -49,6 +36,11 @@ class ViewRecordSetSUBSETFilterInternalJoinNumericRange extends ViewRecordSetSUB
 
 		pRecord.StartClauseDescriptor.DataType = 'Number';
 		pRecord.EndClauseDescriptor.DataType = 'Number';
+	}
+
+	getFilterFormTemplate()
+	{
+		return 'PRSP-Filter-InternalJoin-NumericRange-Template';
 	}
 }
 

@@ -6,9 +6,6 @@ const _DEFAULT_CONFIGURATION_Filter_ExternalJoin_DateMatch =
 {
 	ViewIdentifier: 'PRSP-Filter-ExternalJoin-DateMatch',
 
-	DefaultRenderable: 'PRSP_Renderable_Filter_ExternalJoin_DateMatch',
-	DefaultDestinationAddress: '#PRSP_Renderable_Filter_ExternalJoin_DateMatch',
-
 	Templates:
 	[
 		{
@@ -18,16 +15,6 @@ const _DEFAULT_CONFIGURATION_Filter_ExternalJoin_DateMatch =
 	{~IWVDA:PSRSFilterProxyView:Record.ClauseDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-ExternalJoin-DateMatch-Template] -->
 `
-		}
-	],
-
-	Renderables:
-	[
-		{
-			RenderableHash: 'PRSP_Renderable_Filter_ExternalJoin_DateMatch',
-			TemplateHash: 'PRSP-Filter-ExternalJoin-DateMatch-Template',
-			DestinationAddress: '#PRSP_Filter_ExternalJoin_DateMatch_Container',
-			RenderMethod: 'replace'
 		}
 	],
 };
@@ -47,6 +34,11 @@ class ViewRecordSetSUBSETFilterExternalJoinDateMatch extends ViewRecordSetSUBSET
 	prepareRecord(pRecord)
 	{
 		pRecord.ClauseDescriptor.DataType = 'DateTime';
+	}
+
+	getFilterFormTemplate()
+	{
+		return 'PRSP-Filter-ExternalJoin-DateMatch-Template';
 	}
 }
 

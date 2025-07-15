@@ -43,6 +43,8 @@ declare class RecordSetProviderBase extends libPictProvider {
     fable: import("pict");
     /** @type {import('pict')} */
     pict: import("pict");
+    /** @type {Record<string, any>} */
+    _FilterSchema: Record<string, any>;
     /**
      * Get a record by its ID or GUID.
      *
@@ -145,6 +147,43 @@ declare class RecordSetProviderBase extends libPictProvider {
      * @return {Promise<void>}
      */
     decorateCoreRecords(pRecords: Array<Record<string, any>>): Promise<void>;
+    getFilterSchemaKeys(): string[];
+    /**
+     * @param {string} pFilterKey - The filter key to get the schema for.
+     *
+     * @return {Record<string, any>} The schema for the filter clause.
+     */
+    getFilterClauseSchemaForKey(pFilterKey: string): Record<string, any>;
+    /**
+     * @return {Record<string, Record<string, any>>} The schema for the filter clauses.
+     */
+    getFilterSchema(): Record<string, Record<string, any>>;
+    /**
+     * @param {string} pFilterKey - The filter key to add the clause for.
+     * @param {string} pClauseKey - The clause key to add.
+     */
+    addFilterClause(pFilterKey: string, pClauseKey: string): void;
+    /**
+     */
+    clearFilterClauses(): void;
+    /**
+     * @param {string} pSpecificFilterClauseHash - The hash of the specific filter clause to remove.
+     */
+    removeFilterClause(pSpecificFilterClauseHash: string): void;
+    /**
+     * @return {Array<Record<string, any>>} The filter clauses.
+     */
+    getFilterClauses(): Array<Record<string, any>>;
+    /**
+     * @param {string} pSpecificFilterClauseHash - The hash of the specific filter clause to move.
+     * @param {number} pOrdinal - The ordinal position to move the filter clause to.
+     */
+    moveFilterClauseTo(pSpecificFilterClauseHash: string, pOrdinal: number): void;
+    /**
+     * @param {string} pSpecificFilterClauseHash - The hash of the specific filter clause to move.
+     * @param {number} pOrdinalOffset - The ordinal offset to move the filter clause by.
+     */
+    moveFilterClauseBy(pSpecificFilterClauseHash: string, pOrdinalOffset: number): void;
 }
 declare namespace RecordSetProviderBase {
     export { _DefaultProviderConfiguration as default_configuration, RecordSetSearchRangeFacet, RecordSetSearchFacetPayload, RecordSetResult, RecordSetFilter };

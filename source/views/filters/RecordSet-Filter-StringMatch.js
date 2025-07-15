@@ -6,9 +6,6 @@ const _DEFAULT_CONFIGURATION_Filter_StringMatch =
 {
 	ViewIdentifier: 'PRSP-Filter-StringMatch',
 
-	DefaultRenderable: 'PRSP_Renderable_Filter_StringMatch',
-	DefaultDestinationAddress: '#PRSP_Renderable_Filter_StringMatch',
-
 	Templates:
 	[
 		{
@@ -20,16 +17,6 @@ const _DEFAULT_CONFIGURATION_Filter_StringMatch =
 `
 		}
 	],
-
-	Renderables:
-	[
-		{
-			RenderableHash: 'PRSP_Renderable_Filter_StringMatch',
-			TemplateHash: 'PRSP-Filter-StringMatch-Template',
-			DestinationAddress: '#PRSP_Filter_StringMatch_Container',
-			RenderMethod: 'replace'
-		}
-	],
 };
 
 class ViewRecordSetSUBSETFilterStringMatch extends ViewRecordSetSUBSETFilterBase
@@ -37,6 +24,11 @@ class ViewRecordSetSUBSETFilterStringMatch extends ViewRecordSetSUBSETFilterBase
 	constructor(pFable, pOptions, pServiceHash)
 	{
 		super(pFable, pOptions, pServiceHash);
+	}
+
+	getFilterFormTemplate()
+	{
+		return 'PRSP-Filter-StringMatch-Template';
 	}
 }
 

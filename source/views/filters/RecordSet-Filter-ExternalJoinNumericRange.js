@@ -6,9 +6,6 @@ const _DEFAULT_CONFIGURATION_Filter_ExternalJoin_NumericRange =
 {
 	ViewIdentifier: 'PRSP-Filter-ExternalJoin-NumericRange',
 
-	DefaultRenderable: 'PRSP_Renderable_Filter_ExternalJoin_NumericRange',
-	DefaultDestinationAddress: '#PRSP_Renderable_Filter_ExternalJoin_NumericRange',
-
 	Templates:
 	[
 		{
@@ -19,16 +16,6 @@ const _DEFAULT_CONFIGURATION_Filter_ExternalJoin_NumericRange =
 	{~IWVDA:PSRSFilterProxyView:Record.EndClauseDescriptor~}
 	<!-- DefaultPackage end view template:	[PRSP-Filter-ExternalJoin-NumericRange-Template] -->
 `
-		}
-	],
-
-	Renderables:
-	[
-		{
-			RenderableHash: 'PRSP_Renderable_Filter_ExternalJoin_NumericRange',
-			TemplateHash: 'PRSP-Filter-ExternalJoin-NumericRange-Template',
-			DestinationAddress: '#PRSP_Filter_ExternalJoin_NumericRange_Container',
-			RenderMethod: 'replace'
 		}
 	],
 };
@@ -49,6 +36,11 @@ class ViewRecordSetSUBSETFilterExternalJoinNumericRange extends ViewRecordSetSUB
 
 		pRecord.StartClauseDescriptor.DataType = 'Number';
 		pRecord.EndClauseDescriptor.DataType = 'Number';
+	}
+
+	getFilterFormTemplate()
+	{
+		return 'PRSP-Filter-ExternalJoin-NumericRange-Template';
 	}
 }
 

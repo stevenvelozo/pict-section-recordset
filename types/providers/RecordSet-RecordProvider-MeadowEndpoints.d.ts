@@ -124,6 +124,16 @@ declare class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase 
      */
     onInitializeAsync(fCallback: (error?: Error) => void): void;
     /**
+     * @param {string} pEntity - The schema field name.
+     * @return {string} - The human-readable name for the entity.
+     */
+    _getHumanReadbleEntityName(pEntity: string): string;
+    /**
+     * @param {string} pSchemaField - The schema field name.
+     * @return {string} - The human-readable name for the schema field.
+     */
+    _getHumanReadableFieldName(pSchemaField: string): string;
+    /**
      * @param {(error?: Error) => void} fCallback - The callback function.
      */
     initializeEntitySchema(fCallback: (error?: Error) => void): void;
