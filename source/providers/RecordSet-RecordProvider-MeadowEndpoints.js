@@ -489,8 +489,8 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 							break;
 						case 'boolean': //TODO: we didn't add filters for this - they are just numeric but it's weird for the user, maybe we should add views for this that account for the difference
 						case 'integer':
-							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'NumberMatch', FilterByColumn: tmpSchemaField, ExactMatch: true , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
-							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'NumberMatch', FilterByColumn: tmpSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
+							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'NumericMatch', FilterByColumn: tmpSchemaField, ExactMatch: true , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
+							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'NumericMatch', FilterByColumn: tmpSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
 							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'NumberRange', FilterByColumn: tmpSchemaField , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
 							break;
 						default:
