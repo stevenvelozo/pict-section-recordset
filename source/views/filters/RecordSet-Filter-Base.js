@@ -3,7 +3,7 @@ const libPictView = require('pict-view');
 /** @type {Record<string, any>} */
 const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 {
-	ViewIdentifier: 'PRSP-SUBSET-Filter-Base',
+	ViewIdentifier: 'PRSP-FilterType-Base',
 
 	DefaultTemplateRecordAddress: false,
 

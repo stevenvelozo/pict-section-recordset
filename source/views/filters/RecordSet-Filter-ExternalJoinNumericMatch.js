@@ -3,7 +3,7 @@ const ViewRecordSetSUBSETFilterBase = require('./RecordSet-Filter-Base');
 
 const _DEFAULT_CONFIGURATION_Filter_ExternalJoin_NumericMatch =
 {
-	ViewIdentifier: 'PRSP-Filter-ExternalJoin-NumericMatch',
+	ViewIdentifier: 'PRSP-FilterType-ExternalJoinNumericMatch',
 
 	Templates:
 	[

@@ -4,7 +4,7 @@ const ViewRecordSetSUBSETFilterBase = require('./RecordSet-Filter-Base');
 /** @type {Record<string, any>} */
 const _DEFAULT_CONFIGURATION_Filter_StringMatch =
 {
-	ViewIdentifier: 'PRSP-Filter-StringMatch',
+	ViewIdentifier: 'PRSP-FilterType-StringMatch',
 
 	Templates:
 	[

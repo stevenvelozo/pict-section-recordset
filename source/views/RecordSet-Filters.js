@@ -206,6 +206,13 @@ class ViewRecordSetSUBSETFilters extends libPictView
 			this.pict.addView(tmpViewConfiguration.ViewHash, tmpViewConfiguration, libPictViewDynamicForm);
 			this.pict.views[tmpDynamicInputViewSection.ViewHash].viewMarshalDestination = 'Bundle';
 		}
+		for (const tmpView of Object.values(require('./filters')))
+		{
+			if (tmpView.default_configuration.ViewIdentifier && !this.pict.views[tmpView.default_configuration.ViewIdentifier])
+			{
+				this.pict.addView(tmpView.default_configuration.ViewIdentifier, {}, tmpView);
+			}
+		}
 		this.chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 		// Use a lookup table to find the index.

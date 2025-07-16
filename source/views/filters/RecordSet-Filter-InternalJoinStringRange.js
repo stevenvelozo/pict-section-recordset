@@ -4,7 +4,7 @@ const ViewRecordSetSUBSETFilterBaseRange = require('./RecordSet-Filter-Base-Rang
 /** @type {Record<string, any>} */
 const _DEFAULT_CONFIGURATION_Filter_InternalJoin_StringRange =
 {
-	ViewIdentifier: 'PRSP-Filter-InternalJoin-StringRange',
+	ViewIdentifier: 'PRSP-FilterType-InternalJoinStringRange',
 
 	Templates:
 	[

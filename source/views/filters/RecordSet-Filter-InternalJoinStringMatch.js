@@ -4,7 +4,7 @@ const ViewRecordSetSUBSETFilterBase = require('./RecordSet-Filter-Base');
 /** @type {Record<string, any>} */
 const _DEFAULT_CONFIGURATION_Filter_InternalJoin_StringMatch =
 {
-	ViewIdentifier: 'PRSP-Filter-InternalJoin-StringMatch',
+	ViewIdentifier: 'PRSP-FilterType-InternalJoinStringMatch',
 
 	Templates:
 	[

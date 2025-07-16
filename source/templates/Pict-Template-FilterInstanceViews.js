@@ -32,7 +32,7 @@ class PictTemplateFilterInstanceViewInstruction extends libPictTemplate
 
 	_getViewForFilterClauses(pClauses)
 	{
-		const tmpViewHash =`PSRS-FilterType-${pClauses.Type}`; 
+		const tmpViewHash =`PRSP-FilterType-${pClauses.Type}`;
 		/** @type {import('../views/filters/RecordSet-Filter-Base.js')} */
 		let tmpView = this.pict.views[tmpViewHash];
 		if (!tmpView)

@@ -4,7 +4,7 @@ const ViewRecordSetSUBSETFilterBase = require('./RecordSet-Filter-Base');
 /** @type {Record<string, any>} */
 const _DEFAULT_CONFIGURATION_Filter_ExternalJoin_DateMatch =
 {
-	ViewIdentifier: 'PRSP-Filter-ExternalJoin-DateMatch',
+	ViewIdentifier: 'PRSP-FilterType-ExternalJoinDateMatch',
 
 	Templates:
 	[
