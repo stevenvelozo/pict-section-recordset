@@ -36,10 +36,11 @@ class PictTemplateFilterViewInstruction extends libPictTemplate
 	 * @param {any} pRecord - The json object to be used as the Record for the template render
 	 * @param {Array<any>} pContextArray - An array of context objects accessible from the template; safe to leave empty
 	 * @param {any} [pScope] - A sticky scope that can be used to carry state and simplify template
+	 * @param {any} [pState] - A catchall state object for plumbing data through template processing.
 	 *
 	 * @return {string} The rendered template
 	 */
-	render(pTemplateHash, pRecord, pContextArray, pScope)
+	render(pTemplateHash, pRecord, pContextArray, pScope, pState)
 	{
 		let [ tmpViewHash, tmpViewContext ] = pTemplateHash.split(':');
 		tmpViewHash = tmpViewHash.trim();
@@ -88,7 +89,7 @@ class PictTemplateFilterViewInstruction extends libPictTemplate
 		/** @type {import('pict-view')} */
 		const tmpView = this.pict.views[tmpViewHash];
 
-		tmpView.render('__Virtual', `__TemplateOutputCache.${tmpRenderGUID}`, pRecord);
+		tmpView.render('__Virtual', `__TemplateOutputCache.${tmpRenderGUID}`, pRecord, pState && pState.RootRenderable);
 
 		let tmpResult = this.pict.__TemplateOutputCache[tmpRenderGUID];
 		// TODO: Uncomment this when we like how it's working
@@ -103,9 +104,10 @@ class PictTemplateFilterViewInstruction extends libPictTemplate
 	 * @param {(pError?: Error, pResult?: string) => void} fCallback - The callback function to call with the result
 	 * @param {Array<any>} pContextArray - An array of context objects accessible from the template; safe to leave empty
 	 * @param {any} [pScope] - A sticky scope that can be used to carry state and simplify template
+	 * @param {any} [pState] - A catchall state object for plumbing data through template processing.
 	 * @return {void}
 	 */
-	renderAsync(pTemplateHash, pRecord, fCallback, pContextArray, pScope)
+	renderAsync(pTemplateHash, pRecord, fCallback, pContextArray, pScope, pState)
 	{
 		let [ tmpViewHash, tmpViewContext ] = pTemplateHash.split(':');
 		tmpViewHash = tmpViewHash.trim();
@@ -153,7 +155,7 @@ class PictTemplateFilterViewInstruction extends libPictTemplate
 		/** @type {import('pict-view')} */
 		const tmpView = this.pict.views[tmpViewHash];
 
-		return tmpView.renderAsync('__Virtual', `__TemplateOutputCache.${tmpRenderGUID}`, pRecord,
+		return tmpView.renderAsync('__Virtual', `__TemplateOutputCache.${tmpRenderGUID}`, pRecord, pState && pState.RootRenderable,
 			(pError, pResult) =>
 			{
 				if (pError)

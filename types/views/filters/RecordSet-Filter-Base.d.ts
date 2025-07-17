@@ -1,18 +1,6 @@
 export = ViewRecordSetSUBSETFilterBase;
 declare class ViewRecordSetSUBSETFilterBase extends libPictView {
     constructor(pFable: any, pOptions: any, pServiceHash: any);
-    /** @type {import('pict') & { log: any, instantiateServiceProviderWithoutRegistration: (hash: String) => any, PictSectionRecordSet: import('../../Pict-Section-RecordSet.js') }} */
-    pict: import("pict") & {
-        log: any;
-        instantiateServiceProviderWithoutRegistration: (hash: string) => any;
-        PictSectionRecordSet: {
-            new (pFable: any, pOptions: any, pServiceHash: any): import("../../services/RecordsSet-MetaController.js");
-            default_configuration: Record<string, any>;
-            PictRecordSetApplication: typeof import("../../application/Pict-Application-RecordSet.js");
-            RecordSetProviderBase: typeof import("../../providers/RecordSet-RecordProvider-Base.js");
-            RecordSetProviderMeadowEndpoints: typeof import("../../providers/RecordSet-RecordProvider-MeadowEndpoints.js");
-        };
-    };
     /**
      * Hook to prepare state on the render record before rendering.
      *

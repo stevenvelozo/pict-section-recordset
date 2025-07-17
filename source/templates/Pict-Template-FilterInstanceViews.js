@@ -56,10 +56,11 @@ class PictTemplateFilterInstanceViewInstruction extends libPictTemplate
 	 * @param {any} pRecord - The json object to be used as the Record for the template render
 	 * @param {Array<any>} pContextArray - An array of context objects accessible from the template; safe to leave empty
 	 * @param {any} [pScope] - A sticky scope that can be used to carry state and simplify template
+	 * @param {any} [pState] - A catchall state object for plumbing data through template processing.
 	 *
 	 * @return {string} The rendered template
 	 */
-	render(pTemplateHash, pRecord, pContextArray, pScope)
+	render(pTemplateHash, pRecord, pContextArray, pScope, pState)
 	{
 		const tmpRecordSet = pRecord.RecordSet || '';
 		if (!tmpRecordSet)
@@ -116,7 +117,7 @@ class PictTemplateFilterInstanceViewInstruction extends libPictTemplate
 			//tmpRecord.ClauseAddress = `Bundle._ActiveFilterState['${pRecord.RecordSet}'].FilterClauses[${i}]`;
 			tmpRecord.ClauseAddress = `_ActiveFilterState[\`${pRecord.RecordSet}\`].FilterClauses[${i}]`;
 			tmpView.prepareRecord(tmpRecord);
-			tmpView.renderWithScope(tmpClause, '__Virtual', `__TemplateOutputCache.${tmpRenderGUID}`, tmpRecord);
+			tmpView.renderWithScope(tmpClause, '__Virtual', `__TemplateOutputCache.${tmpRenderGUID}`, tmpRecord, pState && pState.RootRenderable);
 
 			tmpResult += this.pict.__TemplateOutputCache[tmpRenderGUID];
 			// TODO: Uncomment this when we like how it's working
@@ -132,9 +133,10 @@ class PictTemplateFilterInstanceViewInstruction extends libPictTemplate
 	 * @param {(pError?: Error, pResult?: string) => void} fCallback - The callback function to call with the result
 	 * @param {Array<any>} pContextArray - An array of context objects accessible from the template; safe to leave empty
 	 * @param {any} [pScope] - A sticky scope that can be used to carry state and simplify template
+	 * @param {any} [pState] - A catchall state object for plumbing data through template processing.
 	 * @return {void}
 	 */
-	renderAsync(pTemplateHash, pRecord, fCallback, pContextArray, pScope)
+	renderAsync(pTemplateHash, pRecord, fCallback, pContextArray, pScope, pState)
 	{
 		const tmpRecordSet = pRecord.RecordSet || '';
 		if (!tmpRecordSet)
@@ -193,7 +195,7 @@ class PictTemplateFilterInstanceViewInstruction extends libPictTemplate
 				tmpRecord.ClauseAddress = `_ActiveFilterState[${pRecord.RecordSet}].FilterClauses[${i}]`;
 				tmpView.prepareRecord(tmpRecord);
 
-				return tmpView.renderWithScopeAsync(tmpClause, '__Virtual', `__TemplateOutputCache.${tmpRenderGUID}`, tmpRecord,
+				return tmpView.renderWithScopeAsync(tmpClause, '__Virtual', `__TemplateOutputCache.${tmpRenderGUID}`, tmpRecord, pState && pState.RootRenderable,
 					(pError, pResult) =>
 					{
 						if (pError)

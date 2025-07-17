@@ -364,6 +364,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 
 	addFilter(pEvent, pRecordSet, pViewContext, pFilterKey, pClauseKey)
 	{
+		pEvent?.preventDefault();
 		this.pict.log.info(`Adding filter: ${pFilterKey} with clause: ${pClauseKey} to record set: ${pRecordSet} in view context: ${pViewContext}`);
 		this.pict.providers[`RSP-Provider-${pRecordSet}`].addFilterClause(pFilterKey, pClauseKey);
 		//FIXME: we need the record from the original render here but no longer have it...
@@ -380,65 +381,32 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	 * Lifecycle hook that triggers after the view is rendered.
 	 *
 	 * @param {import('pict-view').Renderable} pRenderable - The renderable that was rendered.
-	 * @param {string} pRenderDestinationAddress - The address where the renderable was rendered.
-	 * @param {any} pRecord - The record (data) that was used by the renderable.
-	 * @param {string} pContent - The content that was rendered.
 	 */
-	onAfterRender(pRenderable, pRenderDestinationAddress, pRecord, pContent)
+	onAfterRender(pRenderable)
 	{
-		//FIXME: since this is rendering to the DOM indirectly, can't marshal right after render; need to fix this better, if this even works
-		setTimeout(() =>
+		const res = super.onAfterRender(pRenderable);
+		const tmpRecord = { };
+		const tmpSelect = document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select');
+		if (tmpSelect)
 		{
-			if (!pRecord)
+			const tmpActiveOption = document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select')?.querySelector('option:checked')
+			const tmpRecordSet = tmpActiveOption?.getAttribute('data-i-recordset');
+			const tmpFilterKey = tmpActiveOption?.getAttribute('data-i-filter-key');
+			if (tmpRecordSet && tmpFilterKey)
 			{
-				pRecord = {};
-			}
-			if (!Array.isArray(pRecord.AvailableClauses))
-			{
-				const tmpSelect = document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select');
-				if (tmpSelect)
+				const tmpProvider = this.pict.providers[`RSP-Provider-${tmpRecordSet}`];
+				if (tmpProvider)
 				{
-					const tmpActiveOption = document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select')?.querySelector('option:checked')
-					const tmpRecordSet = tmpActiveOption?.getAttribute('data-i-recordset');
-					const tmpFilterKey = tmpActiveOption?.getAttribute('data-i-filter-key');
-					if (tmpRecordSet && tmpFilterKey)
+					tmpRecord.AvailableClauses = tmpProvider.getFilterClauseSchemaForKey(tmpFilterKey).AvailableClauses;
+					if (Array.isArray(tmpRecord.AvailableClauses))
 					{
-						const tmpProvider = this.pict.providers[`RSP-Provider-${tmpRecordSet}`];
-						if (tmpProvider)
-						{
-							pRecord.AvailableClauses = tmpProvider.getFilterClauseSchemaForKey(tmpFilterKey).AvailableClauses;
-							if (Array.isArray(pRecord.AvailableClauses))
-							{
-								this.render('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown', undefined, pRecord);
-							}
-						}
+						this.render('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown', undefined, tmpRecord, pRenderable);
 					}
 				}
 			}
-			setTimeout(() =>
-			{
-				this.onMarshalToView();
-			}, 1);
-		}, 1);
-		return super.onAfterRender(pRenderable, pRenderDestinationAddress, pRecord, pContent);
-	}
-
-	/**
-	 * Lifecycle hook that triggers after the view is rendered (async flow).
-	 *
-	 * @param {import('pict-view').ErrorCallback} fCallback - The callback to call when the async operation is complete.
-	 */
-	onAfterRenderAsync(fCallback)
-	{
-		return super.onAfterRenderAsync((pError) =>
-		{
-			//FIXME: since this is rendering to the DOM indirectly, can't marshal right after render; need to fix this better, if this even works
-			setTimeout(() =>
-			{
-				this.onMarshalToView();
-			}, 1);
-			fCallback(pError);
-		});
+		}
+		this.onMarshalToView();
+		return res;
 	}
 
 	async serializeFilterExperience(pExperience)

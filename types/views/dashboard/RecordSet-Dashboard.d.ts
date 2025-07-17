@@ -10,10 +10,6 @@ declare class viewRecordSetDashboard extends libPictRecordSetRecordView {
         paginationBottom: any;
     };
     handleRecordSetDashboardRoute(pRoutePayload: any): Promise<void>;
-    /**
-     * @param {import('pict-router')} pPictRouter
-     */
-    addRoutes(pPictRouter: any): boolean;
     onBeforeRenderList(pRecordListData: any): any;
     dynamicallyGenerateColumns(pRecordListData: any): any;
     excludedByDefaultCells: string[];

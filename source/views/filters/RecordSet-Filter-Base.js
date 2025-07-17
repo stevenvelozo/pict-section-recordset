@@ -66,8 +66,6 @@ class ViewRecordSetSUBSETFilterBase extends libPictView
 	{
 		let tmpOptions = Object.assign({}, _DEFAULT_CONFIGURATION_SUBSET_Filter, pOptions);
 		super(pFable, tmpOptions, pServiceHash);
-		/** @type {import('pict') & { log: any, instantiateServiceProviderWithoutRegistration: (hash: String) => any, PictSectionRecordSet: import('../../Pict-Section-RecordSet.js') }} */
-		this.pict;
 	}
 
 	/**

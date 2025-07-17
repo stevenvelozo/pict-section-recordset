@@ -131,9 +131,6 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		return this.renderDashboard(tmpProviderConfiguration, tmpProviderHash, tmpFilterString, tmpSerializedFilterExperience, tmpOffset, tmpPageSize);
 	}
 
-	/**
-	 * @param {import('pict-router')} pPictRouter
-	 */
 	addRoutes(pPictRouter)
 	{
 		pPictRouter.router.on('/PSRS/:RecordSet/Dashboard/FilterExperience/:FilterExperience', this.handleRecordSetDashboardRoute.bind(this));
