@@ -33,7 +33,8 @@ class ViewRecordSetSUBSETFilterDateMatch extends ViewRecordSetSUBSETFilterBase
 	 */
 	prepareRecord(pRecord)
 	{
-	//{~IWVDA:PSRSFilterProxyView:Record.ClauseDescriptor~}
+		super.prepareRecord(pRecord);
+
 		pRecord.ClauseDescriptor.DataType = 'DateTime';
 	}
 

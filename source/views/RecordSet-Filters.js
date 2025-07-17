@@ -368,7 +368,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		this.pict.log.info(`Adding filter: ${pFilterKey} with clause: ${pClauseKey} to record set: ${pRecordSet} in view context: ${pViewContext}`);
 		this.pict.providers[`RSP-Provider-${pRecordSet}`].addFilterClause(pFilterKey, pClauseKey);
 		//FIXME: we need the record from the original render here but no longer have it...
-		//this.render();
+		this.render(undefined, undefined, { RecordSet: pRecordSet, ViewContext: pViewContext });
 	}
 
 	getFilterSchema(pRecordSet)
@@ -385,6 +385,10 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	onAfterRender(pRenderable)
 	{
 		const res = super.onAfterRender(pRenderable);
+		if (pRenderable?.RenderableHash === 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown')
+		{
+			return;
+		}
 		const tmpRecord = { };
 		const tmpSelect = document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select');
 		if (tmpSelect)
@@ -397,6 +401,8 @@ class ViewRecordSetSUBSETFilters extends libPictView
 				const tmpProvider = this.pict.providers[`RSP-Provider-${tmpRecordSet}`];
 				if (tmpProvider)
 				{
+					tmpRecord.RecordSet = tmpRecordSet;
+					tmpRecord.FilterKey = tmpFilterKey;
 					tmpRecord.AvailableClauses = tmpProvider.getFilterClauseSchemaForKey(tmpFilterKey).AvailableClauses;
 					if (Array.isArray(tmpRecord.AvailableClauses))
 					{
