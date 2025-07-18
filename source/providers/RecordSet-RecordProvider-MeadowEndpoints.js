@@ -491,7 +491,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 						case 'integer':
 							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'NumericMatch', FilterByColumn: tmpSchemaField, ExactMatch: true , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
 							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'NumericMatch', FilterByColumn: tmpSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
-							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'NumbericRange', FilterByColumn: tmpSchemaField , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
+							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'NumericRange', FilterByColumn: tmpSchemaField , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
 							break;
 						default:
 							this.pict.log.warn(`Unsupported field type ${tmpColumn.type} for field ${tmpSchemaField}`, { Schema: tmpColumn });
