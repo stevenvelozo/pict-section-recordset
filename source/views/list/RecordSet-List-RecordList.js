@@ -22,7 +22,11 @@ const _DEFAULT_CONFIGURATION_List_RecordList =
 	AutoSolveWithApp: false,
 	AutoSolveOrdinal: 0,
 
-	CSS: false,
+	CSS: /*css*/`
+		tr#PRSP_List_Table_Empty:not(:first-child) {
+			display: none;
+		}
+	`,
 	CSSPriority: 500,
 
 	Templates:
@@ -45,9 +49,20 @@ const _DEFAULT_CONFIGURATION_List_RecordList =
 		<thead>{~T:PRSP-List-RecordListHeader-Template~}</thead>
 		<tbody id="PRSP_RecordList_Container_Entries">
 			{~T:PRSP-List-RecordListEntry-Template~}
+			{~T:PRSP-List-RecordList-Template-EmptyTable~}
 		</tbody>
 	</table>
 	<!-- DefaultPackage end view template:	[PRSP-List-RecordList-Template-Table] -->
+`
+		},
+		{
+			Hash: 'PRSP-List-RecordList-Template-EmptyTable',
+			Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-List-RecordList-Template-EmptyTable] -->
+	<tr id="PRSP_List_Table_Empty">
+		<td colspan="100%" style="text-align: center; padding: 10px;">No records found.</td>
+	</tr>
+	<!-- DefaultPackage end view template:	[PRSP-List-RecordList-Template-EmptyTable] -->
 `
 		}
 	],
