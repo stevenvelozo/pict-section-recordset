@@ -166,7 +166,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		return new Promise((resolve, reject) =>
 		{
 			const [ tmpClauses, tmpExperience ] = this._prepareFilterState(tmpEntity, pOptions);
-			this.pict.providers.FilterManager.loadRecordPageByFilter(tmpClauses, tmpExperience, pOptions.Offset || 0, pOptions.PageSize || 250, (pError) =>
+			this.pict.providers.FilterManager.loadRecordPageByFilterUsingProvider(this._EntityProvider, tmpClauses, tmpExperience, pOptions.Offset || 0, pOptions.PageSize || 250, (pError) =>
 			{
 				if (pError)
 				{
@@ -211,7 +211,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		return new Promise((resolve, reject) =>
 		{
 			const [ tmpClauses, tmpExperience ] = this._prepareFilterState(tmpEntity, pOptions, 'Count');
-			this.pict.providers.FilterManager.countRecordsByFilter(tmpClauses, tmpExperience, (pError) =>
+			this.pict.providers.FilterManager.countRecordsByFilterUsingProivider(this._EntityProvider, tmpClauses, tmpExperience, (pError) =>
 			{
 				if (pError)
 				{
