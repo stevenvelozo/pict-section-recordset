@@ -168,11 +168,24 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 				{
 					providerConfiguration.URLPrefix = '/1.0/';
 				}
+				if (`RecordSetIgnoreFilterFields` in pRecordSetConfiguration)
+				{
+					providerConfiguration.IgnoreFilterFields = pRecordSetConfiguration.RecordSetIgnoreFilterFields;
+				}
+				else
+				{
+					providerConfiguration.IgnoreFilterFields = [ 'Deleted', 'DeletingIDUser', 'DeleteDate' ];
+				}
+				if (`RecordSetFieldFilterClauses` in pRecordSetConfiguration)
+				{
+					providerConfiguration.FieldFilterClauses = pRecordSetConfiguration.RecordSetFieldFilterClauses;
+				}
+
 				tmpProvider = this.recordSetProviders[pRecordSetConfiguration.RecordSet] = this.fable.addProvider(providerConfiguration.Hash, providerConfiguration, ProviderMeadowEndpoints);
 				break;
 			default:
 			case 'Custom':
-				// Create a custom provider				
+				// Create a custom provider
 				if (`ProviderHash` in providerConfiguration)
 				{
 					if (!(providerConfiguration.ProviderHash in this.fable.servicesMap))

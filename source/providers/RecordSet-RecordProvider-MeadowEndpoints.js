@@ -67,6 +67,18 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 	}
 
 	/**
+	 * @return {Array<string>} - The fields to ignore for filter availability.
+	 */
+	get ignoreFilterFields()
+	{
+		if (Array.isArray(this.options.IgnoreFilterFields))
+		{
+			return this.options.IgnoreFilterFields;
+		}
+		return [];
+	}
+
+	/**
 	 * Get a record by its ID or GUID.
 	 *
 	 * @param {string|number} pIDOrGuid - The ID or GUID of the record.
@@ -351,6 +363,43 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 	}
 
 	/**
+	 * @param {string} pSchemaField - The schema field name.
+	 * @param {Record<string, any>} pColumn - The full column definition from the schema.
+	 */
+	getFieldFilterClauses(pSchemaField, pColumn)
+	{
+		let tmpFieldFilterClauses = this.options.FieldFilterClauses?.[pSchemaField];
+		if (!Array.isArray(tmpFieldFilterClauses))
+		{
+			tmpFieldFilterClauses = [];
+			const tmpFieldHumanName = this._getHumanReadableFieldName(pSchemaField);
+			switch (pColumn.type)
+			{
+				case 'string':
+					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'StringMatch', FilterByColumn: pSchemaField, ExactMatch: true, Ordinal: tmpFieldFilterClauses.length + 1 });
+					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'StringMatch', FilterByColumn: pSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterClauses.length + 1 });
+					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'StringRange', FilterByColumn: pSchemaField , Ordinal: tmpFieldFilterClauses.length + 1 });
+					break;
+				case 'date':
+				case 'datetime':
+					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'DateMatch', FilterByColumn: pSchemaField, ExactMatch: true , Ordinal: tmpFieldFilterClauses.length + 1 });
+					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'DateMatch', FilterByColumn: pSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterClauses.length + 1 });
+					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'DateRange', FilterByColumn: pSchemaField , Ordinal: tmpFieldFilterClauses.length + 1 });
+					break;
+				case 'boolean': //TODO: we didn't add filters for this - they are just numeric but it's weird for the user, maybe we should add views for this that account for the difference
+				case 'integer':
+					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'NumericMatch', FilterByColumn: pSchemaField, ExactMatch: true , Ordinal: tmpFieldFilterClauses.length + 1 });
+					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'NumericMatch', FilterByColumn: pSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterClauses.length + 1 });
+					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'NumericRange', FilterByColumn: pSchemaField , Ordinal: tmpFieldFilterClauses.length + 1 });
+					break;
+				default:
+					this.pict.log.warn(`Unsupported field type ${pColumn.type} for field ${pSchemaField}`, { Schema: pColumn });
+			}
+		}
+		return tmpFieldFilterClauses;
+	}
+
+	/**
 	 * @param {(error?: Error) => void} fCallback - The callback function.
 	 */
 	onInitializeAsync(fCallback)
@@ -434,15 +483,15 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 					return fCallback(pError);
 				}
 				const tmpProperties = tmpSchema?.properties;
-				// loop throught the schema and add the columns to the tableCells
+				// loop through the schema and add the columns to the tableCells
 				let tmpOrdinal = 0;
 				for (const tmpSchemaField in tmpProperties)
 				{
-					++tmpOrdinal;
-					if (tmpSchemaField === 'Deleted' || tmpSchemaField === 'DeletingIDUser')
+					if (this.ignoreFilterFields.includes(tmpSchemaField))
 					{
 						continue;
 					}
+					++tmpOrdinal;
 					const tmpColumn = tmpProperties[tmpSchemaField];
 					let tmpFieldFilterSchema = this._FilterSchema[tmpSchemaField];
 					if (!tmpFieldFilterSchema)
@@ -477,28 +526,15 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 					{
 						tmpFieldFilterSchema.AvailableClauses = [];
 					}
-					const tmpFieldHumanName = this._getHumanReadableFieldName(tmpSchemaField);
-					switch (tmpColumn.type)
+					const tmpFieldFilterClauses = this.getFieldFilterClauses(tmpSchemaField, tmpColumn);
+					if (Array.isArray(tmpFieldFilterClauses) && tmpFieldFilterClauses.length > 0)
 					{
-						case 'string':
-							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'StringMatch', FilterByColumn: tmpSchemaField, ExactMatch: true, Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
-							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'StringMatch', FilterByColumn: tmpSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
-							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'StringRange', FilterByColumn: tmpSchemaField , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
-							break;
-						case 'date':
-						case 'datetime':
-							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'DateMatch', FilterByColumn: tmpSchemaField, ExactMatch: true , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
-							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'DateMatch', FilterByColumn: tmpSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
-							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'DateRange', FilterByColumn: tmpSchemaField , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
-							break;
-						case 'boolean': //TODO: we didn't add filters for this - they are just numeric but it's weird for the user, maybe we should add views for this that account for the difference
-						case 'integer':
-							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'NumericMatch', FilterByColumn: tmpSchemaField, ExactMatch: true , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
-							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'NumericMatch', FilterByColumn: tmpSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
-							tmpFieldFilterSchema.AvailableClauses.push({ FilterKey: tmpSchemaField, ClauseKey: `${tmpSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'NumericRange', FilterByColumn: tmpSchemaField , Ordinal: tmpFieldFilterSchema.AvailableClauses.length + 1 });
-							break;
-						default:
-							this.pict.log.warn(`Unsupported field type ${tmpColumn.type} for field ${tmpSchemaField}`, { Schema: tmpColumn });
+						for (const tmpFilterClause of tmpFieldFilterClauses)
+						{
+							//TODO: allow customization of filter order
+							tmpFilterClause.Ordinal = tmpFieldFilterSchema.AvailableClauses.length + 1;
+							tmpFieldFilterSchema.AvailableClauses.push(tmpFilterClause);
+						}
 					}
 				}
 				if (typeof this.pict.providers.FilterManager.filters === 'object')
@@ -522,9 +558,14 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 							{
 								tmpFieldFilterSchema.RecordSet = this.options.RecordSet;
 							}
+							const tmpFieldHumanName = this._getHumanReadableFieldName(tmpFilterKey);
+							if (tmpFilterClause.DisplayName)
+							{
+								tmpFieldFilterSchema.DisplayName = tmpFilterClause.DisplayName;
+							}
 							if (!tmpFieldFilterSchema.DisplayName)
 							{
-								tmpFieldFilterSchema.DisplayName = tmpFilterClause.DisplayName || this._getHumanReadableFieldName(tmpFilterKey);
+								tmpFieldFilterSchema.DisplayName = tmpFieldHumanName;
 							}
 							if (!tmpFieldFilterSchema.Description)
 							{
@@ -542,7 +583,6 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 							{
 								tmpFieldFilterSchema.AvailableClauses = [];
 							}
-							const tmpFieldHumanName = this._getHumanReadableFieldName(tmpFilterKey);
 							tmpFieldFilterSchema.AvailableClauses.push(tmpFilterClause);
 							if (!tmpFilterClause.FilterKey)
 							{
@@ -628,7 +668,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 			{
 				if (error)
 				{
-					this.fable.log.error('Error fetching schema', error);
+					this.fable.log.error(`Error fetching schema: ${error?.message || error}`, { Stack: error?.stack });
 					this._Schema = null;
 					return fCallback(error);
 				}

@@ -71,6 +71,10 @@ declare class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase 
     /** @type {import('pict/types/source/Pict-Meadow-EntityProvider.js')} */
     _EntityProvider: import("pict/types/source/Pict-Meadow-EntityProvider.js");
     /**
+     * @return {Array<string>} - The fields to ignore for filter availability.
+     */
+    get ignoreFilterFields(): Array<string>;
+    /**
      * Get a record by its ID or GUID.
      *
      * @param {string|number} pIDOrGuid - The ID or GUID of the record.
@@ -119,6 +123,11 @@ declare class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase 
      * @param {Record<string, any>} pRecord - The record to clone.
      */
     cloneRecord(pRecord: Record<string, any>): Promise<any>;
+    /**
+     * @param {string} pSchemaField - The schema field name.
+     * @param {Record<string, any>} pColumn - The full column definition from the schema.
+     */
+    getFieldFilterClauses(pSchemaField: string, pColumn: Record<string, any>): any;
     /**
      * @param {(error?: Error) => void} fCallback - The callback function.
      */
