@@ -52,13 +52,17 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 	/** @return {import('pict/types/source/Pict-Meadow-EntityProvider.js')} */
 	get entityProvider()
 	{
-		/** @type {import('pict/types/source/Pict-Meadow-EntityProvider.js')} */
-		//TODO: figure out a pattern to share this with other consumers, to consolidate cache
-		this._EntityProvider = this.pict.instantiateServiceProviderWithoutRegistration('EntityProvider');
-		if (this.options.URLPrefix)
+		if (!this._EntityProvider)
 		{
-			this._EntityProvider.options.urlPrefix = this.options.URLPrefix;
+			/** @type {import('pict/types/source/Pict-Meadow-EntityProvider.js')} */
+			//TODO: figure out a pattern to share this with other consumers, to consolidate cache
+			this._EntityProvider = this.pict.instantiateServiceProviderWithoutRegistration('EntityProvider');
+			if (this.options.URLPrefix)
+			{
+				this._EntityProvider.options.urlPrefix = this.options.URLPrefix;
+			}
 		}
+
 		return this._EntityProvider;
 	}
 
@@ -166,7 +170,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		return new Promise((resolve, reject) =>
 		{
 			const [ tmpClauses, tmpExperience ] = this._prepareFilterState(tmpEntity, pOptions);
-			this.pict.providers.FilterManager.loadRecordPageByFilterUsingProvider(this._EntityProvider, tmpClauses, tmpExperience, pOptions.Offset || 0, pOptions.PageSize || 250, (pError) =>
+			this.pict.providers.FilterManager.loadRecordPageByFilterUsingProvider(this.entityProvider, tmpClauses, tmpExperience, pOptions.Offset || 0, pOptions.PageSize || 250, (pError) =>
 			{
 				if (pError)
 				{
@@ -211,7 +215,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		return new Promise((resolve, reject) =>
 		{
 			const [ tmpClauses, tmpExperience ] = this._prepareFilterState(tmpEntity, pOptions, 'Count');
-			this.pict.providers.FilterManager.countRecordsByFilterUsingProivider(this._EntityProvider, tmpClauses, tmpExperience, (pError) =>
+			this.pict.providers.FilterManager.countRecordsByFilterUsingProivider(this.entityProvider, tmpClauses, tmpExperience, (pError) =>
 			{
 				if (pError)
 				{
