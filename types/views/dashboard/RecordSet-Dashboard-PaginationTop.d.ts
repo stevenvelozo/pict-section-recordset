@@ -1,8 +1,8 @@
-export = viewRecordSetListPaginationTop;
-declare class viewRecordSetListPaginationTop extends libPictView {
+export = viewRecordSetDashboardPaginationTop;
+declare class viewRecordSetDashboardPaginationTop extends libPictView {
     constructor(pFable: any, pOptions: any, pServiceHash: any);
 }
-declare namespace viewRecordSetListPaginationTop {
+declare namespace viewRecordSetDashboardPaginationTop {
     export { _DEFAULT_CONFIGURATION_List_PaginationTop as default_configuration };
 }
 import libPictView = require("pict-view");

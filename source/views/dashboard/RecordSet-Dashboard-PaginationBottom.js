@@ -53,7 +53,7 @@ const _DEFAULT_CONFIGURATION_List_PaginationBottom = (
 		Manifests: {}
 	});
 
-class viewRecordSetListPaginationBottom extends libPictView
+class viewRecordSetDashboardPaginationBottom extends libPictView
 {
 	constructor(pFable, pOptions, pServiceHash)
 	{
@@ -62,7 +62,7 @@ class viewRecordSetListPaginationBottom extends libPictView
 	}
 }
 
-module.exports = viewRecordSetListPaginationBottom;
+module.exports = viewRecordSetDashboardPaginationBottom;
 
 module.exports.default_configuration = _DEFAULT_CONFIGURATION_List_PaginationBottom;
 

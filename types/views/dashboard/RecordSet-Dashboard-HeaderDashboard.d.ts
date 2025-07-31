@@ -1,8 +1,8 @@
-export = viewRecordSetListHeaderList;
-declare class viewRecordSetListHeaderList extends libPictView {
+export = viewRecordSetDashboardHeaderList;
+declare class viewRecordSetDashboardHeaderList extends libPictView {
     constructor(pFable: any, pOptions: any, pServiceHash: any);
 }
-declare namespace viewRecordSetListHeaderList {
+declare namespace viewRecordSetDashboardHeaderList {
     export { _DEFAULT_CONFIGURATION_Dashboard_HeaderList as default_configuration };
 }
 import libPictView = require("pict-view");

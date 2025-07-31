@@ -53,7 +53,7 @@ const _DEFAULT_CONFIGURATION_List_Title =
 	Manifests: {},
 };
 
-class viewRecordSetListTitle extends libPictView
+class viewRecordSetDashboardTitle extends libPictView
 {
 	constructor(pFable, pOptions, pServiceHash)
 	{
@@ -62,6 +62,6 @@ class viewRecordSetListTitle extends libPictView
 	}
 }
 
-module.exports = viewRecordSetListTitle;
+module.exports = viewRecordSetDashboardTitle;
 
 module.exports.default_configuration = _DEFAULT_CONFIGURATION_List_Title;

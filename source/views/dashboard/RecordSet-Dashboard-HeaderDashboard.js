@@ -49,7 +49,7 @@ const _DEFAULT_CONFIGURATION_Dashboard_HeaderList =
 	Manifests: {},
 };
 
-class viewRecordSetListHeaderList extends libPictView
+class viewRecordSetDashboardHeaderList extends libPictView
 {
 	constructor(pFable, pOptions, pServiceHash)
 	{
@@ -58,7 +58,7 @@ class viewRecordSetListHeaderList extends libPictView
 	}
 }
 
-module.exports = viewRecordSetListHeaderList;
+module.exports = viewRecordSetDashboardHeaderList;
 
 module.exports.default_configuration = _DEFAULT_CONFIGURATION_Dashboard_HeaderList;
 

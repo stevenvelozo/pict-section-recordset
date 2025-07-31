@@ -1,7 +1,7 @@
 const libPictView = require('pict-view');
 
 /** @type {Record<string, any>} */
-const _DEFAULT_CONFIGURATION_List_RecordList =
+const _DEFAULT_CONFIGURATION_Dashboard_RecordList =
 {
 	ViewIdentifier: 'PRSP-Dashboard-RecordList',
 
@@ -65,16 +65,16 @@ const _DEFAULT_CONFIGURATION_List_RecordList =
 	Manifests: {}
 };
 
-class viewRecordSetListRecordList extends libPictView
+class viewRecordSetDashboardRecordList extends libPictView
 {
 	constructor(pFable, pOptions, pServiceHash)
 	{
-		let tmpOptions = Object.assign({}, _DEFAULT_CONFIGURATION_List_RecordList, pOptions);
+		let tmpOptions = Object.assign({}, _DEFAULT_CONFIGURATION_Dashboard_RecordList, pOptions);
 		super(pFable, tmpOptions, pServiceHash);
 	}
 }
 
-module.exports = viewRecordSetListRecordList;
+module.exports = viewRecordSetDashboardRecordList;
 
-module.exports.default_configuration = _DEFAULT_CONFIGURATION_List_RecordList;
+module.exports.default_configuration = _DEFAULT_CONFIGURATION_Dashboard_RecordList;
 

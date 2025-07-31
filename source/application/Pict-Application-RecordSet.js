@@ -45,6 +45,10 @@ class PictSectionRecordSetApplication extends libPictApplication
 
 	onAfterInitialize()
 	{
+		if (this.pict.CSSMap)
+		{
+			this.pict.CSSMap.injectCSS();
+		}
 		// Now add the routes
 		this.pict.providers.RecordSetRouter.addRoutes(this.fable.providers.RecordSetRouter.pictRouter);
 

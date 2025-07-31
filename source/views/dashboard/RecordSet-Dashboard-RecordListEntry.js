@@ -106,7 +106,7 @@ const _DEFAULT_CONFIGURATION_List_RecordListEntry = (
 		Manifests: {}
 	});
 
-class viewRecordSetListRecordListEntry extends libPictView
+class viewRecordSetDashboardRecordListEntry extends libPictView
 {
 	constructor(pFable, pOptions, pServiceHash)
 	{
@@ -115,7 +115,7 @@ class viewRecordSetListRecordListEntry extends libPictView
 	}
 }
 
-module.exports = viewRecordSetListRecordListEntry;
+module.exports = viewRecordSetDashboardRecordListEntry;
 
 module.exports.default_configuration = _DEFAULT_CONFIGURATION_List_RecordListEntry;
 

@@ -113,7 +113,7 @@ const _DEFAULT_CONFIGURATION_List_PaginationTop = (
 		Manifests: {}
 	});
 
-class viewRecordSetListPaginationTop extends libPictView
+class viewRecordSetDashboardPaginationTop extends libPictView
 {
 	constructor(pFable, pOptions, pServiceHash)
 	{
@@ -122,7 +122,7 @@ class viewRecordSetListPaginationTop extends libPictView
 	}
 }
 
-module.exports = viewRecordSetListPaginationTop;
+module.exports = viewRecordSetDashboardPaginationTop;
 
 module.exports.default_configuration = _DEFAULT_CONFIGURATION_List_PaginationTop;
 
