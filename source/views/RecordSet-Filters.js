@@ -31,16 +31,14 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Hash: 'PRSP-SUBSET-Filters-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template] -->
-	<section id="PRSP_Filters_Container">
-		<form id="PRSP_Filter_Form" onsubmit="_Pict.views['PRSP-Filters'].handleSearch(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}'); return false;">
-			{~T:PRSP-SUBSET-Filters-Template-Input-Fieldset~}
-			<div id="PRSP_Filter_Instances">
-				{~FIV:Record~}
-			</div>
-			{~T:PRSP-SUBSET-Filters-Template-Button-Fieldset~}
-			{~T:PRSP-SUBSET-Filters-Template-AddFilter-Fieldset~}
-		</form>
-	</section>
+	<form id="PRSP_Filter_Form" onsubmit="_Pict.views['PRSP-Filters'].handleSearch(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}'); return false;">
+		{~T:PRSP-SUBSET-Filters-Template-Input-Fieldset~}
+		<div id="PRSP_Filter_Instances">
+			{~FIV:Record~}
+		</div>
+		{~T:PRSP-SUBSET-Filters-Template-Button-Fieldset~}
+		{~T:PRSP-SUBSET-Filters-Template-AddFilter-Fieldset~}
+	</form>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template] -->
 `
 		},

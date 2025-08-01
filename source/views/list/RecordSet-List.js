@@ -43,7 +43,9 @@ const _DEFAULT_CONFIGURATION__List = (
 	<section id="PRSP_List_Container">
 		{~V:PRSP-List-Title~}
 		{~V:PRSP-List-HeaderList~}
-		{~FV:PRSP-Filters:List~}
+		<section id="PRSP_Filters_Container">
+			{~FV:PRSP-Filters:List~}
+		</section>
 		{~V:PRSP-List-PaginationTop~}
 		{~V:PRSP-List-RecordList~}
 		{~V:PRSP-List-PaginationBottom~}

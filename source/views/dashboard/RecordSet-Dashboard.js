@@ -43,7 +43,9 @@ const _DEFAULT_CONFIGURATION__Dashboard = (
 	<section id="PRSP_List_Container">
 		{~V:PRSP-Dashboard-Title~}
 		{~V:PRSP-Dashboard-HeaderDashboard~}
-		{~FV:PRSP-Filters:Dashboard~}
+		<section id="PRSP_Filters_Container">
+			{~FV:PRSP-Filters:Dashboard~}
+		</section>
 		{~V:PRSP-Dashboard-PaginationTop~}
 		{~V:PRSP-Dashboard-RecordList~}
 		{~V:PRSP-Dashboard-PaginationBottom~}
