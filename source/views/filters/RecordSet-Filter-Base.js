@@ -42,10 +42,9 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-Base-Template] -->
 	<div>
-		{~Breakpoint~}
-		<button
-			type="button" 
-			onclick="_Pict.views['PRSP-Filters'].removeFilter(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}', '{~D:Record.Hash~}');">
+		<button type="button"
+			onclick="_Pict.views['PRSP-Filters'].removeFilter(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}', '{~D:Record.Hash~}');"
+			>
 			-
 		</button>
 		{~TBR:Context[0].getFilterFormTemplate()~}

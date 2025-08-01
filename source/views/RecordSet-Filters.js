@@ -49,8 +49,8 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-Input-Fieldset] -->
 	<fieldset>
-		<label for="filter">Filter:</label>
-		<input type="text" name="filter">
+		<label for="search_filter">Filter:</label>
+		<input id="search_filter" type="text" name="filter">
 	</fieldset>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-Input-Fieldset] -->
 `
