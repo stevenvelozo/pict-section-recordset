@@ -465,6 +465,10 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 						if (tmpExperience.Default && !tmpEntityFilterState.FilterClauses)
 						{
 							tmpEntityFilterState.FilterClauses = JSON.parse(JSON.stringify(this._Experiences[tmpKey].FilterClauses));
+							for (const tmpClause of tmpEntityFilterState.FilterClauses)
+							{
+								tmpClause.Hash = `${tmpClause.FilterByColumn}-${tmpClause.Type}-${this.pict.getUUID()}`;
+							}
 						}
 						continue;
 					}

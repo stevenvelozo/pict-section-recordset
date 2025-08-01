@@ -50,6 +50,7 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
      */
     selectFilterToAdd(pEvent: Event, pRecordSet: string, pViewContext: string): void;
     addFilter(pEvent: any, pRecordSet: any, pViewContext: any, pFilterKey: any, pClauseKey: any): void;
+    removeFilter(pEvent: any, pRecordSet: any, pViewContext: any, pSpecificFilterKey: any): void;
     getFilterSchema(pRecordSet: any): any[];
     serializeFilterExperience(pExperience: any): Promise<string>;
     /**

@@ -371,6 +371,15 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		this.render(undefined, undefined, { RecordSet: pRecordSet, ViewContext: pViewContext });
 	}
 
+	removeFilter(pEvent, pRecordSet, pViewContext, pSpecificFilterKey)
+	{
+		pEvent?.preventDefault();
+		this.pict.log.info(`Removing filter: ${pSpecificFilterKey} from record set: ${pRecordSet} in view context: ${pViewContext}`);
+		this.pict.providers[`RSP-Provider-${pRecordSet}`].removeFilterClause(pSpecificFilterKey);
+		//FIXME: we need the record from the original render here but no longer have it...
+		this.render(undefined, undefined, { RecordSet: pRecordSet, ViewContext: pViewContext });
+	}
+
 	getFilterSchema(pRecordSet)
 	{
 		const tmpRecordsetProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
