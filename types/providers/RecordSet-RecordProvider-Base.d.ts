@@ -147,7 +147,14 @@ declare class RecordSetProviderBase extends libPictProvider {
      * @return {Promise<void>}
      */
     decorateCoreRecords(pRecords: Array<Record<string, any>>): Promise<void>;
-    getFilterSchemaKeys(): string[];
+    /**
+     * @return {Promise<Record<string, any>>} The schema of the record.
+     */
+    getRecordSchema(): Promise<Record<string, any>>;
+    /**
+     * @return {Array<string>} The keys of the filter schema.
+     */
+    getFilterSchemaKeys(): Array<string>;
     /**
      * @param {string} pFilterKey - The filter key to get the schema for.
      *

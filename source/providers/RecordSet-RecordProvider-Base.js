@@ -250,6 +250,17 @@ class RecordSetProviderBase extends libPictProvider
 	{
 	}
 
+	/**
+	 * @return {Promise<Record<string, any>>} The schema of the record.
+	 */
+	async getRecordSchema()
+	{
+		throw new Error(`getRecordSchema must be implemented in a sub-class`);
+	}
+
+	/**
+	 * @return {Array<string>} The keys of the filter schema.
+	 */
 	getFilterSchemaKeys()
 	{
 		return Object.keys(this._FilterSchema);
@@ -270,6 +281,7 @@ class RecordSetProviderBase extends libPictProvider
 	 */
 	getFilterSchema()
 	{
+		//FIXME: risk here that the schema hasn't been loaded - but don't want to make this async...
 		/** @type {Record<string, Record<string, any>>} */
 		const tmpSchema = {};
 		for (const tmpKey of this.getFilterSchemaKeys())

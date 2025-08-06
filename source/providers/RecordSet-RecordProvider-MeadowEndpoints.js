@@ -42,7 +42,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		this.UUID;
 		//TODO: make this typedef better
 		/** @type {Record<string, any>} */
-		this._Schema = { };
+		this._Schema;
 		/** @type {Record<string, Record<string, any>>} */
 		this._Experiences = { };
 		/** @type {Record<string, Record<string, any>>} */
@@ -687,6 +687,9 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		});
 	}
 
+	/**
+	 * @return {Promise<Record<string, any>>} The schema of the record.
+	 */
 	async getRecordSchema()
 	{
 		if (!this._Schema)
