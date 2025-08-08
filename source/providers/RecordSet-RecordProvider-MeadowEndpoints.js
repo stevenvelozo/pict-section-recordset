@@ -481,130 +481,12 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 			}
 			this.initializeEntitySchema(() =>
 			{
-				const tmpSchema = this._Schema;
-				if (!tmpSchema || !tmpSchema.properties)
+				if (pError)
 				{
 					return fCallback(pError);
 				}
-				const tmpProperties = tmpSchema?.properties;
-				// loop through the schema and add the columns to the tableCells
-				let tmpOrdinal = 0;
-				for (const tmpSchemaField in tmpProperties)
-				{
-					if (this.ignoreFilterFields.includes(tmpSchemaField))
-					{
-						continue;
-					}
-					++tmpOrdinal;
-					const tmpColumn = tmpProperties[tmpSchemaField];
-					let tmpFieldFilterSchema = this._FilterSchema[tmpSchemaField];
-					if (!tmpFieldFilterSchema)
-					{
-						this._FilterSchema[tmpSchemaField] = tmpFieldFilterSchema = { };
-					}
-					if (!tmpFieldFilterSchema.FilterKey)
-					{
-						tmpFieldFilterSchema.FilterKey = tmpSchemaField;
-					}
-					if (!tmpFieldFilterSchema.RecordSet)
-					{
-						tmpFieldFilterSchema.RecordSet = this.options.RecordSet;
-					}
-					if (!tmpFieldFilterSchema.DisplayName)
-					{
-						tmpFieldFilterSchema.DisplayName = this._getHumanReadableFieldName(tmpSchemaField);
-					}
-					if (!tmpFieldFilterSchema.Description)
-					{
-						tmpFieldFilterSchema.Description = `Filter by ${tmpFieldFilterSchema.DisplayName}`;
-					}
-					if (!tmpFieldFilterSchema.HelpText)
-					{
-						tmpFieldFilterSchema.HelpText = `Filter by ${tmpFieldFilterSchema.DisplayName} for the ${this._getHumanReadbleEntityName(this.options.Entity)} entity.`;
-					}
-					if (tmpFieldFilterSchema.Ordinal == null)
-					{
-						tmpFieldFilterSchema.Ordinal = tmpOrdinal;
-					}
-					if (!Array.isArray(tmpFieldFilterSchema.AvailableClauses))
-					{
-						tmpFieldFilterSchema.AvailableClauses = [];
-					}
-					const tmpFieldFilterClauses = this.getFieldFilterClauses(tmpSchemaField, tmpColumn);
-					if (Array.isArray(tmpFieldFilterClauses) && tmpFieldFilterClauses.length > 0)
-					{
-						for (const tmpFilterClause of tmpFieldFilterClauses)
-						{
-							//TODO: allow customization of filter order
-							tmpFilterClause.Ordinal = tmpFieldFilterSchema.AvailableClauses.length + 1;
-							tmpFieldFilterSchema.AvailableClauses.push(tmpFilterClause);
-						}
-					}
-				}
-				if (typeof this.pict.providers.FilterManager.filters === 'object')
-				{
-					for (const tmpFilterKey of Object.keys(this.pict.providers.FilterManager.filters))
-					{
-						const tmpFilterClause = this.pict.providers.FilterManager.filters[tmpFilterKey];
-						if (tmpFilterClause.CoreConnectionColumn === `ID${this.options.Entity}`)
-						{
-							//FIXME: I don't think using filter key is right here
-							let tmpFieldFilterSchema = this._FilterSchema[tmpFilterKey];
-							if (!tmpFieldFilterSchema)
-							{
-								this._FilterSchema[tmpFilterKey] = tmpFieldFilterSchema = { };
-							}
-							if (!tmpFieldFilterSchema.FilterKey)
-							{
-								tmpFieldFilterSchema.FilterKey = tmpFilterKey;
-							}
-							if (!tmpFieldFilterSchema.RecordSet)
-							{
-								tmpFieldFilterSchema.RecordSet = this.options.RecordSet;
-							}
-							const tmpFieldHumanName = this._getHumanReadableFieldName(tmpFilterKey);
-							if (tmpFilterClause.DisplayName)
-							{
-								tmpFieldFilterSchema.DisplayName = tmpFilterClause.DisplayName;
-							}
-							if (!tmpFieldFilterSchema.DisplayName)
-							{
-								tmpFieldFilterSchema.DisplayName = tmpFieldHumanName;
-							}
-							if (!tmpFieldFilterSchema.Description)
-							{
-								tmpFieldFilterSchema.Description = tmpFilterClause.Description || `Filter by ${tmpFieldFilterSchema.DisplayName}`;
-							}
-							if (!tmpFieldFilterSchema.HelpText)
-							{
-								tmpFieldFilterSchema.HelpText = tmpFilterClause.HelpText || `Filter by ${tmpFieldFilterSchema.DisplayName} for the ${this._getHumanReadbleEntityName(this.options.Entity)} entity.`;
-							}
-							if (tmpFieldFilterSchema.Ordinal == null)
-							{
-								tmpFieldFilterSchema.Ordinal = tmpOrdinal;
-							}
-							if (!Array.isArray(tmpFieldFilterSchema.AvailableClauses))
-							{
-								tmpFieldFilterSchema.AvailableClauses = [];
-							}
-							tmpFieldFilterSchema.AvailableClauses.push(tmpFilterClause);
-							if (!tmpFilterClause.FilterKey)
-							{
-								tmpFilterClause.FilterKey = tmpFilterKey;
-							}
-							if (!tmpFilterClause.ClauseKey)
-							{
-								tmpFilterClause.ClauseKey = tmpFilterKey;
-							}
-							if (!tmpFilterClause.DisplayName)
-							{
-								tmpFilterClause.DisplayName = tmpFieldHumanName;
-							}
-							tmpFilterClause.Ordinal = tmpFieldFilterSchema.AvailableClauses.length + 1;
-						}
-					}
-				}
-				return fCallback(pError);
+				this.initializeFilterSchema();
+				return fCallback();
 			});
 		});
 	}
@@ -687,6 +569,133 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		});
 	}
 
+	initializeFilterSchema()
+	{
+		const tmpSchema = this._Schema;
+		if (!tmpSchema || !tmpSchema.properties)
+		{
+			return;
+		}
+		const tmpProperties = tmpSchema?.properties;
+		// loop through the schema and add the columns to the tableCells
+		let tmpOrdinal = 0;
+		for (const tmpSchemaField in tmpProperties)
+		{
+			if (this.ignoreFilterFields.includes(tmpSchemaField))
+			{
+				continue;
+			}
+			++tmpOrdinal;
+			const tmpColumn = tmpProperties[tmpSchemaField];
+			let tmpFieldFilterSchema = this._FilterSchema[tmpSchemaField];
+			if (!tmpFieldFilterSchema)
+			{
+				this._FilterSchema[tmpSchemaField] = tmpFieldFilterSchema = { };
+			}
+			if (!tmpFieldFilterSchema.FilterKey)
+			{
+				tmpFieldFilterSchema.FilterKey = tmpSchemaField;
+			}
+			if (!tmpFieldFilterSchema.RecordSet)
+			{
+				tmpFieldFilterSchema.RecordSet = this.options.RecordSet;
+			}
+			if (!tmpFieldFilterSchema.DisplayName)
+			{
+				tmpFieldFilterSchema.DisplayName = this._getHumanReadableFieldName(tmpSchemaField);
+			}
+			if (!tmpFieldFilterSchema.Description)
+			{
+				tmpFieldFilterSchema.Description = `Filter by ${tmpFieldFilterSchema.DisplayName}`;
+			}
+			if (!tmpFieldFilterSchema.HelpText)
+			{
+				tmpFieldFilterSchema.HelpText = `Filter by ${tmpFieldFilterSchema.DisplayName} for the ${this._getHumanReadbleEntityName(this.options.Entity)} entity.`;
+			}
+			if (tmpFieldFilterSchema.Ordinal == null)
+			{
+				tmpFieldFilterSchema.Ordinal = tmpOrdinal;
+			}
+			if (!Array.isArray(tmpFieldFilterSchema.AvailableClauses))
+			{
+				tmpFieldFilterSchema.AvailableClauses = [];
+			}
+			const tmpFieldFilterClauses = this.getFieldFilterClauses(tmpSchemaField, tmpColumn);
+			if (Array.isArray(tmpFieldFilterClauses) && tmpFieldFilterClauses.length > 0)
+			{
+				for (const tmpFilterClause of tmpFieldFilterClauses)
+				{
+					//TODO: allow customization of filter order
+					tmpFilterClause.Ordinal = tmpFieldFilterSchema.AvailableClauses.length + 1;
+					tmpFieldFilterSchema.AvailableClauses.push(tmpFilterClause);
+				}
+			}
+		}
+		if (typeof this.pict.providers.FilterManager.filters === 'object')
+		{
+			for (const tmpFilterKey of Object.keys(this.pict.providers.FilterManager.filters))
+			{
+				const tmpFilterClause = this.pict.providers.FilterManager.filters[tmpFilterKey];
+				if (tmpFilterClause.CoreConnectionColumn === `ID${this.options.Entity}`)
+				{
+					//FIXME: I don't think using filter key is right here
+					let tmpFieldFilterSchema = this._FilterSchema[tmpFilterKey];
+					if (!tmpFieldFilterSchema)
+					{
+						this._FilterSchema[tmpFilterKey] = tmpFieldFilterSchema = { };
+					}
+					if (!tmpFieldFilterSchema.FilterKey)
+					{
+						tmpFieldFilterSchema.FilterKey = tmpFilterKey;
+					}
+					if (!tmpFieldFilterSchema.RecordSet)
+					{
+						tmpFieldFilterSchema.RecordSet = this.options.RecordSet;
+					}
+					const tmpFieldHumanName = this._getHumanReadableFieldName(tmpFilterKey);
+					if (tmpFilterClause.DisplayName)
+					{
+						tmpFieldFilterSchema.DisplayName = tmpFilterClause.DisplayName;
+					}
+					if (!tmpFieldFilterSchema.DisplayName)
+					{
+						tmpFieldFilterSchema.DisplayName = tmpFieldHumanName;
+					}
+					if (!tmpFieldFilterSchema.Description)
+					{
+						tmpFieldFilterSchema.Description = tmpFilterClause.Description || `Filter by ${tmpFieldFilterSchema.DisplayName}`;
+					}
+					if (!tmpFieldFilterSchema.HelpText)
+					{
+						tmpFieldFilterSchema.HelpText = tmpFilterClause.HelpText || `Filter by ${tmpFieldFilterSchema.DisplayName} for the ${this._getHumanReadbleEntityName(this.options.Entity)} entity.`;
+					}
+					if (tmpFieldFilterSchema.Ordinal == null)
+					{
+						tmpFieldFilterSchema.Ordinal = tmpOrdinal;
+					}
+					if (!Array.isArray(tmpFieldFilterSchema.AvailableClauses))
+					{
+						tmpFieldFilterSchema.AvailableClauses = [];
+					}
+					tmpFieldFilterSchema.AvailableClauses.push(tmpFilterClause);
+					if (!tmpFilterClause.FilterKey)
+					{
+						tmpFilterClause.FilterKey = tmpFilterKey;
+					}
+					if (!tmpFilterClause.ClauseKey)
+					{
+						tmpFilterClause.ClauseKey = tmpFilterKey;
+					}
+					if (!tmpFilterClause.DisplayName)
+					{
+						tmpFilterClause.DisplayName = tmpFieldHumanName;
+					}
+					tmpFilterClause.Ordinal = tmpFieldFilterSchema.AvailableClauses.length + 1;
+				}
+			}
+		}
+	}
+
 	/**
 	 * @return {Promise<Record<string, any>>} The schema of the record.
 	 */
@@ -700,6 +709,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 				{
 					return reject(pError);
 				}
+				this.initializeFilterSchema();
 				resolve();
 			}));
 		}

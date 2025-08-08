@@ -146,6 +146,7 @@ declare class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase 
      * @param {(error?: Error) => void} fCallback - The callback function.
      */
     initializeEntitySchema(fCallback: (error?: Error) => void): void;
+    initializeFilterSchema(): void;
 }
 declare namespace MeadowEndpointsRecordSetProvider {
     export { RecordSetFilter, RecordSetResult };
