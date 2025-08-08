@@ -365,19 +365,26 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 	/**
 	 * @param {string} pSchemaField - The schema field name.
 	 * @param {Record<string, any>} pColumn - The full column definition from the schema.
+	 * @param {Record<string, any>} [pMeadowSchemaField] - The meadow schema field definition.
 	 */
-	getFieldFilterClauses(pSchemaField, pColumn)
+	getFieldFilterClauses(pSchemaField, pColumn, pMeadowSchemaField)
 	{
 		/** @type {Record<string, any>} */
 		let tmpRangeClause;
 		let tmpFieldFilterClauses = this.options.FieldFilterClauses?.[pSchemaField];
 		if (!Array.isArray(tmpFieldFilterClauses))
 		{
+			let tmpFieldType = pColumn.type;
+			if (pMeadowSchemaField && typeof pMeadowSchemaField.Type === 'string')
+			{
+				tmpFieldType = pMeadowSchemaField.Type.toLowerCase();
+			}
 			tmpFieldFilterClauses = [];
 			const tmpFieldHumanName = this._getHumanReadableFieldName(pSchemaField);
-			switch (pColumn.type)
+			switch (tmpFieldType)
 			{
 				case 'string':
+				case 'autoguid':
 					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'StringMatch', FilterByColumn: pSchemaField, ExactMatch: true, Ordinal: tmpFieldFilterClauses.length + 1 });
 					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'StringMatch', FilterByColumn: pSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterClauses.length + 1 });
 					tmpRangeClause = { FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'StringRange', FilterByColumn: pSchemaField , Ordinal: tmpFieldFilterClauses.length + 1 };
@@ -387,6 +394,8 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 					break;
 				case 'date':
 				case 'datetime':
+				case 'createdate':
+				case 'updatedate':
 					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'DateMatch', FilterByColumn: pSchemaField, ExactMatch: true , Ordinal: tmpFieldFilterClauses.length + 1 });
 					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'DateMatch', FilterByColumn: pSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterClauses.length + 1 });
 					tmpRangeClause = { FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'DateRange', FilterByColumn: pSchemaField , Ordinal: tmpFieldFilterClauses.length + 1 };
@@ -395,7 +404,13 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 					tmpFieldFilterClauses.push(tmpRangeClause);
 					break;
 				case 'boolean': //TODO: we didn't add filters for this - they are just numeric but it's weird for the user, maybe we should add views for this that account for the difference
+				case 'deleted':
 				case 'integer':
+				case 'decimal':
+				case 'autoidentity':
+				case 'createiduser':
+				case 'updateiduser':
+				case 'deleteiduser':
 					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'NumericMatch', FilterByColumn: pSchemaField, ExactMatch: true , Ordinal: tmpFieldFilterClauses.length + 1 });
 					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'NumericMatch', FilterByColumn: pSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterClauses.length + 1 });
 					tmpRangeClause = { FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'NumericRange', FilterByColumn: pSchemaField , Ordinal: tmpFieldFilterClauses.length + 1 };
@@ -598,6 +613,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 			}
 			++tmpOrdinal;
 			const tmpColumn = tmpProperties[tmpSchemaField];
+			const tmpMeadowSchemaField = tmpSchema.MeadowSchema?.Schema?.find?.((f) => f.Column === tmpSchemaField);
 			let tmpFieldFilterSchema = this._FilterSchema[tmpSchemaField];
 			if (!tmpFieldFilterSchema)
 			{
@@ -631,7 +647,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 			{
 				tmpFieldFilterSchema.AvailableClauses = [];
 			}
-			const tmpFieldFilterClauses = this.getFieldFilterClauses(tmpSchemaField, tmpColumn);
+			const tmpFieldFilterClauses = this.getFieldFilterClauses(tmpSchemaField, tmpColumn, tmpMeadowSchemaField);
 			if (Array.isArray(tmpFieldFilterClauses) && tmpFieldFilterClauses.length > 0)
 			{
 				for (const tmpFilterClause of tmpFieldFilterClauses)

@@ -126,8 +126,9 @@ declare class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase 
     /**
      * @param {string} pSchemaField - The schema field name.
      * @param {Record<string, any>} pColumn - The full column definition from the schema.
+     * @param {Record<string, any>} [pMeadowSchemaField] - The meadow schema field definition.
      */
-    getFieldFilterClauses(pSchemaField: string, pColumn: Record<string, any>): any;
+    getFieldFilterClauses(pSchemaField: string, pColumn: Record<string, any>, pMeadowSchemaField?: Record<string, any>): any;
     /**
      * @param {(error?: Error) => void} fCallback - The callback function.
      */
