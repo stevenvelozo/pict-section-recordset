@@ -368,6 +368,8 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 	 */
 	getFieldFilterClauses(pSchemaField, pColumn)
 	{
+		/** @type {Record<string, any>} */
+		let tmpRangeClause;
 		let tmpFieldFilterClauses = this.options.FieldFilterClauses?.[pSchemaField];
 		if (!Array.isArray(tmpFieldFilterClauses))
 		{
@@ -378,19 +380,28 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 				case 'string':
 					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'StringMatch', FilterByColumn: pSchemaField, ExactMatch: true, Ordinal: tmpFieldFilterClauses.length + 1 });
 					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'StringMatch', FilterByColumn: pSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterClauses.length + 1 });
-					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'StringRange', FilterByColumn: pSchemaField , Ordinal: tmpFieldFilterClauses.length + 1 });
+					tmpRangeClause = { FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'StringRange', FilterByColumn: pSchemaField , Ordinal: tmpFieldFilterClauses.length + 1 };
+					tmpRangeClause.MinimumLabel = `Minimum ${tmpFieldHumanName}`;
+					tmpRangeClause.MaximumLabel = `Maximum ${tmpFieldHumanName}`;
+					tmpFieldFilterClauses.push(tmpRangeClause);
 					break;
 				case 'date':
 				case 'datetime':
 					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'DateMatch', FilterByColumn: pSchemaField, ExactMatch: true , Ordinal: tmpFieldFilterClauses.length + 1 });
 					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'DateMatch', FilterByColumn: pSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterClauses.length + 1 });
-					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'DateRange', FilterByColumn: pSchemaField , Ordinal: tmpFieldFilterClauses.length + 1 });
+					tmpRangeClause = { FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'DateRange', FilterByColumn: pSchemaField , Ordinal: tmpFieldFilterClauses.length + 1 };
+					tmpRangeClause.MinimumLabel = `Minimum ${tmpFieldHumanName}`;
+					tmpRangeClause.MaximumLabel = `Maximum ${tmpFieldHumanName}`;
+					tmpFieldFilterClauses.push(tmpRangeClause);
 					break;
 				case 'boolean': //TODO: we didn't add filters for this - they are just numeric but it's weird for the user, maybe we should add views for this that account for the difference
 				case 'integer':
 					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'NumericMatch', FilterByColumn: pSchemaField, ExactMatch: true , Ordinal: tmpFieldFilterClauses.length + 1 });
 					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'NumericMatch', FilterByColumn: pSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterClauses.length + 1 });
-					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'NumericRange', FilterByColumn: pSchemaField , Ordinal: tmpFieldFilterClauses.length + 1 });
+					tmpRangeClause = { FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'NumericRange', FilterByColumn: pSchemaField , Ordinal: tmpFieldFilterClauses.length + 1 };
+					tmpRangeClause.MinimumLabel = `Minimum ${tmpFieldHumanName}`;
+					tmpRangeClause.MaximumLabel = `Maximum ${tmpFieldHumanName}`;
+					tmpFieldFilterClauses.push(tmpRangeClause);
 					break;
 				default:
 					this.pict.log.warn(`Unsupported field type ${pColumn.type} for field ${pSchemaField}`, { Schema: pColumn });
