@@ -96,6 +96,8 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 	 */
 
 	/**
+	 * @param {string} pRecordSet - The RecordSet name to get the configuration for.
+	 *
 	 * @return {Record<string, any>} - The registered configuration for the RecordSet
 	 */
 	getRecordSetConfiguration(pRecordSet)
@@ -103,6 +105,9 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		return this.recordSetProviderConfigurations[pRecordSet];
 	}
 
+	/**
+	 * @param {Record<string, any>} pRecordSetConfiguration - The RecordSet configuration to load.
+	 */
 	loadRecordSetConfiguration(pRecordSetConfiguration)
 	{
 		if (typeof pRecordSetConfiguration !== 'object')
@@ -208,6 +213,9 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		return tmpProvider;
 	}
 
+	/**
+	 * @param {Array<Record<string, any>>} pRecordSetConfigurationArray - An array of RecordSet configurations to load.
+	 */
 	loadRecordSetConfigurationArray(pRecordSetConfigurationArray)
 	{
 		if (!Array.isArray(pRecordSetConfigurationArray))
@@ -229,6 +237,11 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		}
 	}
 
+	/**
+	 * @param {Record<string, any> | string} pRecordSet - The RecordSet configuration or hash to load dynamically.
+	 * @param {string} [pEntity] - (optional) The Entity type to use (defaults to the RecordSet name if not provided).
+	 * @param {string} [pDefaultFilter] - (optional) The default filter to use.
+	 */
 	loadRecordSetDynamically(pRecordSet, pEntity, pDefaultFilter)
 	{
 		if (typeof(pRecordSet) === 'object')
@@ -238,6 +251,11 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 
 			return this.fable.providers[tmpRecordSetProviderHash].initializeAsync((pError) =>
 				{
+					if (pError)
+					{
+						this.log.error(`RecordSet [${pRecordSet.RecordSet}] dynamically loaded with error: ${pError.message || pError}`, { Stack: pError.stack });
+						return;
+					}
 					this.log.trace(`RecordSet [${pRecordSet.RecordSet} dynamically loaded.`);
 				})
 		}
@@ -264,6 +282,11 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 			return this.fable.providers[tmpRecordSetProviderHash].initializeAsync(
 				(pError) =>
 				{
+					if (pError)
+					{
+						this.log.error(`RecordSet [${tmpRecordSet}] dynamically loaded with error: ${pError.message || pError}`, { Stack: pError.stack });
+						return;
+					}
 					this.log.trace(`RecordSet [${tmpRecordSetConfiguration.RecordSet} dynamically loaded.`);
 				});
 		}
@@ -272,6 +295,9 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		return false;
 	}
 
+	/**
+	 * @param {Record<string, any>} pRoutePayload - The route payload containing the RecordSet and optional Entity and DefaultFilter.
+	 */
 	handleLoadDynamicRecordSetRoute(pRoutePayload)
 	{
 		if (typeof(pRoutePayload) != 'object')
@@ -287,6 +313,9 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		return this.loadRecordSetDynamically(tmpRecordSet, tmpEntity, tmpDefaultFilter);
 	}
 
+	/**
+	 * @param {import('pict-router')} pPictRouter - The Pict Router to add the routes to.
+	 */
 	addRoutes(pPictRouter)
 	{
 		pPictRouter.addRoute('/PSRS/:RecordSet/LoadDynamic', this.handleLoadDynamicRecordSetRoute.bind(this));
@@ -295,6 +324,9 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		return true;
 	}
 
+	/**
+	 * @param {string} pCapability - The capability to check for.
+	 */
 	async checkSession(pCapability)
 	{
 		for (const sessionProvider of this.sessionProviders)
@@ -307,6 +339,13 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		return true;
 	}
 
+	/**
+	 * @param {string} pNameTemplate - The name template for the record link.
+	 * @param {string} pURLTemplate - The URL template for the record link.
+	 * @param {boolean} pDefault - Whether this is a default link template.
+	 *
+	 * @return {Record<string, any>} - The link template object that was added.
+	 */
 	addRecordLinkTemplate(pNameTemplate, pURLTemplate, pDefault)
 	{
 		return this.fable.providers.RecordSetLinkManager.addRecordLinkTemplate(pNameTemplate, pURLTemplate, pDefault);

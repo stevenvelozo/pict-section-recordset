@@ -4,11 +4,16 @@ declare class PictRecordSetLinkManager extends libPictProvider {
     /** @type {import('pict')} */
     pict: import("pict");
     linkTemplates: any[];
-    addRecordLinkTemplate(pNameTemplate: any, pURLTemplate: any, pDefault: any): {
-        Name: any;
-        URL: any;
-        Default: any;
-    };
+    /**
+     * TODO: Add the ability to add routes that are scoped to particular entity types
+     *
+     * @param {string} pNameTemplate - The name template for the record link.
+     * @param {string} pURLTemplate - The URL template for the record link.
+     * @param {boolean} pDefault - Whether this is a default link template.
+     *
+     * @return {Record<string, any>} - The link template object that was added.
+     */
+    addRecordLinkTemplate(pNameTemplate: string, pURLTemplate: string, pDefault: boolean): Record<string, any>;
 }
 declare namespace PictRecordSetLinkManager {
     export { _DEFAULT_PROVIDER_CONFIGURATION as default_configuration };

@@ -432,6 +432,8 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 	{
 		super.onInitializeAsync((pError) =>
 		{
+			//FIXME: load the most recent experience from local storage using the other provider
+			//       how do we control the initialization order of the providers?
 			if (this.options.FilterExperiences && typeof this.options.FilterExperiences === 'object' && !Array.isArray(this.options.FilterExperiences))
 			{
 				this.pict.Bundle._ActiveFilterState = this.pict.Bundle._ActiveFilterState || {};

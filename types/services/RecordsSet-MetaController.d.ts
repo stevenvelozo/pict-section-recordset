@@ -36,16 +36,45 @@ declare class RecordSetMetacontroller {
     manifests: Record<string, import("manyfest")>;
     has_initialized: boolean;
     /**
+     * @param {string} pRecordSet - The RecordSet name to get the configuration for.
+     *
      * @return {Record<string, any>} - The registered configuration for the RecordSet
      */
-    getRecordSetConfiguration(pRecordSet: any): Record<string, any>;
-    loadRecordSetConfiguration(pRecordSetConfiguration: any): boolean;
-    loadRecordSetConfigurationArray(pRecordSetConfigurationArray: any): boolean;
-    loadRecordSetDynamically(pRecordSet: any, pEntity: any, pDefaultFilter: any): any;
-    handleLoadDynamicRecordSetRoute(pRoutePayload: any): any;
+    getRecordSetConfiguration(pRecordSet: string): Record<string, any>;
+    /**
+     * @param {Record<string, any>} pRecordSetConfiguration - The RecordSet configuration to load.
+     */
+    loadRecordSetConfiguration(pRecordSetConfiguration: Record<string, any>): boolean;
+    /**
+     * @param {Array<Record<string, any>>} pRecordSetConfigurationArray - An array of RecordSet configurations to load.
+     */
+    loadRecordSetConfigurationArray(pRecordSetConfigurationArray: Array<Record<string, any>>): boolean;
+    /**
+     * @param {Record<string, any> | string} pRecordSet - The RecordSet configuration or hash to load dynamically.
+     * @param {string} [pEntity] - (optional) The Entity type to use (defaults to the RecordSet name if not provided).
+     * @param {string} [pDefaultFilter] - (optional) The default filter to use.
+     */
+    loadRecordSetDynamically(pRecordSet: Record<string, any> | string, pEntity?: string, pDefaultFilter?: string): any;
+    /**
+     * @param {Record<string, any>} pRoutePayload - The route payload containing the RecordSet and optional Entity and DefaultFilter.
+     */
+    handleLoadDynamicRecordSetRoute(pRoutePayload: Record<string, any>): any;
+    /**
+     * @param {import('pict-router')} pPictRouter - The Pict Router to add the routes to.
+     */
     addRoutes(pPictRouter: any): boolean;
-    checkSession(pCapability: any): Promise<boolean>;
-    addRecordLinkTemplate(pNameTemplate: any, pURLTemplate: any, pDefault: any): any;
+    /**
+     * @param {string} pCapability - The capability to check for.
+     */
+    checkSession(pCapability: string): Promise<boolean>;
+    /**
+     * @param {string} pNameTemplate - The name template for the record link.
+     * @param {string} pURLTemplate - The URL template for the record link.
+     * @param {boolean} pDefault - Whether this is a default link template.
+     *
+     * @return {Record<string, any>} - The link template object that was added.
+     */
+    addRecordLinkTemplate(pNameTemplate: string, pURLTemplate: string, pDefault: boolean): Record<string, any>;
     initialize(): true | this;
     getManifest(pScope: any): import("manyfest");
     /**

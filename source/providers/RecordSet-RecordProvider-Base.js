@@ -8,7 +8,7 @@ const libPictProvider = require('pict-provider');
 const _DefaultProviderConfiguration = {
 	ProviderIdentifier: 'Pict-RecordSetProvider',
 	AutoInitialize: true,
-	AutoInitializeOrdinal: 0,
+	AutoInitializeOrdinal: 1, // initialize after other providers if initialized during app init
 	AutoSolveWithApp: false,
 };
 

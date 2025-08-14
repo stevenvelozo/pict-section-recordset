@@ -31,7 +31,15 @@ class PictRecordSetLinkManager extends libPictProvider
 		this.linkTemplates = [];
 	}
 
-	// TODO: Add the ability to add routes that are scoped to particular entity types
+	/**
+	 * TODO: Add the ability to add routes that are scoped to particular entity types
+	 *
+	 * @param {string} pNameTemplate - The name template for the record link.
+	 * @param {string} pURLTemplate - The URL template for the record link.
+	 * @param {boolean} pDefault - Whether this is a default link template.
+	 *
+	 * @return {Record<string, any>} - The link template object that was added.
+	 */
 	addRecordLinkTemplate(pNameTemplate, pURLTemplate, pDefault)
 	{
 		let tmpDefaultAction = (typeof(pDefault) !== 'undefined') ? pDefault : false;
