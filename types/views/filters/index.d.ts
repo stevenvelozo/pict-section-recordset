@@ -11,10 +11,14 @@ export let InternalJoinNumericMatch: typeof import("./RecordSet-Filter-InternalJ
 export let InternalJoinNumericRange: typeof import("./RecordSet-Filter-InternalJoinNumericRange.js");
 export let InternalJoinStringMatch: typeof import("./RecordSet-Filter-InternalJoinStringMatch.js");
 export let InternalJoinStringRange: typeof import("./RecordSet-Filter-InternalJoinStringRange.js");
+export let InternalJoinSelectedValue: typeof import("./RecordSet-Filter-InternalJoinSelectedValue.js");
+export let InternalJoinSelectedValueList: typeof import("./RecordSet-Filter-InternalJoinSelectedValueList.js");
 export let ExternalJoinDateMatch: typeof import("./RecordSet-Filter-ExternalJoinDateMatch.js");
 export let ExternalJoinDateRange: typeof import("./RecordSet-Filter-ExternalJoinDateRange.js");
 export let ExternalJoinNumericMatch: typeof import("./RecordSet-Filter-ExternalJoinNumericMatch.js");
 export let ExternalJoinNumericRange: typeof import("./RecordSet-Filter-ExternalJoinNumericRange.js");
 export let ExternalJoinStringMatch: typeof import("./RecordSet-Filter-ExternalJoinStringMatch.js");
 export let ExternalJoinStringRange: typeof import("./RecordSet-Filter-ExternalJoinStringRange.js");
+export let ExternalJoinSelectedValue: typeof import("./RecordSet-Filter-ExternalJoinSelectedValue.js");
+export let ExternalJoinSelectedValueList: typeof import("./RecordSet-Filter-ExternalJoinSelectedValueList.js");
 //# sourceMappingURL=index.d.ts.map

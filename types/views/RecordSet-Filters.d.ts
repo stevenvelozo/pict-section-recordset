@@ -14,6 +14,16 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
     chars: string;
     lookup: any[] | Uint8Array<ArrayBuffer>;
     /**
+     * @return {string} - The marshalling prefix configured for filters. Usually 'Bundle.'
+     */
+    getInformaryAddressPrefix(): string;
+    /**
+     * @param {string} pAddress - The address of the informary to get the value from.
+     *
+     * @return {any} - The value at the given address, using the informary marshalling prefix.
+     */
+    getInformaryScopedValue(pAddress: string): any;
+    /**
      * Marshals data from the view to the model, usually AppData (or configured data store).
      *
      * @returns {any} The result of the superclass's onMarshalFromView method.

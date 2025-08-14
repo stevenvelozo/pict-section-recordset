@@ -148,6 +148,47 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 //FIXME: export this from PSF?
 const libPictViewDynamicForm = require('pict-section-form/source/views/Pict-View-DynamicForm.js');
 
+const DynamicInputViewSectionDefinition = (
+{
+	"Hash": "PSRSDynamicInputs",
+	"Name": "Custom Dynamic Inputs",
+	"ViewHash": "PSRSFilterProxyView",
+
+	"AutoMarshalDataOnSolve": true,
+	"IncludeInMetatemplateSectionGeneration": false,
+
+	"Manifests":
+	{
+		"Section":
+		{
+			"Scope": "PSRSDynamic",
+			"Sections":
+			[
+				{
+					"Hash": "PSRSDynamicInputs",
+					"Name": "Dynamic Inputs"
+				}
+			],
+			"Descriptors":
+			{
+				"PSRS.DynamicInputPlaceholder":
+				{
+					"Name": "DynamicInputPlaceholder",
+					"Hash": "DynamicInputPlaceholder",
+					"DataType": "String",
+					"Macro":
+					{
+						"HTMLSelector": ""
+					},
+					"PictForm":
+					{
+						"Section": "PSRSDynamicInputs"
+					}
+				}
+			}
+		}
+	}
+});
 class ViewRecordSetSUBSETFilters extends libPictView
 {
 	constructor(pFable, pOptions, pServiceHash)
@@ -157,52 +198,11 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		/** @type {import('fable') & import('pict') & { PictSectionRecordSet: import('../Pict-Section-RecordSet.js') }} */
 		this.pict;
 
-		const tmpDynamicInputViewSection = (
+		if (!this.pict.views[DynamicInputViewSectionDefinition.ViewHash])
 		{
-			"Hash": "PSRSDynamicInputs",
-			"Name": "Custom Dynamic Inputs",
-			"ViewHash": "PSRSFilterProxyView",
-
-			"AutoMarshalDataOnSolve": true,
-			"IncludeInMetatemplateSectionGeneration": false,
-
-			"Manifests":
-			{
-				"Section":
-				{
-					"Scope": "PSRSDynamic",
-					"Sections":
-					[
-						{
-							"Hash": "PSRSDynamicInputs",
-							"Name": "Dynamic Inputs"
-						}
-					],
-					"Descriptors":
-					{
-						"PSRS.DynamicInputPlaceholder":
-						{
-							"Name": "DynamicInputPlaceholder",
-							"Hash": "DynamicInputPlaceholder",
-							"DataType": "String",
-							"Macro":
-							{
-								"HTMLSelector": ""
-							},
-							"PictForm":
-							{
-								"Section": "PSRSDynamicInputs"
-							}
-						}
-					}
-				}
-			}
-		});
-		if (!this.pict.views[tmpDynamicInputViewSection.ViewHash])
-		{
-			const tmpViewConfiguration = Object.assign({}, tmpDynamicInputViewSection);
+			const tmpViewConfiguration = Object.assign({}, DynamicInputViewSectionDefinition);
 			this.pict.addView(tmpViewConfiguration.ViewHash, tmpViewConfiguration, libPictViewDynamicForm);
-			this.pict.views[tmpDynamicInputViewSection.ViewHash].viewMarshalDestination = 'Bundle';
+			this.pict.views[DynamicInputViewSectionDefinition.ViewHash].viewMarshalDestination = 'Bundle';
 		}
 		for (const tmpView of Object.values(require('./filters')))
 		{
@@ -219,6 +219,25 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		{
 			this.lookup[this.chars.charCodeAt(i)] = i;
 		}
+	}
+
+	/**
+	 * @return {string} - The marshalling prefix configured for filters. Usually 'Bundle.'
+	 */
+	getInformaryAddressPrefix()
+	{
+		return `${this.pict.views[DynamicInputViewSectionDefinition.ViewHash].viewMarshalDestination}.`;
+	}
+
+	/**
+	 * @param {string} pAddress - The address of the informary to get the value from.
+	 *
+	 * @return {any} - The value at the given address, using the informary marshalling prefix.
+	 */
+	getInformaryScopedValue(pAddress)
+	{
+		const tmpCompositeAddress = `${this.getInformaryAddressPrefix()}${pAddress}`;
+		return this.pict.resolveStateFromAddress(tmpCompositeAddress);
 	}
 
 	//NOTE: two methods below copied from the pict-section-form metacontroller
@@ -315,6 +334,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		{
 			tmpURL = tmpURL.replace(/\/FilteredTo\//, '');
 		}
+		this.render(undefined, undefined, { RecordSet: pRecordSet, ViewContext: pViewContext });
 		this.serializeFilterExperience(this.pict.Bundle._ActiveFilterState[pRecordSet]?.FilterClauses).then((pFilterExperienceSerialized) =>
 		{
 			if (pFilterExperienceSerialized)
@@ -342,6 +362,11 @@ class ViewRecordSetSUBSETFilters extends libPictView
 			{
 				delete tmpClause.Value;
 				delete tmpClause.Values;
+				delete tmpClause.SearchInputValue;
+				delete tmpClause.SelectedValues;
+				delete tmpClause.SearchResults;
+				delete tmpClause.SearchResultsOffset;
+				delete tmpClause.LoadMoreEnabled;
 			}
 		}
 		this.performSearch(pRecordSet, pViewContext);
@@ -428,7 +453,15 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		{
 			return '';
 		}
-		return this.encode(await this.compress(JSON.stringify(pExperience)));
+		const tmpExperience = JSON.parse(JSON.stringify(pExperience));
+		for (const tmpClause of tmpExperience)
+		{
+			//FIXME: avoiding saving search results to the URL but this pattern isn't ideal
+			delete tmpClause.SearchResults;
+			delete tmpClause.SearchResultsOffset;
+			delete tmpClause.LoadMoreEnabled;
+		}
+		return this.encode(await this.compress(JSON.stringify(tmpExperience)));
 	}
 
 	/**

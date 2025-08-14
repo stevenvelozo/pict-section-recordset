@@ -30,17 +30,22 @@ class PictTemplateFilterInstanceViewInstruction extends libPictTemplate
 		}
 	}
 
-	_getViewForFilterClauses(pClauses)
+	_getViewForFilterClause(pClause)
 	{
-		const tmpViewHash =`PRSP-FilterType-${pClauses.Type}`;
+		let tmpViewHash = `PRSP-FilterType-${pClause.Type}`;
+		const tmpCustomViewHash = `${tmpViewHash}-${pClause.CustomFilterViewHash}`;
+		if (tmpCustomViewHash in this.pict.views)
+		{
+			tmpViewHash = tmpCustomViewHash;
+		}
 		/** @type {import('../views/filters/RecordSet-Filter-Base.js')} */
 		let tmpView = this.pict.views[tmpViewHash];
 		if (!tmpView)
 		{
-			const tmpViewPrototype = libFilterViews[pClauses.Type] || libFilterViews.Base;
+			const tmpViewPrototype = libFilterViews[pClause.Type] || libFilterViews.Base;
 			if (!tmpViewPrototype)
 			{
-				this.pict.log.error(`Pict: Filter Instance Views Template Render: No view prototype found for filter type [${pClauses.Type}]`);
+				this.pict.log.error(`Pict: Filter Instance Views Template Render: No view prototype found for filter type [${pClause.Type}]`);
 				return null;
 			}
 			//FIXME: is this safe? will this view get rendered at other times?
@@ -103,11 +108,10 @@ class PictTemplateFilterInstanceViewInstruction extends libPictTemplate
 		const tmpClauses = this.pict.Bundle._ActiveFilterState?.[pRecord.RecordSet]?.FilterClauses || [];
 		//FIXME: lookup by hash instead?
 		for (let i = 0; i < tmpClauses.length; i++)
-		//for (const tmpClauses of this.pict.Bundle._ActiveFilterState?.[pRecord.RecordSet]?.FilterClauses || [])
 		{
 			const tmpClause = tmpClauses[i];
 			/** @type {import('../views/filters/RecordSet-Filter-Base.js')} */
-			const tmpView = this._getViewForFilterClauses(tmpClause);
+			const tmpView = this._getViewForFilterClause(tmpClause);
 			if (!tmpView)
 			{
 				continue;
@@ -182,7 +186,7 @@ class PictTemplateFilterInstanceViewInstruction extends libPictTemplate
 		{
 			const tmpClause = tmpClauses[i];
 			/** @type {import('../views/filters/RecordSet-Filter-Base.js')} */
-			const tmpView = this._getViewForFilterClauses(tmpClause);
+			const tmpView = this._getViewForFilterClause(tmpClause);
 			if (!tmpView)
 			{
 				continue;

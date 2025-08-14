@@ -41,7 +41,7 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Hash: 'PRSP-Filter-Base-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-Filter-Base-Template] -->
-	<div>
+	<div id="PRSP_Filter_Container_{~D:Record.Hash~}">
 		<button type="button"
 			onclick="_Pict.views['PRSP-Filters'].removeFilter(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}', '{~D:Record.Hash~}');"
 			>
@@ -96,6 +96,24 @@ class ViewRecordSetSUBSETFilterBase extends libPictView
 	getFilterFormTemplate()
 	{
 		return 'PRSP-Filter-Base-Form';
+	}
+
+	/**
+	 * @return {string} - The prefix for the informary address.
+	 */
+	getInformaryAddressPrefix()
+	{
+		return this.pict.views['PRSP-Filters'].getInformaryAddressPrefix();
+	}
+
+	/**
+	 * @param {string} pInformaryAddress - The address of the informary to get the value from.
+	 *
+	 * @return {any} - The value at the informary address.
+	 */
+	getInformaryScopedValue(pInformaryAddress)
+	{
+		return this.pict.views['PRSP-Filters'].getInformaryScopedValue(pInformaryAddress);
 	}
 }
 

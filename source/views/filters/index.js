@@ -16,6 +16,8 @@ module.exports =
 	InternalJoinNumericRange: require('./RecordSet-Filter-InternalJoinNumericRange.js'),
 	InternalJoinStringMatch: require('./RecordSet-Filter-InternalJoinStringMatch.js'),
 	InternalJoinStringRange: require('./RecordSet-Filter-InternalJoinStringRange.js'),
+	InternalJoinSelectedValue: require('./RecordSet-Filter-InternalJoinSelectedValue.js'),
+	InternalJoinSelectedValueList: require('./RecordSet-Filter-InternalJoinSelectedValueList.js'),
 
 	ExternalJoinDateMatch: require('./RecordSet-Filter-ExternalJoinDateMatch.js'),
 	ExternalJoinDateRange: require('./RecordSet-Filter-ExternalJoinDateRange.js'),
@@ -23,5 +25,7 @@ module.exports =
 	ExternalJoinNumericRange: require('./RecordSet-Filter-ExternalJoinNumericRange.js'),
 	ExternalJoinStringMatch: require('./RecordSet-Filter-ExternalJoinStringMatch.js'),
 	ExternalJoinStringRange: require('./RecordSet-Filter-ExternalJoinStringRange.js'),
+	ExternalJoinSelectedValue: require('./RecordSet-Filter-ExternalJoinSelectedValue.js'),
+	ExternalJoinSelectedValueList: require('./RecordSet-Filter-ExternalJoinSelectedValueList.js'),
 };
 
