@@ -381,45 +381,76 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 			}
 			tmpFieldFilterClauses = [];
 			const tmpFieldHumanName = this._getHumanReadableFieldName(pSchemaField);
-			switch (tmpFieldType)
+			const isUserAuditField = ['CreatingIDUser', 'DeletingIDUser', 'UpdatingIDUser'].includes(pSchemaField);
+			const customFilterClauses = this.options.Filters?.[pSchemaField];
+			if (pSchemaField.startsWith('ID') || isUserAuditField || customFilterClauses)
 			{
-				case 'string':
-				case 'autoguid':
-					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'StringMatch', FilterByColumn: pSchemaField, ExactMatch: true, Ordinal: tmpFieldFilterClauses.length + 1 });
-					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'StringMatch', FilterByColumn: pSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterClauses.length + 1 });
-					tmpRangeClause = { FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'StringRange', FilterByColumn: pSchemaField , Ordinal: tmpFieldFilterClauses.length + 1 };
-					tmpRangeClause.MinimumLabel = `Minimum ${tmpFieldHumanName}`;
-					tmpRangeClause.MaximumLabel = `Maximum ${tmpFieldHumanName}`;
-					tmpFieldFilterClauses.push(tmpRangeClause);
-					break;
-				case 'date':
-				case 'datetime':
-				case 'createdate':
-				case 'updatedate':
-					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'DateMatch', FilterByColumn: pSchemaField, ExactMatch: true , Ordinal: tmpFieldFilterClauses.length + 1 });
-					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'DateMatch', FilterByColumn: pSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterClauses.length + 1 });
-					tmpRangeClause = { FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'DateRange', FilterByColumn: pSchemaField , Ordinal: tmpFieldFilterClauses.length + 1 };
-					tmpRangeClause.MinimumLabel = `Minimum ${tmpFieldHumanName}`;
-					tmpRangeClause.MaximumLabel = `Maximum ${tmpFieldHumanName}`;
-					tmpFieldFilterClauses.push(tmpRangeClause);
-					break;
-				case 'boolean': //TODO: we didn't add filters for this - they are just numeric but it's weird for the user, maybe we should add views for this that account for the difference
-				case 'deleted':
-				case 'integer':
-				case 'decimal':
-				case 'autoidentity':
-				case 'createiduser':
-				case 'updateiduser':
-				case 'deleteiduser':
-					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Exact`, DisplayName: `${tmpFieldHumanName} Exact Match`, Type: 'NumericMatch', FilterByColumn: pSchemaField, ExactMatch: true , Ordinal: tmpFieldFilterClauses.length + 1 });
-					tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Fuzzy`, DisplayName: `${tmpFieldHumanName} Partial Match`, Type: 'NumericMatch', FilterByColumn: pSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterClauses.length + 1 });
-					tmpRangeClause = { FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Range`, DisplayName: `${tmpFieldHumanName} in Range`, Type: 'NumericRange', FilterByColumn: pSchemaField , Ordinal: tmpFieldFilterClauses.length + 1 };
-					tmpRangeClause.MinimumLabel = `Minimum ${tmpFieldHumanName}`;
-					tmpRangeClause.MaximumLabel = `Maximum ${tmpFieldHumanName}`;
-					tmpFieldFilterClauses.push(tmpRangeClause);
-					break;
-				default:
-					this.pict.log.warn(`Unsupported field type ${pColumn.type} for field ${pSchemaField}`, { Schema: pColumn });
+				for (const customField of Array.isArray(customFilterClauses) ? customFilterClauses : [customFilterClauses])
+				{
+					const remoteTableName = customField?.RemoteTable || pSchemaField.split('ID')[1];
+					const fieldName = isUserAuditField ? this._getHumanReadableFieldName(pSchemaField) : this._getHumanReadableEntityName(remoteTableName);
+					tmpFieldFilterClauses.push(Object.assign(
+					{
+						"Label": `${ fieldName }`,
+						"Type": "InternalJoinSelectedValueList",
+						"ExternalFilterByColumns": remoteTableName === 'User' ? [ 'NameFirst', 'NameLast' ] : [ 'Name' ],
+
+						"ExternalRecordDisplayTemplate": remoteTableName === 'User' ? '{~D:Record.Data.NameFirst~} {~D:Record.Data.NameLast~}' : '{~D:Record.Name~}',
+
+						"CoreConnectionColumn": pSchemaField,
+
+						"RemoteTable": `${ remoteTableName }`,
+						"JoinExternalConnectionColumn": `ID${ remoteTableName }`,
+						"JoinInternalConnectionColumn": `ID${ remoteTableName }`,
+						'DisplayName': `Selected Records`,
+						'Ordinal': tmpFieldFilterClauses.length + 1,
+						'FilterKey': pSchemaField,
+						'ClauseKey': `${pSchemaField}_Selected`
+					}, customField));
+				}
+			}
+			else
+			{
+				switch (tmpFieldType)
+				{
+					case 'string':
+					case 'autoguid':
+						tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Exact`, DisplayName: `Exact Match`, Type: 'StringMatch', FilterByColumn: pSchemaField, ExactMatch: true, Ordinal: tmpFieldFilterClauses.length + 1 });
+						tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Fuzzy`, DisplayName: `Partial Match`, Type: 'StringMatch', FilterByColumn: pSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterClauses.length + 1 });
+						tmpRangeClause = { FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Range`, DisplayName: `In Range`, Type: 'StringRange', FilterByColumn: pSchemaField , Ordinal: tmpFieldFilterClauses.length + 1 };
+						tmpRangeClause.MinimumLabel = `Minimum ${tmpFieldHumanName}`;
+						tmpRangeClause.MaximumLabel = `Maximum ${tmpFieldHumanName}`;
+						tmpFieldFilterClauses.push(tmpRangeClause);
+						break;
+					case 'date':
+					case 'datetime':
+					case 'createdate':
+					case 'updatedate':
+						tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Exact`, DisplayName: `Exact Match`, Type: 'DateMatch', FilterByColumn: pSchemaField, ExactMatch: true , Ordinal: tmpFieldFilterClauses.length + 1 });
+						tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Fuzzy`, DisplayName: `Partial Match`, Type: 'DateMatch', FilterByColumn: pSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterClauses.length + 1 });
+						tmpRangeClause = { FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Range`, DisplayName: `In Range`, Type: 'DateRange', FilterByColumn: pSchemaField , Ordinal: tmpFieldFilterClauses.length + 1 };
+						tmpRangeClause.MinimumLabel = `Minimum ${tmpFieldHumanName}`;
+						tmpRangeClause.MaximumLabel = `Maximum ${tmpFieldHumanName}`;
+						tmpFieldFilterClauses.push(tmpRangeClause);
+						break;
+					case 'boolean': //TODO: we didn't add filters for this - they are just numeric but it's weird for the user, maybe we should add views for this that account for the difference
+					case 'deleted':
+					case 'integer':
+					case 'decimal':
+					case 'autoidentity':
+					case 'createiduser':
+					case 'updateiduser':
+					case 'deleteiduser':
+						tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Exact`, DisplayName: `Exact Match`, Type: 'NumericMatch', FilterByColumn: pSchemaField, ExactMatch: true , Ordinal: tmpFieldFilterClauses.length + 1 });
+						tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Fuzzy`, DisplayName: `Partial Match`, Type: 'NumericMatch', FilterByColumn: pSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterClauses.length + 1 });
+						tmpRangeClause = { FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Range`, DisplayName: `In Range`, Type: 'NumericRange', FilterByColumn: pSchemaField , Ordinal: tmpFieldFilterClauses.length + 1 };
+						tmpRangeClause.MinimumLabel = `Minimum ${tmpFieldHumanName}`;
+						tmpRangeClause.MaximumLabel = `Maximum ${tmpFieldHumanName}`;
+						tmpFieldFilterClauses.push(tmpRangeClause);
+						break;
+					default:
+						this.pict.log.warn(`Unsupported field type ${pColumn.type} for field ${pSchemaField}`, { Schema: pColumn });
+				}
 			}
 		}
 		return tmpFieldFilterClauses;
@@ -523,7 +554,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 	 * @param {string} pEntity - The schema field name.
 	 * @return {string} - The human-readable name for the entity.
 	 */
-	_getHumanReadbleEntityName(pEntity)
+	_getHumanReadableEntityName(pEntity)
 	{
 		return pEntity.replace(/([a-z])([A-Z])/g, '$1 $2'); // Add space before capital letters
 	}
@@ -540,11 +571,11 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		}
 		if (pSchemaField === `ID${this.options.Entity}`)
 		{
-			return `${this._getHumanReadbleEntityName(this.options.Entity)} Unique Database ID`;
+			return `${this._getHumanReadableEntityName(this.options.Entity)} Unique Database ID`;
 		}
 		if (pSchemaField === `GUID${this.options.Entity}`)
 		{
-			return `${this._getHumanReadbleEntityName(this.options.Entity)} Unique Identifier`;
+			return `${this._getHumanReadableEntityName(this.options.Entity)} Unique Identifier`;
 		}
 		if (pSchemaField === 'CreatingIDUser')
 		{
@@ -639,7 +670,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 			}
 			if (!tmpFieldFilterSchema.HelpText)
 			{
-				tmpFieldFilterSchema.HelpText = `Filter by ${tmpFieldFilterSchema.DisplayName} for the ${this._getHumanReadbleEntityName(this.options.Entity)} entity.`;
+				tmpFieldFilterSchema.HelpText = `Filter by ${tmpFieldFilterSchema.DisplayName} for the ${this._getHumanReadableEntityName(this.options.Entity)} entity.`;
 			}
 			if (tmpFieldFilterSchema.Ordinal == null)
 			{
@@ -696,7 +727,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 					}
 					if (!tmpFieldFilterSchema.HelpText)
 					{
-						tmpFieldFilterSchema.HelpText = tmpFilterClause.HelpText || `Filter by ${tmpFieldFilterSchema.DisplayName} for the ${this._getHumanReadbleEntityName(this.options.Entity)} entity.`;
+						tmpFieldFilterSchema.HelpText = tmpFilterClause.HelpText || `Filter by ${tmpFieldFilterSchema.DisplayName} for the ${this._getHumanReadableEntityName(this.options.Entity)} entity.`;
 					}
 					if (tmpFieldFilterSchema.Ordinal == null)
 					{

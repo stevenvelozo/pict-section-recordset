@@ -343,6 +343,7 @@ module.exports.default_configuration.pict_configuration = (
 				"Label": "Author's Name",
 				"Type": "ExternalJoinStringMatch",
 				"ExternalFilterByColumns": [ "Name" ],
+				"DisplayName": "Author's Name",
 
 				"CoreConnectionColumn": "IDBook",
 

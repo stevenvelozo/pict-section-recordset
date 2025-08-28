@@ -383,7 +383,15 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		{
 			for (const tmpFilterKey of Object.keys(this.fable.settings.Filters))
 			{
-				this.pict.providers.FilterManager.addFilter(tmpFilterKey, this.fable.settings.Filters[tmpFilterKey]);
+				const filterArray = Array.isArray(this.fable.settings.Filters[tmpFilterKey]) ? this.fable.settings.Filters[tmpFilterKey] : [this.fable.settings.Filters[tmpFilterKey]];
+				for (let x = 0; x < filterArray.length; x++)
+				{
+					if (!filterArray[x].DisplayName)
+					{
+						filterArray[x].DisplayName = filterArray[x].Label || tmpFilterKey;
+					}
+					this.pict.providers.FilterManager.addFilter(filterArray[x].FilterKey || `${ tmpFilterKey }${ x ? `_${ x }` : '' }`, filterArray[x]);
+				}
 			}
 		}
 

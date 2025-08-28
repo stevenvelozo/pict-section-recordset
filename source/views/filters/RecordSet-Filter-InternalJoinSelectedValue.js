@@ -22,7 +22,7 @@ const _DEFAULT_CONFIGURATION_Filter_InternalJoin_SelectedValue =
 		{
 			Hash: 'PRSP-Filter-InternalJoin-SelectedValue-SearchResults',
 			Template: /*html*/`
-	<!-- DefaultPackage pict view template: [PRSP-Filter-InternalJoin-SearchResults] -->
+	<!-- DefaultPackage pict view template: [PRSP-Filter-InternalJoin-SelectedValue-SearchResults] -->
 	<form id="PRSP_Filter_{~D:Record.Hash~}_Search_Form" onsubmit="_Pict.views['{~D:Context[0].Hash~}'].performSearch(event, '{~D:Record.ClauseAddress~}', '{~D:Record.Hash~}'); return false;">
 		<input id="PRSP_Filter_{~D:Record.Hash~}_Search_Value" type="text" placeholder="Search..." value="{~D:Record.SearchInputValue~}" />
 		<button type="submit" id="PRSP_Filter_{~D:Record.Hash~}_Button_Search" onclick="_Pict.views['{~D:Context[0].Hash~}'].performSearch(event, '{~D:Record.ClauseAddress~}', '{~D:Record.Hash~}')">Search</button>
@@ -36,7 +36,7 @@ const _DEFAULT_CONFIGURATION_Filter_InternalJoin_SelectedValue =
 		</tbody>
 	</table>
 	<button type="button" id="PRSP_Filter_{~D:Record.Hash~}_Button_LoadMore" class="is-hidden" onclick="_Pict.views['{~D:Context[0].Hash~}'].loadMore(event, '{~D:Record.ClauseAddress~}', '{~D:Record.Hash~}', {~D:Record.SearchResultsOffset:0~})">Load More</button>
-	<!-- DefaultPackage end view template:	[PRSP-Filter-InternalJoin-SearchResults] -->
+	<!-- DefaultPackage end view template:	[PRSP-Filter-InternalJoin-SelectedValue-SearchResults] -->
 `
 		},
 		{
