@@ -383,7 +383,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 			const tmpFieldHumanName = this._getHumanReadableFieldName(pSchemaField);
 			const isUserAuditField = ['CreatingIDUser', 'DeletingIDUser', 'UpdatingIDUser'].includes(pSchemaField);
 			const customFilterClauses = this.options.Filters?.[pSchemaField];
-			if (pSchemaField.startsWith('ID') || isUserAuditField || customFilterClauses)
+			if (pSchemaField.startsWith('ID') || pSchemaField.startsWith('ParentID') || isUserAuditField || customFilterClauses)
 			{
 				for (const customField of Array.isArray(customFilterClauses) ? customFilterClauses : [customFilterClauses])
 				{
@@ -394,14 +394,11 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 						"Label": `${ fieldName }`,
 						"Type": "InternalJoinSelectedValueList",
 						"ExternalFilterByColumns": remoteTableName === 'User' ? [ 'NameFirst', 'NameLast' ] : [ 'Name' ],
-
 						"ExternalRecordDisplayTemplate": remoteTableName === 'User' ? '{~D:Record.Data.NameFirst~} {~D:Record.Data.NameLast~}' : '{~D:Record.Name~}',
-
 						"CoreConnectionColumn": pSchemaField,
-
 						"RemoteTable": `${ remoteTableName }`,
 						"JoinExternalConnectionColumn": `ID${ remoteTableName }`,
-						"JoinInternalConnectionColumn": `ID${ remoteTableName }`,
+						"JoinInternalConnectionColumn": pSchemaField,
 						'DisplayName': `Selected Records`,
 						'Ordinal': tmpFieldFilterClauses.length + 1,
 						'FilterKey': pSchemaField,
@@ -592,6 +589,14 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		if (pSchemaField === 'UpdateDate')
 		{
 			return 'Date Last Updated';
+		}
+		if (pSchemaField.startsWith('ID'))
+		{
+			return this._getHumanReadableEntityName(pSchemaField.split('ID')[1]);
+		}
+		if (pSchemaField.startsWith('ParentID'))
+		{
+			return 'Parent ' + this._getHumanReadableEntityName(pSchemaField.split('ID')[1]);
 		}
 		return pSchemaField.replace(/([a-z])([A-Z])/g, '$1 $2') // Add space before capital letters
 	}
