@@ -388,7 +388,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 				for (const customField of Array.isArray(customFilterClauses) ? customFilterClauses : [customFilterClauses])
 				{
 					const remoteTableName = customField?.RemoteTable || pSchemaField.split('ID')[1];
-					const fieldName = isUserAuditField ? this._getHumanReadableFieldName(pSchemaField) : this._getHumanReadableEntityName(remoteTableName);
+					const fieldName = this._getHumanReadableFieldName(pSchemaField);
 					tmpFieldFilterClauses.push(Object.assign(
 					{
 						"Label": `${ fieldName }`,
