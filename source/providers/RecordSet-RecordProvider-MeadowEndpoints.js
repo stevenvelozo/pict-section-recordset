@@ -742,7 +742,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 					{
 						tmpFieldFilterSchema.AvailableClauses = [];
 					}
-					tmpFieldFilterSchema.AvailableClauses.push(tmpFilterClause);
+					tmpFieldFilterSchema.AvailableClauses.push(tmpFilterClause.ClauseName ? Object.assign(tmpFilterClause, { DisplayName: tmpFilterClause.ClauseName }) : tmpFilterClause);
 					if (!tmpFilterClause.FilterKey)
 					{
 						tmpFilterClause.FilterKey = tmpFilterKey;
