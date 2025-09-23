@@ -408,12 +408,12 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		{
 			// Put code here to preprocess columns into other data parts.
 			/*
-				"RecordSetListManifestOnly": false,
+				"RecordSetDashboardManifestOnly": false,
 
 				"RecordSetListManifests": [ "Bestsellers", "Underdogs", "NewReleases" ],
 				"RecordSetDashboardManifests": [ "Bestsellers" ],
 			 */
-			if (pRecordSetConfiguration.RecordSetListManifestOnly)
+			if (pRecordSetConfiguration.RecordSetDashboardManifestOnly)
 			{
 				const tmpManifestHash = pRecordSetConfiguration.RecordSetDashboardDefaultManifest || pRecordSetConfiguration.RecordSetDashboardManifests?.[0];
 				const tmpManifest = this.pict.PictSectionRecordSet.getManifest(tmpManifestHash);
@@ -509,7 +509,7 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 			this.pict.log.error(`RecordSetDashboard: No provider found for ${pProviderHash} in ${pRecordSetConfiguration.RecordSet}.  List Render failed.`);
 			return;
 		}
-		if (pRecordSetConfiguration.RecordSetListManifestOnly)
+		if (pRecordSetConfiguration.RecordSetDashboardManifestOnly)
 		{
 			const tmpManifestHash = pRecordSetConfiguration.RecordSetDashboardDefaultManifest || pRecordSetConfiguration.RecordSetDashboardManifests?.[0];
 			const tmpManifest = this.pict.PictSectionRecordSet.getManifest(tmpManifestHash);
@@ -689,7 +689,7 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 
 		// Put code here to preprocess columns into other data parts.
 		/*
-			"RecordSetListManifestOnly": false,
+			"RecordSetDashboardManifestOnly": false,
 
 			"RecordSetListManifests": [ "Bestsellers", "Underdogs", "NewReleases" ],
 			"RecordSetDashboardManifests": [ "Bestsellers" ],

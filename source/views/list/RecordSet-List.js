@@ -193,6 +193,20 @@ class viewRecordSetList extends libPictRecordSetRecordView
 			return;
 		}
 
+		if (pRecordSetConfiguration.RecordSetListManifestOnly)
+		{
+			const tmpManifestHash = pRecordSetConfiguration.RecordSetListDefaultManifest || pRecordSetConfiguration.RecordSetListManifests?.[0];
+			const tmpManifest = this.pict.PictSectionRecordSet.manifestDefinitions[tmpManifestHash];
+			if (!tmpManifest)
+			{
+				this.pict.log.error(`RecordSetList: No manifest found for ${pRecordSetConfiguration.RecordSet}.  List Render failed.`);
+			}
+			else
+			{
+				return this.renderListFromManifest(tmpManifest, pRecordSetConfiguration, pProviderHash, pFilterString, pSerializedFilterExperience, pOffset, pPageSize);
+			}
+		}
+
 		const tmpEncodedFilterExperience = pSerializedFilterExperience && encodeURIComponent(pSerializedFilterExperience);
 		if (tmpEncodedFilterExperience)
 		{
@@ -408,6 +422,257 @@ class viewRecordSetList extends libPictRecordSetRecordView
 					this.pict.log.info(`RecordSetList: Rendered list ${tmpRecordListData.RecordSet} with ${tmpRecordListData.Records.Records.length} records.`);
 				}
 				return true;
+			}.bind(this));
+	}
+
+	/**
+	 * @param {object} pManifest
+	 * @param {Record<string, any>} pRecordSetConfiguration
+	 * @param {string} pProviderHash
+	 * @param {string} pFilterString
+	 * @param {string} pSerializedFilterExperience
+	 * @param {number} pOffset
+	 * @param {number} pPageSize
+	 *
+	 * @return {Promise<void>}
+	 */
+	async renderListFromManifest(pManifest, pRecordSetConfiguration, pProviderHash, pFilterString, pSerializedFilterExperience, pOffset, pPageSize)
+	{
+		if (!pRecordSetConfiguration)
+		{
+			this.pict.log.error(`RecordSetList: No record set configuration found.  List Render failed.`);
+			return;
+		}
+		// Get the records
+		if (!(pProviderHash in this.pict.providers))
+		{
+			this.pict.log.error(`RecordSetList: No provider found for ${pProviderHash} in ${pRecordSetConfiguration.RecordSet}.  List Render failed.`);
+			return;
+		}
+
+		let tmpTitle = pRecordSetConfiguration.Title || pRecordSetConfiguration.RecordSet;
+		if (pManifest && pManifest.TitleTemplate)
+		{
+			tmpTitle = this.pict.parseTemplate(pManifest.TitleTemplate, pRecordSetConfiguration);
+		}
+
+		const tmpEncodedFilterExperience = pSerializedFilterExperience && encodeURIComponent(pSerializedFilterExperience);
+		if (tmpEncodedFilterExperience)
+		{
+			// shove filter xp into the active filters for this recordset
+			const tmpExperienceFromURL = await this.pict.views['PRSP-Filters'].deserializeFilterExperience(pSerializedFilterExperience);
+			if (tmpExperienceFromURL)
+			{
+				this.pict.manifest.setValueByHash(this.pict.Bundle, `_ActiveFilterState[${pRecordSetConfiguration.RecordSet}].FilterClauses`, tmpExperienceFromURL);
+			}
+		}
+
+		let tmpRecordListData =
+		{
+			"Title": tmpTitle,
+
+			"RecordSet": pRecordSetConfiguration.RecordSet,
+			"RecordSetConfiguration": pRecordSetConfiguration,
+
+			"RenderDestination": this.options.DefaultDestinationAddress,
+
+			"FilterString": pFilterString ? encodeURIComponent(pFilterString) : undefined,
+
+			"Records": { "Records": [] },
+			"TotalRecordCount": { "Count": -1 },
+
+			"Offset": pOffset || 0,
+			"PageSize": pPageSize || 100,
+		};
+
+		// TODO: There are still problems with the way these have nested data.  Discuss how we might move that around
+		// Fetch the records
+		tmpRecordListData.Records = await this.pict.providers[pProviderHash].getDecoratedRecords(tmpRecordListData);
+		// Get the total record count
+		tmpRecordListData.TotalRecordCount = await this.pict.providers[pProviderHash].getRecordSetCount(tmpRecordListData);
+		// Get the record schema
+		tmpRecordListData.RecordSchema = await this.pict.providers[pProviderHash].getRecordSchema();
+
+		// TODO: This should be coming from the schema but that can come after we discuss how we deal with default routing
+		tmpRecordListData.GUIDAddress = `GUID${this.pict.providers[pProviderHash].options.Entity}`;
+
+		// Get the "page end record number" for the current page (e.g. for messaging like Record 700 to 800 of 75,000)
+		const tmpOffset = Number(tmpRecordListData.Offset);
+		tmpRecordListData.PageEnd = tmpOffset + tmpRecordListData.Records.Records.length;
+
+		// Compute the number of pages total
+		tmpRecordListData.PageCount = Math.ceil(tmpRecordListData.TotalRecordCount.Count / tmpRecordListData.PageSize);
+
+		// Generate each page's links.
+		// TODO: This is fast and cool; any reason not to?
+		// Get "bookmarks" as references to the array of page links.
+		tmpRecordListData.PageLinkBookmarks = (
+			{
+				Current: Math.floor(tmpRecordListData.Offset / tmpRecordListData.PageSize)
+			});
+		tmpRecordListData.PageLinks = [];
+		for (let i = 0; i < tmpRecordListData.PageCount; i++)
+		{
+			if (tmpRecordListData.FilterString)
+			{
+				tmpRecordListData.PageLinks.push(
+					{
+						Page: i + 1,
+						RelativeOffset: i - tmpRecordListData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/FilteredTo/${tmpRecordListData.FilterString}/${i * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+					});
+			}
+			else
+			{
+				tmpRecordListData.PageLinks.push(
+					{
+						Page: i + 1,
+						RelativeOffset: i - tmpRecordListData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/${i * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+					});
+			}
+			if (tmpEncodedFilterExperience)
+			{
+				tmpRecordListData.PageLinks[tmpRecordListData.PageLinks.length - 1].URL += `/FilterExperience/${tmpEncodedFilterExperience}`;
+			}
+		}
+
+		//FIXME: short-term workaround to not blow up the tempplate rendering with way too many links
+		const linkRangeStart = Math.max(0, tmpRecordListData.PageLinkBookmarks.Current - 10);
+		const linkRangeEnd = Math.min(tmpRecordListData.PageLinks.length, tmpRecordListData.PageLinkBookmarks.Current + 10);
+		tmpRecordListData.PageLinksLimited = tmpRecordListData.PageLinks.slice(linkRangeStart, linkRangeEnd);
+		if (linkRangeStart > 0)
+		{
+			if (tmpRecordListData.FilterString)
+			{
+				tmpRecordListData.PageLinksLimited.unshift(
+					{
+						Page: 1,
+						RelativeOffset: -tmpRecordListData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordListData.RecordSet}/list/FilteredTo/${tmpRecordListData.FilterString}/${tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+					});
+			}
+			else
+			{
+				tmpRecordListData.PageLinksLimited.unshift(
+					{
+						Page: 1,
+						RelativeOffset: -tmpRecordListData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/0/${tmpRecordListData.PageSize}`
+					});
+			}
+			if (tmpEncodedFilterExperience)
+			{
+				tmpRecordListData.PageLinksLimited[tmpRecordListData.PageLinksLimited.length - 1].URL += `/FilterExperience/${tmpEncodedFilterExperience}`;
+			}
+		}
+		if (linkRangeEnd < tmpRecordListData.PageLinks.length)
+		{
+			if (tmpRecordListData.FilterString)
+			{
+				tmpRecordListData.PageLinksLimited.push(
+					{
+						Page: tmpRecordListData.PageCount,
+						RelativeOffset: (tmpRecordListData.PageCount - 1) - tmpRecordListData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/FilteredTo/${tmpRecordListData.FilterString}/${(tmpRecordListData.PageCount - 1) * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+					});
+			}
+			else
+			{
+				tmpRecordListData.PageLinksLimited.push(
+					{
+						Page: tmpRecordListData.PageCount,
+						RelativeOffset: (tmpRecordListData.PageCount - 1) - tmpRecordListData.PageLinkBookmarks.Current,
+						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/${(tmpRecordListData.PageCount - 1) * tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+					});
+			}
+			if (tmpEncodedFilterExperience)
+			{
+				tmpRecordListData.PageLinksLimited[tmpRecordListData.PageLinksLimited.length - 1].URL += `/FilterExperience/${tmpEncodedFilterExperience}`;
+			}
+		}
+
+		tmpRecordListData.PageLinkBookmarks.Previous = tmpRecordListData.PageLinkBookmarks.Current - 1;
+		tmpRecordListData.PageLinkBookmarks.Next = tmpRecordListData.PageLinkBookmarks.Current + 1;
+		tmpRecordListData.PageLinkBookmarks.ShowPreviousLink = true;
+		tmpRecordListData.PageLinkBookmarks.ShowNextLink = true;
+		if (tmpRecordListData.PageLinkBookmarks.Previous < 0)
+		{
+			tmpRecordListData.PageLinkBookmarks.PreviousLink = false;
+			tmpRecordListData.PageLinkBookmarks.ShowPreviousLink = false;
+		}
+		else
+		{
+			tmpRecordListData.PageLinkBookmarks.PreviousLink = tmpRecordListData.PageLinks[tmpRecordListData.PageLinkBookmarks.Previous];
+		}
+		if (tmpRecordListData.PageLinkBookmarks.Next >= tmpRecordListData.PageLinks.length)
+		{
+			tmpRecordListData.PageLinkBookmarks.NextLink = false;
+			tmpRecordListData.PageLinkBookmarks.ShowNextLink = false;
+		}
+		else
+		{
+			tmpRecordListData.PageLinkBookmarks.NextLink = tmpRecordListData.PageLinks[tmpRecordListData.PageLinkBookmarks.Next];
+		}
+
+		tmpRecordListData.TableCells = pManifest?.TableCells;
+
+		if (!tmpRecordListData.TableCells)
+		{
+			if (tmpRecordListData.RecordSetConfiguration.hasOwnProperty('RecordSetListColumns'))
+			{
+				tmpRecordListData.TableCells = tmpRecordListData.RecordSetConfiguration.RecordSetListColumns.map((key) =>
+					{
+						if (typeof key === 'object')
+						{
+							if (!key.DisplayName)
+							{
+								key.DisplayName = key.Key; //FIXME: use schema?
+							}
+							if (!key.ManifestHash)
+							{
+								key.ManifestHash = 'Default';
+							}
+							return key;
+						}
+						return {
+							Key: key,
+							DisplayName: key, //FIXME: use schema?
+							ManifestHash: 'Default',
+							PictDashboard:
+							{
+								ValueTemplate: '{~DVBK:Record.Payload:Record.Data.Key~}',
+							},
+						};
+					});
+			}
+			else
+			{
+				this.dynamicallyGenerateColumns(tmpRecordListData);
+			}
+		}
+
+		tmpRecordListData = this.onBeforeRenderList(tmpRecordListData);
+
+		this.pict.providers.DynamicRecordsetSolver.solveDashboard(pManifest, tmpRecordListData.Records.Records);
+
+		this.renderAsync('PRSP_Renderable_List', tmpRecordListData.RenderDestination, tmpRecordListData,
+			function (pError)
+			{
+				if (pError)
+				{
+					this.pict.log.error(`RecordSetList: Error rendering list ${pError}`, tmpRecordListData);
+					return;
+				}
+
+				if (this.pict.LogNoisiness > 0)
+				{
+					this.pict.log.info(`RecordSetList: Rendered list ${tmpRecordListData.RecordSet} with ${tmpRecordListData.Records.Records.length} records.`, tmpRecordListData);
+				}
+				else
+				{
+					this.pict.log.info(`RecordSetList: Rendered list ${tmpRecordListData.RecordSet} with ${tmpRecordListData.Records.Records.length} records.`);
+				}
 			}.bind(this));
 	}
 
