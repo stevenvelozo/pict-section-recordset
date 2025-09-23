@@ -204,7 +204,7 @@ module.exports.default_configuration.pict_configuration = (
 					"IDBook":
 					{
 						"Name": "Book Identifier",
-						"Hash": "BookIdentifire",
+						"Hash": "BookIdentifier",
 					},
 					"PublicationYear":
 					{
@@ -266,7 +266,7 @@ module.exports.default_configuration.pict_configuration = (
 						"DataType": "Number",
 						"PictDashboard":
 						{
-							"Equation": "AuthorSineWave = ROUND(SIN(BookIdentifire / 100)^3,5)", //FIXME: having to + 0 here seems sketchy
+							"Equation": "AuthorSineWave = ROUND(SIN(BookIdentifier / 100)^3,5)", //FIXME: having to + 0 here seems sketchy
 							//"ValueTemplate": "{~D:Record.Payload.AuthorsInOrbit~}",
 							"Solvers": [ "AuthorsInOrbit = SIN(Authors.length)" ],
 						}
@@ -283,14 +283,19 @@ module.exports.default_configuration.pict_configuration = (
 					{
 						"Name": "Title",
 						"Hash": "Title",
-						"DataType": "String"
+						"DataType": "String",
+						"PictDashboard":
+						{
+						}
 					},
 					"Authors":
 					{
 						"Name": "Authors",
-						"Hash": "Authors",
+						"Hash": "BookAuthors",
+						"DataType": "Array",
 						"PictDashboard":
 						{
+							"ValueTemplate": "{~PJU:, ^Name^Record.Payload.Authors~}"
 						}
 					},
 					"AuthorCount":
@@ -300,6 +305,16 @@ module.exports.default_configuration.pict_configuration = (
 						"DataType": "Number",
 						"PictDashboard":
 						{
+							"EquationNamespaceScope": "Full",
+							"Equation": "Payload.Authors.length + 0", //FIXME: having to + 0 here seems sketchy
+							"Solvers":
+							[
+								{
+									"Ordinal": 0,
+									"Expression": "Price = ROUND(RANDOMFLOATBETWEEN(0.5, 40), 2)",
+								},
+								"AuthorCount = COS(Authors.length)",
+							],
 						}
 					}
 				},
