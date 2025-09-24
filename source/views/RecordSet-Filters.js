@@ -80,8 +80,9 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-AddFilter-Dropdown] -->
 	<div>
-		<select id="PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select" onchange="event.preventDefault(); _Pict.views['PRSP-Filters'].render('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown', undefined,
+		<select id="PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select" data-i-view-context="{~D:Record.ViewContext~}" onchange="event.preventDefault(); _Pict.views['PRSP-Filters'].render('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown', undefined,
 		{
+			ViewContext: '{~D:Record.ViewContext~}',
 			RecordSet: event.target.querySelector('option:checked').getAttribute('data-i-recordset'),
 			FilterKey: event.target.querySelector('option:checked').getAttribute('data-i-filter-key'),
 			AvailableClauses: _Pict.providers[\`RSP-Provider-\${event.target.querySelector('option:checked').getAttribute('data-i-recordset')}\`].getFilterClauseSchemaForKey(event.target.querySelector('option:checked').getAttribute('data-i-filter-key')).AvailableClauses,
@@ -382,7 +383,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		pEvent.preventDefault();
 		//const tmpRecordsetProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
 		//this.pict.log.info(`Selecting filter to add for record set: ${pRecordSet} in view context: ${pViewContext}`, tmpRecordsetProvider.getFilterSchema())
-		this.renderWithScope(this.pict.providers[`RSP-Provider-${pRecordSet}`], 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown');
+		this.renderWithScope(this.pict.providers[`RSP-Provider-${pRecordSet}`], 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown', undefined, { RecordSet: pRecordSet, ViewContext: pViewContext });
 	}
 
 	addFilter(pEvent, pRecordSet, pViewContext, pFilterKey, pClauseKey)
@@ -428,6 +429,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 			const tmpActiveOption = document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select')?.querySelector('option:checked')
 			const tmpRecordSet = tmpActiveOption?.getAttribute('data-i-recordset');
 			const tmpFilterKey = tmpActiveOption?.getAttribute('data-i-filter-key');
+			const tmpViewContext = tmpSelect?.getAttribute('data-i-view-context');
 			if (tmpRecordSet && tmpFilterKey)
 			{
 				const tmpProvider = this.pict.providers[`RSP-Provider-${tmpRecordSet}`];
@@ -435,6 +437,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 				{
 					tmpRecord.RecordSet = tmpRecordSet;
 					tmpRecord.FilterKey = tmpFilterKey;
+					tmpRecord.ViewContext = tmpViewContext;
 					tmpRecord.AvailableClauses = tmpProvider.getFilterClauseSchemaForKey(tmpFilterKey).AvailableClauses;
 					if (Array.isArray(tmpRecord.AvailableClauses))
 					{
