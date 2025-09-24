@@ -70,12 +70,17 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		this.pict.MetaTemplate.addPatternBoth('{~ProcessCell:', '~}', (pHash, pData, fCallback)=>
 		{ 
 			const field = this.pict.resolveStateFromAddress(pHash, pData, fCallback);
-			return fCallback(null, pData?.Payload?.[field]);
+			return fCallback(null, this.pict.manifest.getValueByHash(pData.Payload, field));
 		}, async (pHash, pData, fCallback) =>
 		{
 			const field = this.pict.resolveStateFromAddress(pHash, pData, fCallback);
-			let value = pData?.Payload?.[field];
-			const sanitizedField = field.replace('ParentID', 'ID').replace('CreatingID', 'ID').replace('DeletingID', 'ID').replace('UpdatingID', 'ID');
+			let value = this.pict.manifest.getValueByHash(pData.Payload, field);
+			const IDPrefixes = ['Parent', 'Child', 'Creating', 'Updating', 'Deleting'];
+			let sanitizedField = field;
+			for (let p of IDPrefixes)
+			{
+				sanitizedField = sanitizedField.replace(`${ p }ID`, 'ID');
+			}
 			if (sanitizedField?.startsWith('ID'))
 			{
 				if (!value)
