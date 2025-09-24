@@ -145,7 +145,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 
 	_prepareFilterState(pEntity, pOptions, pFilterExperienceResultAddress = 'Records')
 	{
-		const tmpClauses = [].concat(this.pict.Bundle._ActiveFilterState?.[pOptions.Entity || this.options.Entity]?.FilterClauses || []);
+		const tmpClauses = [].concat(this.pict.Bundle._ActiveFilterState?.[pOptions.RecordSet || pOptions.Entity || this.options.Entity]?.FilterClauses || []);
 		const tmpExperience = Object.assign({}, this.pict.Bundle._ActiveFilterState?.[pOptions.Entity || this.options.Entity]?.Experience || {});
 		if (!tmpExperience.ResultDestinationAddress)
 		{

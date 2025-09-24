@@ -1,12 +1,14 @@
 export = RecordSetMetacontroller;
 declare class RecordSetMetacontroller {
     constructor(pFable: any, pOptions: any, pServiceHash: any);
-    /** @type {import('pict') & { addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any, newManyfest: (rec: any) => any }} */
+    /** @type {import('pict') & { PictSectionRecordSet: any, addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any, newManyfest: (rec: any) => any }} */
     fable: import("pict") & {
+        PictSectionRecordSet: any;
         addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any;
         newManyfest: (rec: any) => any;
     };
     pict: import("pict") & {
+        PictSectionRecordSet: any;
         addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any;
         newManyfest: (rec: any) => any;
     };
