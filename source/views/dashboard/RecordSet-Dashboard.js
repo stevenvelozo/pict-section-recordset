@@ -195,7 +195,7 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 						ManifestHash: 'Default',
 						PictDashboard:
 						{
-							ValueTemplate: '{~DVBK:Record.Payload:Record.Data.Key~}',
+							ValueTemplate: '{~ProcessCell:Record.Data.Key~}',
 						},
 					});
 				}
@@ -442,6 +442,10 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 								{
 									key.ManifestHash = 'Default';
 								}
+								if (key.PictDashboard && !key.PictDashboard.ValueTemplate)
+								{
+									key.PictDashboard.ValueTemplate = '{~ProcessCell:Record.Data.Key~}';
+								}
 								return key;
 							}
 							return {
@@ -450,7 +454,7 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 								ManifestHash: 'Default',
 								PictDashboard:
 								{
-									ValueTemplate: '{~DVBK:Record.Payload:Record.Data.Key~}',
+									ValueTemplate: '{~ProcessCell:Record.Data.Key~}',
 								},
 							};
 						});
@@ -715,7 +719,7 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 						}
 						if (!tmpTableCell.PictDashboard.ValueTemplate)
 						{
-							tmpTableCell.PictDashboard.ValueTemplate = '{~DVBK:Record.Payload:Record.Data.Key~}';
+							tmpTableCell.PictDashboard.ValueTemplate = '{~ProcessCell:Record.Data.Key~}';
 						}
 						return tmpTableCell;
 					}
@@ -725,7 +729,7 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 						ManifestHash: 'Default',
 						PictDashboard:
 						{
-							ValueTemplate: '{~DVBK:Record.Payload:Record.Data.Key~}',
+							ValueTemplate: '{~ProcessCell:Record.Data.Key~}',
 						},
 					};
 				});

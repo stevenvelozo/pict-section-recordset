@@ -29,7 +29,7 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		let tmpOptions = Object.assign({}, _DEFAULT_CONFIGURATION, pOptions);
 		super(pFable, tmpOptions, pServiceHash);
 
-		/** @type {import('pict') & { addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any, newManyfest: (rec: any) => any }} */
+		/** @type {import('pict') & { PictSectionRecordSet: any, addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any, newManyfest: (rec: any) => any }} */
 		this.fable;
 		this.pict = this.fable;
 		/** @type {any} */
@@ -66,6 +66,71 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 
 		//FIXME: this duplicates a behavior in pict-section-form - figure out how we want this coupled dependency to work.
 		this.fable.addProviderSingleton('PictFormSectionDefaultTemplateProvider', libFormsTemplateProvider.default_configuration, libFormsTemplateProvider);
+
+		this.pict.MetaTemplate.addPatternBoth('{~ProcessCell:', '~}', (pHash, pData, fCallback)=>
+		{ 
+			const field = this.pict.resolveStateFromAddress(pHash, pData, fCallback);
+			return fCallback(null, this.pict.manifest.getValueByHash(pData.Payload, field));
+		}, async (pHash, pData, fCallback) =>
+		{
+			const field = this.pict.resolveStateFromAddress(pHash, pData, fCallback);
+			let value = this.pict.manifest.getValueByHash(pData.Payload, field);
+			const IDPrefixes = ['Parent', 'Child', 'Creating', 'Updating', 'Deleting'];
+			let sanitizedField = field;
+			for (let p of IDPrefixes)
+			{
+				sanitizedField = sanitizedField.replace(`${ p }ID`, 'ID');
+			}
+			if (sanitizedField?.startsWith('ID'))
+			{
+				if (!value)
+				{
+					return fCallback(null, '');
+				}
+				const remote = field.split('ID')[1];
+				try
+				{
+					const entity = await new Promise((resolve, reject) =>
+					{
+						this.pict.EntityProvider.getEntity(remote, value, (pError, pResult) =>
+						{
+							if (pError)
+							{
+								return reject(pError);
+							}
+							resolve(pResult);
+						});
+					});
+					if (remote === 'User')
+					{
+						value = `${ entity.NameFirst } ${ entity.NameLast }`;
+					}
+					else if (entity?.Name)
+					{
+						value = entity.Name;
+					}
+					else if (entity?.Title)
+					{
+						value = entity.Title;
+					}
+					else if (entity?.Hash)
+					{
+						value = entity.Hash;
+					}
+					if (this.pict.PictSectionRecordSet.recordSetProviderConfigurations[remote])
+					{
+						const url = this.pict.parseTemplateByHash('PRSP-Read-Link-URL-Template', { Payload: { Payload: { RecordSet: remote, GUIDAddress: `GUID${ remote }` }, Data: entity }});
+						value = `<a href="${ url }">${ value }</a>`;
+					}
+				}
+				catch (e)
+				{
+					this.pict.log.error(`[RecordSet-MetaController]  Unable to fetch entity: ${ e }`);
+					return fCallback(e, '');
+				}
+			}
+			return fCallback(null, value);
+		});
 	}
 
 	/*
@@ -472,7 +537,7 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 			}
 			if (!tmpPictDashboard.ValueTemplate)
 			{
-				tmpPictDashboard.ValueTemplate = '{~DVBK:Record.Payload:Record.Data.Key~}';
+				tmpPictDashboard.ValueTemplate = '{~ProcessCell:Record.Data.Key~}';
 			}
 			return {
 				Key: key,
