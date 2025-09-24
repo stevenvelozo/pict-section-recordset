@@ -88,7 +88,6 @@ const _DEFAULT_CONFIGURATION_List_RecordListEntry = (
 					Template: /*html*/`
 					<li><a href="{~TBR:Record.Data.URL~}">{~TBR:Record.Data.Name~}</a></li>
 	`
-	//					{~Breakpoint~}
 
 				},
 			],

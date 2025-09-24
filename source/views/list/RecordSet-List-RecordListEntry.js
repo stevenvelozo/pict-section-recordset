@@ -62,7 +62,7 @@ const _DEFAULT_CONFIGURATION_List_RecordListEntry = (
 					Hash: 'PRSP-List-RecordListEntry-Template-Row-Cell',
 					Template: /*html*/`
 		<td style="border-bottom: 1px solid #ccc; padding: 5px;">
-			{~DVBK:Record.Payload:Record.Data.Key~}
+			{~TBDA:Record.Data.PictDashboard.ValueTemplate~}
 		</td>
 	`
 				},
@@ -90,7 +90,6 @@ const _DEFAULT_CONFIGURATION_List_RecordListEntry = (
 					Template: /*html*/`
 					<li><a href="{~TBR:Record.Data.URL~}">{~TBR:Record.Data.Name~}</a></li>
 	`
-	//					{~Breakpoint~}
 
 				},
 			],

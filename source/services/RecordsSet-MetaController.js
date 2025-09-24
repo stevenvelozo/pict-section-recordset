@@ -66,6 +66,53 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 
 		//FIXME: this duplicates a behavior in pict-section-form - figure out how we want this coupled dependency to work.
 		this.fable.addProviderSingleton('PictFormSectionDefaultTemplateProvider', libFormsTemplateProvider.default_configuration, libFormsTemplateProvider);
+
+		this.pict.MetaTemplate.addPatternBoth('{~ProcessCell:', '~}', (pHash, pData, fCallback)=>
+		{ 
+			const field = this.pict.resolveStateFromAddress(pHash, pData, fCallback);
+			return fCallback(null, pData?.Payload?.[field]);
+		}, async (pHash, pData, fCallback) =>
+		{
+			const field = this.pict.resolveStateFromAddress(pHash, pData, fCallback);
+			let value = pData?.Payload?.[field];
+			const sanitizedField = field.replace('ParentID', 'ID').replace('CreatingID', 'ID').replace('DeletingID', 'ID').replace('UpdatingID', 'ID');
+			if (sanitizedField?.startsWith('ID'))
+			{
+				if (!value)
+				{
+					return fCallback(null, '');
+				}
+				const remote = field.split('ID')[1];
+				try
+				{
+					const entity = await new Promise((resolve, reject) =>
+					{
+						this.pict.EntityProvider.getEntity(remote, value, (pError, pResult) =>
+						{
+							if (pError)
+							{
+								return reject(pError);
+							}
+							resolve(pResult);
+						});
+					});
+					if (remote === 'User')
+					{
+						value = `${ entity.NameFirst } ${ entity.NameLast }`;
+					}
+					else if (entity?.Name)
+					{
+						value = entity.Name;
+					}
+				}
+				catch (e)
+				{
+					this.pict.log.error(`[RecordSet-MetaController]  Unable to fetch entity: ${ e }`);
+					return fCallback(e, '');
+				}
+			}
+			return fCallback(null, value);
+		});
 	}
 
 	/*
@@ -472,7 +519,7 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 			}
 			if (!tmpPictDashboard.ValueTemplate)
 			{
-				tmpPictDashboard.ValueTemplate = '{~DVBK:Record.Payload:Record.Data.Key~}';
+				tmpPictDashboard.ValueTemplate = '{~ProcessCell:Record.Data.Key~}';
 			}
 			return {
 				Key: key,
