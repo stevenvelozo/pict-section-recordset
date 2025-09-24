@@ -29,7 +29,7 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		let tmpOptions = Object.assign({}, _DEFAULT_CONFIGURATION, pOptions);
 		super(pFable, tmpOptions, pServiceHash);
 
-		/** @type {import('pict') & { addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any, newManyfest: (rec: any) => any }} */
+		/** @type {import('pict') & { PictSectionRecordSet: any, addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any, newManyfest: (rec: any) => any }} */
 		this.fable;
 		this.pict = this.fable;
 		/** @type {any} */
@@ -108,6 +108,19 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 					else if (entity?.Name)
 					{
 						value = entity.Name;
+					}
+					else if (entity?.Title)
+					{
+						value = entity.Title;
+					}
+					else if (entity?.Hash)
+					{
+						value = entity.Hash;
+					}
+					if (this.pict.PictSectionRecordSet.recordSetProviderConfigurations[remote])
+					{
+						const url = this.pict.parseTemplateByHash('PRSP-Read-Link-URL-Template', { Payload: { Payload: { RecordSet: remote, GUIDAddress: `GUID${ remote }` }, Data: entity }});
+						value = `<a href="${ url }">${ value }</a>`;
 					}
 				}
 				catch (e)
