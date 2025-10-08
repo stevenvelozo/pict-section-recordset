@@ -162,12 +162,12 @@ class viewRecordSetCreate extends libPictRecordSetRecordView
 			"RenderDestination": this.options.DefaultDestinationAddress,
 		};
 
-		this.pict.AppData[`${ this.RecordSet }Details`] = {};
-
 		if (pRecordConfiguration.RecordSet !== this.RecordSet)
 		{
 			this.RecordSet = pRecordConfiguration.RecordSet;
 		}
+
+		this.pict.AppData[`${ this.RecordSet }Details`] = {};
 
 		this.providerHash = pProviderHash;
 		tmpRecordCreateData.RecordSchema = await this.pict.providers[pProviderHash].getRecordSchema();

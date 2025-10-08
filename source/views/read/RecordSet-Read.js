@@ -659,7 +659,8 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 
 	_generateManifestTemplate(config, section, specificManifest, setBaseManifest, action = this.action, useDefaultManifest)
 	{
-		const tmpManifestHash = specificManifest || config.RecordSetReadDefaultManifest || config.RecordSetReadManifests?.[0];
+		// Look for a manifest by the action (if there is no specific manifest passed) and fallback to view if the action manifest isn't present.
+		const tmpManifestHash = specificManifest || config[`RecordSetReadDefaultManifest${ action }`] || config[`RecordSetReadManifests${ action }`]?.[0] || config[`RecordSetReadDefaultManifestView`] || config[`RecordSetReadManifestsView`]?.[0];
 		// Make sure the copy of the manifest doesn't mutate the original (for read only handling).
 		const tmpManifest = JSON.parse(JSON.stringify(useDefaultManifest ? this.defaultManifest : this.pict.PictSectionRecordSet.getManifest(tmpManifestHash)));
 		if (!tmpManifest)
@@ -800,7 +801,7 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 						this.pict.log.info(`Skipping attached record tab because recordset ${ t.RecordSet } is not registered.`);
 						continue;
 					}
-					t.Manifest = recordSetConfig.RecordSetReadDefaultManifest || recordSetConfig.RecordSetReadManifests?.[0];
+					t.Manifest = recordSetConfig.RecordSetReadDefaultManifestView || recordSetConfig.RecordSetReadManifestsView?.[0];
 					if (!t.JoinField)
 					{
 						t.JoinField = `ID${ t.RecordSet }`;

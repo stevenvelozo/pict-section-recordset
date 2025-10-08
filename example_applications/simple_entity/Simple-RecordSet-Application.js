@@ -660,7 +660,7 @@ module.exports.default_configuration.pict_configuration = (
 				},
 
 				"RecordSetReadManifestOnly": true,
-				"RecordSetReadManifests": [ "Book-View" ],
+				"RecordSetReadManifestsView": [ "Book-View" ],
 
 				"ReadLayout": "Split",
 
@@ -785,7 +785,7 @@ module.exports.default_configuration.pict_configuration = (
 				"RecordSetURLPrefix": "/1.0/",
 
 				"RecordSetReadManifestOnly": true,
-				"RecordSetReadManifests": [ "Author-View" ],
+				"RecordSetReadManifestsView": [ "Author-View" ],
 
 				"ReadLayout": "Tab",
 				"RecordSetReadTabTitle": "Author",
