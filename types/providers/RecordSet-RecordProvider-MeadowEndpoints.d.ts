@@ -142,7 +142,7 @@ declare class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase 
      * @param {string} pSchemaField - The schema field name.
      * @return {string} - The human-readable name for the schema field.
      */
-    _getHumanReadableFieldName(pSchemaField: string): string;
+    getHumanReadableFieldName(pSchemaField: string): string;
     /**
      * @param {(error?: Error) => void} fCallback - The callback function.
      */

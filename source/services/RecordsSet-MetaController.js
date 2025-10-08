@@ -2,8 +2,8 @@ const libFableServiceProviderBase = require('fable-serviceproviderbase');
 
 const ViewDefinitionRecordSetErrorNotFound = require('../views/error/RecordSet-Error-NotFound.json');
 const ViewRecordSetList = require('../views/list/RecordSet-List.js');
-const ViewRecordSetEdit = require('../views/edit/RecordSet-Edit.js');
 const ViewRecordSetRead = require('../views/read/RecordSet-Read.js');
+const ViewRecordSetCreate = require('../views/create/RecordSet-Create.js');
 const ViewRecordSetDashboard = require('../views/dashboard/RecordSet-Dashboard.js');
 
 //_Pict.addProvider('BooksProvider', { Entity: 'Book', URLPrefix: 'http://www.datadebase.com:8086/1.0/' }, require('../source/providers/RecordSet-RecordProvider-MeadowEndpoints.js'));
@@ -432,14 +432,14 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		this.pict.addTemplate(require('../views/filters').Base);
 		this.childViews.errorNotFound = this.fable.addView('RSP-RecordSet-Error-NotFound', ViewDefinitionRecordSetErrorNotFound);
 		this.childViews.list = this.fable.addView('RSP-RecordSet-List', this.options, ViewRecordSetList);
-		this.childViews.edit = this.fable.addView('RSP-RecordSet-Edit', this.options, ViewRecordSetEdit);
 		this.childViews.read = this.fable.addView('RSP-RecordSet-Read', this.options, ViewRecordSetRead);
+		this.childViews.create = this.fable.addView('RSP-RecordSet-Create', this.options, ViewRecordSetCreate);
 		this.childViews.dashboard = this.fable.addView('RSP-RecordSet-Dashboard', this.options, ViewRecordSetDashboard);
 
 		// Initialize the subviews
 		this.childViews.list.initialize();
-		this.childViews.edit.initialize();
 		this.childViews.read.initialize();
+		this.childViews.create.initialize();
 		this.childViews.dashboard.initialize();
 
 		// Now initialize the router
@@ -484,9 +484,12 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 			{
 				this.pict.log.error(`RecordSetDashboard: Manifest key ${tmpManifestKey} does not match manifest scope ${tmpManifest.Scope}.  This is bad.  Fix it.`);
 			}
-			this.generateManifestTableCells(tmpManifest);
+			if (!tmpManifest.Form)
+			{
+				this.generateManifestTableCells(tmpManifest);
+			}
 			this.manifestDefinitions[tmpManifest.Scope] = tmpManifest;
-			this.manifests[tmpManifest.Scope] = this.pict.newManyfest(tmpManifest);
+			this.manifests[tmpManifest.Scope] = tmpManifest.Form ? tmpManifest : this.pict.newManyfest(tmpManifest);
 		}
 
 		this.has_initialized = true;

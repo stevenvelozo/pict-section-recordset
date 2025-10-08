@@ -380,7 +380,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 				tmpFieldType = pMeadowSchemaField.Type.toLowerCase();
 			}
 			tmpFieldFilterClauses = [];
-			const tmpFieldHumanName = this._getHumanReadableFieldName(pSchemaField);
+			const tmpFieldHumanName = this.getHumanReadableFieldName(pSchemaField);
 			const isUserAuditField = ['CreatingIDUser', 'DeletingIDUser', 'UpdatingIDUser'].includes(pSchemaField);
 			const customFilterClauses = this.options.Filters?.[pSchemaField];
 			if (pSchemaField.startsWith('ID') || pSchemaField.startsWith('ParentID') || isUserAuditField || customFilterClauses)
@@ -388,7 +388,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 				for (const customField of Array.isArray(customFilterClauses) ? customFilterClauses : [customFilterClauses])
 				{
 					const remoteTableName = customField?.RemoteTable || pSchemaField.split('ID')[1];
-					const fieldName = this._getHumanReadableFieldName(pSchemaField);
+					const fieldName = this.getHumanReadableFieldName(pSchemaField);
 					tmpFieldFilterClauses.push(Object.assign(
 					{
 						"Label": `${ fieldName }`,
@@ -560,7 +560,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 	 * @param {string} pSchemaField - The schema field name.
 	 * @return {string} - The human-readable name for the schema field.
 	 */
-	_getHumanReadableFieldName(pSchemaField)
+	getHumanReadableFieldName(pSchemaField)
 	{
 		if (!this._Schema || !this._Schema.properties || !this._Schema.properties[pSchemaField])
 		{
@@ -667,7 +667,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 			}
 			if (!tmpFieldFilterSchema.DisplayName)
 			{
-				tmpFieldFilterSchema.DisplayName = this._getHumanReadableFieldName(tmpSchemaField);
+				tmpFieldFilterSchema.DisplayName = this.getHumanReadableFieldName(tmpSchemaField);
 			}
 			if (!tmpFieldFilterSchema.Description)
 			{
@@ -717,7 +717,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 					{
 						tmpFieldFilterSchema.RecordSet = this.options.RecordSet;
 					}
-					const tmpFieldHumanName = this._getHumanReadableFieldName(tmpFilterKey);
+					const tmpFieldHumanName = this.getHumanReadableFieldName(tmpFilterKey);
 					if (tmpFilterClause.DisplayName)
 					{
 						tmpFieldFilterSchema.DisplayName = tmpFilterClause.DisplayName;
