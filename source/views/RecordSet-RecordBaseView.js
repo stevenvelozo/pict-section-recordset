@@ -40,7 +40,7 @@ Record JSON:
 \`\`\`json
 {~DataJson:Record~}
 \`\`\`
---!
+-->
 <!-- DefaultPackage end view template:  [PRSP-Base-View-Template] -->
 		`
 			}

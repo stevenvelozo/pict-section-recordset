@@ -25,7 +25,7 @@ class PictRecordSetLinkManager extends libPictProvider
 		// Format:
 		// {
 		//   Name: "View Record",
-		//   URL: "#/PSRS/{~D:Record.Payload.RecordSet~}/Read/{~DVBK:Record.Data:Record.Payload.GUIDAddress~}",
+		//   URL: "#/PSRS/{~D:Record.Payload.RecordSet~}/View/{~DVBK:Record.Data:Record.Payload.GUIDAddress~}",
 		//   Default: true
 		// }
 		this.linkTemplates = [];

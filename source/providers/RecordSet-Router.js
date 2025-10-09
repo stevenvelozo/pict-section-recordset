@@ -46,7 +46,7 @@ class PictRecordSetRouter extends libPictProvider
 		//this.pictRouter.addRoute('/PSRS/:RecordSet/List/:Begin/:Cap', "{~LV:Record~}");
 		this.pict.views['RSP-RecordSet-List'].addRoutes(pRouter);
 		this.pict.views['RSP-RecordSet-Read'].addRoutes(pRouter);
-		this.pict.views['RSP-RecordSet-Edit'].addRoutes(pRouter);
+		this.pict.views['RSP-RecordSet-Create'].addRoutes(pRouter);
 		this.pict.views['RSP-RecordSet-Dashboard'].addRoutes(pRouter);
 
 		this.pict.PictSectionRecordSet.addRoutes(pRouter);

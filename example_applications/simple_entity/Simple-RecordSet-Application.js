@@ -157,6 +157,34 @@ class SimpleApplication extends libPictRecordSet.PictRecordSetApplication
 	onInitialize()
 	{
 		this.pict.addView('PRSP-FilterType-ExternalJoinSelectedValueList-MyCoolView', {}, CustomFilterView);
+		this.pict.addView('SpecialBookView', 
+        {
+            "ViewIdentifier": "SpecialBookView",
+
+            "DefaultRenderable": "SpecialBookView",
+            "DefaultDestinationAddress": "#Placeholder",
+            "IncludeInMetacontrollerOperations": true,
+
+            "AutoRender": false,
+
+            "Templates": [
+                {
+                    "Hash": "SpecialBookView-Content",
+                    "Template": /*html*/`
+						<div>
+							This is a special book view, here's some text: <br />
+							Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+						</div>
+					`
+                }
+            ],
+            "Renderables": [
+                {
+                    "RenderableHash": "SpecialBookView",
+                    "TemplateHash": "SpecialBookView-Content"
+                }
+            ]
+        });
 
 		return super.onInitialize();
 	}
@@ -175,6 +203,156 @@ module.exports.default_configuration.pict_configuration = (
 
 		"Manifests": // Manifest'Ohs: Breakfast of Champions
 		{
+			"Book-View":
+			{
+				"Form": "BookViewManifest",
+				"Scope": "Book-View",
+				"Descriptors": 
+				{
+					"BookDetails.Title": 
+					{
+						"Name": "Title",
+						"Hash": "ViewBookName",
+						"DataType": "String",
+						"PictForm": 
+						{
+							"Row": "1",
+							"Section": "BookView",
+							"Group": "BookView"
+						}
+					},
+					"BookDetails.Genre": 
+					{
+						"Name": "Genre",
+						"Hash": "ViewBookGenre",
+						"DataType": "String",
+						"PictForm": 
+						{
+							"Row": "1",
+							"Section": "BookView",
+							"Group": "BookView"
+						}
+					},
+					"BookDetails.ISBN": 
+					{
+						"Name": "ISBN",
+						"Hash": "ViewBookISBN",
+						"DataType": "String",
+						"PictForm": 
+						{
+							"Row": "2",
+							"Section": "BookView",
+							"Group": "BookView"
+						}
+					}
+				},
+				"Sections": 
+				[
+					{
+						"Name": "Book View",
+						"Hash": "BookView",
+						"Solvers": [],
+						"ShowTitle": false,
+						"Groups": [
+							{
+								"Name": "Book View",
+								"Hash": "BookView",
+								"Rows": [],
+								"RecordSetSolvers": [],
+								"ShowTitle": false
+							}
+						]
+					}
+				]
+			},
+			"Author-View":
+			{
+				"Form": "AuthorViewManifest",
+				"Scope": "Author-View",
+				"Descriptors": 
+				{
+					"AuthorDetails.Name": 
+					{
+						"Name": "Author Name",
+						"Hash": "ViewAuthorName",
+						"DataType": "String",
+						"PictForm": 
+						{
+							"Row": "1",
+							"Section": "AuthorView",
+							"Group": "AuthorView"
+						}
+					},
+				},
+				"Sections": 
+				[
+					{
+						"Name": "Author View",
+						"Hash": "AuthorView",
+						"Solvers": [],
+						"ShowTitle": false,
+						"Groups": [
+							{
+								"Name": "Author View",
+								"Hash": "AuthorView",
+								"Rows": [],
+								"RecordSetSolvers": [],
+								"ShowTitle": false
+							}
+						]
+					}
+				]
+			},
+			"AuthorMetadata":
+			{
+				"Form": "AuthorMetadataManifest",
+				"Scope": "AuthorMetadata",
+				"Descriptors": 
+				{
+					"AuthorDetails.GUIDAuthor": 
+					{
+						"Name": "Author GUID",
+						"Hash": "ViewGUIDAuthor",
+						"DataType": "String",
+						"PictForm": 
+						{
+							"Row": "1",
+							"Section": "AuthorMetadata",
+							"Group": "AuthorMetadata"
+						}
+					},
+					"AuthorDetails.IDAuthor": 
+					{
+						"Name": "ID Author",
+						"Hash": "ViewIDAuthor",
+						"DataType": "String",
+						"PictForm": 
+						{
+							"Row": "1",
+							"Section": "AuthorMetadata",
+							"Group": "AuthorMetadata"
+						}
+					},
+				},
+				"Sections": 
+				[
+					{
+						"Name": "Author Metadata",
+						"Hash": "AuthorMetadata",
+						"Solvers": [],
+						"ShowTitle": false,
+						"Groups": [
+							{
+								"Name": "Author Metadata",
+								"Hash": "AuthorMetadata",
+								"Rows": [],
+								"RecordSetSolvers": [],
+								"ShowTitle": false
+							}
+						]
+					}
+				]
+			},
 			"Bestsellers":
 			{
 				"Scope": "Bestsellers",
@@ -481,6 +659,32 @@ module.exports.default_configuration.pict_configuration = (
 					}
 				},
 
+				"RecordSetReadManifestOnly": true,
+				"RecordSetReadDefaultManifestView": "Book-View",
+				"RecordSetReadManifestsView": [ "Book-View" ],
+
+				"ReadLayout": "Split",
+
+				"RecordSetReadTabs": 
+				[
+					{
+						Type: "AttachedRecord",
+						RecordSet: "Author",
+						Title: "Author",
+						JoiningRecordSet: "BookAuthorJoin"
+					},
+					{
+						Type: "Manifest",
+						Manifest: "AuthorMetadata",
+						Title: "Author Metadata"
+					},
+					{
+						Type: "View",
+						View: "SpecialBookView",
+						Title: "More Book Info"
+					}
+				],
+
 				"RecordSetListManifestOnly": false,
 
 				"RecordSetListManifests": [ "Bestsellers", "Underdogs", "NewReleases" ],
@@ -579,7 +783,23 @@ module.exports.default_configuration.pict_configuration = (
 				"RecordSetType": "MeadowEndpoint",
 				"RecordSetMeadowEntity": "Author",
 
-				"RecordSetURLPrefix": "/1.0/"
+				"RecordSetURLPrefix": "/1.0/",
+
+				"RecordSetReadManifestOnly": true,
+				"RecordSetReadManifestsView": [ "Author-View" ],
+
+				"ReadLayout": "Tab",
+				"RecordSetReadTabTitle": "Author",
+
+				"RecordSetReadTabs": 
+				[
+					{
+						Type: "Manifest",
+						Manifest: "AuthorMetadata",
+						Title: "Author Metadata"
+					}
+				],
+
 			},
 			{
 				"RecordSet": "RandomizedValues",
