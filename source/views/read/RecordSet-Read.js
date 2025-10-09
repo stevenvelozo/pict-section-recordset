@@ -479,84 +479,10 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 		else
 		{
 			// Construct a default manifest based on the RecordSchema:
-			this.defaultManifest = 
-			{
-				"Form": "DefaultManifest",
-				"Scope": "Default",
-				"Descriptors": {},
-				"Sections": 
-				[
-					{
-						"Name": "",
-						"Hash": "DefaultSection",
-						"Solvers": [],
-						"ShowTitle": false,
-						"Groups": [
-							{
-								"Name": "",
-								"Hash": "DefaultGroup",
-								"Rows": [],
-								"RecordSetSolvers": [],
-								"ShowTitle": false
-							}
-						]
-					}
-				]
-			}
-			let rowCounter = 1;
-			for (const p of Object.keys(tmpRecordReadData.RecordSchema.properties))
-			{
-				const exclusionSet = [`ID${ this.pict.providers[this.providerHash].options.Entity  }`, `GUID${ this.pict.providers[this.providerHash].options.Entity  }`, 'CreatingIDUser', 'UpdatingIDUser', 'DeletingIDUser', 'Deleted', 'CreateDate', 'UpdateDate', 'DeleteDate', 'Deleted'];
-				if (exclusionSet.includes(p))
-				{
-					continue;
-				}
-				const tmpDescriptor =
-				{
-					"Name": `${ this.pict.providers[pProviderHash].getHumanReadableFieldName?.() || p }`,
-					"Hash": `${ this.pict.providers[this.providerHash].options.Entity  }-${ p }`,
-					"DataType": "String",
-					"PictForm": 
-					{
-						"Row": `${ rowCounter }`,
-						"Section": "DefaultSection",
-						"Group": "DefaultGroup"
-					}
-				};
-				rowCounter += 1;
-				switch (tmpRecordReadData.RecordSchema.properties[p].type)
-				{
-					case 'string':
-					case 'autoguid':
-						tmpDescriptor.DataType = 'String';
-						break;
-					case 'datetime':
-					case 'date':
-					case 'createdate':
-					case 'updatedate':
-						tmpDescriptor.DataType = 'String';
-						tmpDescriptor.PictForm.InputType = 'DateTime'
-						break;
-					case 'boolean':
-					case 'deleted':
-						tmpDescriptor.DataType = 'Boolean';
-					case 'integer':
-					case 'decimal':
-					case 'autoidentity':
-					case 'createiduser':
-					case 'updateiduser':
-					case 'deleteiduser':
-						tmpDescriptor.DataType = 'Number';
-						break;
-					default:
-						tmpDescriptor.DataType = 'String';
-				}
-
-				this.defaultManifest.Descriptors[`${ tmpRecordReadData.RecordSet }Details.${ p }`] = tmpDescriptor;
-			}
+			this.defaultManifest = await this._buildDefaultManifest(tmpRecordReadData.RecordSet);
 			this.pict.TemplateProvider.addTemplate(`PRSP-Read-RecordRead-Template`, /*html*/`
 				<!-- Manifest dynamic pict template: [PRSP-Read-RecordRead-Template] -->
-				<div>${ this._generateManifestTemplate(pRecordConfiguration, 'RecordRead', null, true, this.action, true) }</div>
+				<div>${ this._generateManifestTemplate(pRecordConfiguration, 'RecordRead', null, true, this.action, this.defaultManifest) }</div>
 				{~T:PRSP-Read-RecordButtonBar-Template~}
 				<!-- Manifest dynamic pict end template: [PRSP-Read-RecordRead-Template] -->
 			`);
@@ -658,12 +584,95 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 		}
 	}
 
-	_generateManifestTemplate(config, section, specificManifest, setBaseManifest, action = this.action, useDefaultManifest)
+	async _buildDefaultManifest(recordSet)
+	{
+		// Construct a default manifest based on the RecordSchema:
+		const defaultManifest = 
+		{
+			"Form": "DefaultManifest",
+			"Scope": "Default",
+			"Descriptors": {},
+			"Sections": 
+			[
+				{
+					"Name": "",
+					"Hash": "DefaultSection",
+					"Solvers": [],
+					"ShowTitle": false,
+					"Groups": [
+						{
+							"Name": "",
+							"Hash": "DefaultGroup",
+							"Rows": [],
+							"RecordSetSolvers": [],
+							"ShowTitle": false
+						}
+					]
+				}
+			]
+		}
+		let rowCounter = 1;
+		const providerHash = `RSP-Provider-${ recordSet }`;
+		const schema = await this.pict.providers[providerHash].getRecordSchema();
+		for (const p of Object.keys(schema.properties))
+		{
+			const exclusionSet = [`ID${ this.pict.providers[this.providerHash].options.Entity  }`, `GUID${ this.pict.providers[this.providerHash].options.Entity  }`, 'CreatingIDUser', 'UpdatingIDUser', 'DeletingIDUser', 'Deleted', 'CreateDate', 'UpdateDate', 'DeleteDate', 'Deleted'];
+			if (exclusionSet.includes(p))
+			{
+				continue;
+			}
+			const tmpDescriptor =
+			{
+				"Name": `${ this.pict.providers[providerHash].getHumanReadableFieldName?.() || p }`,
+				"Hash": `${ this.pict.providers[this.providerHash].options.Entity  }-${ p }`,
+				"DataType": "String",
+				"PictForm": 
+				{
+					"Row": `${ rowCounter }`,
+					"Section": "DefaultSection",
+					"Group": "DefaultGroup"
+				}
+			};
+			rowCounter += 1;
+			switch (schema.properties[p].type)
+			{
+				case 'string':
+				case 'autoguid':
+					tmpDescriptor.DataType = 'String';
+					break;
+				case 'datetime':
+				case 'date':
+				case 'createdate':
+				case 'updatedate':
+					tmpDescriptor.DataType = 'String';
+					tmpDescriptor.PictForm.InputType = 'DateTime'
+					break;
+				case 'boolean':
+				case 'deleted':
+					tmpDescriptor.DataType = 'Boolean';
+				case 'integer':
+				case 'decimal':
+				case 'autoidentity':
+				case 'createiduser':
+				case 'updateiduser':
+				case 'deleteiduser':
+					tmpDescriptor.DataType = 'Number';
+					break;
+				default:
+					tmpDescriptor.DataType = 'String';
+			}
+
+			defaultManifest.Descriptors[`${ recordSet }Details.${ p }`] = tmpDescriptor;
+		}
+		return defaultManifest;
+	}
+
+	_generateManifestTemplate(config, section, specificManifest, setBaseManifest, action = this.action, defaultManifest)
 	{
 		// Look for a manifest by the action (if there is no specific manifest passed) and fallback to view if the action manifest isn't present.
 		const tmpManifestHash = specificManifest || config[`RecordSetReadDefaultManifest${ action }`] || config[`RecordSetReadManifests${ action }`]?.[0] || config[`RecordSetReadDefaultManifestView`] || config[`RecordSetReadManifestsView`]?.[0];
 		// Make sure the copy of the manifest doesn't mutate the original (for read only handling).
-		const tmpManifest = JSON.parse(JSON.stringify(useDefaultManifest ? this.defaultManifest : this.pict.PictSectionRecordSet.getManifest(tmpManifestHash)));
+		const tmpManifest = JSON.parse(JSON.stringify(defaultManifest ? defaultManifest : this.pict.PictSectionRecordSet.getManifest(tmpManifestHash)));
 		if (!tmpManifest)
 		{
 			this.pict.log.error(`RecordSetRead: No manifest found for ${ config.RecordSet }. Read Render failed.`);
@@ -746,6 +755,8 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 			}
 			if (t.Type == 'Manifest' || t.Type == 'AttachedRecord')
 			{
+				let recordSetConfig = null;
+				let tmpManifest = null;
 				if (t.Type == 'AttachedRecord')
 				{
 					const getMethod = async (remote, id) => {
@@ -796,13 +807,19 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 					{
 						this.pict.log.info(`Skipping attached record tab because no recordset was included.`);
 					}
-					const recordSetConfig = this.pict.PictSectionRecordSet.recordSetProviderConfigurations[t.RecordSet];
+					recordSetConfig = this.pict.PictSectionRecordSet.recordSetProviderConfigurations[t.RecordSet];
 					if (!recordSetConfig)
 					{
 						this.pict.log.info(`Skipping attached record tab because recordset ${ t.RecordSet } is not registered.`);
 						continue;
 					}
 					t.Manifest = recordSetConfig.RecordSetReadDefaultManifestView || recordSetConfig.RecordSetReadManifestsView?.[0];
+					tmpManifest = recordSetConfig.RecordSetReadManifestOnly ? this.pict.PictSectionRecordSet.getManifest(t.Manifest) : await this._buildDefaultManifest(recordSetConfig.RecordSetMeadowEntity || recordSetConfig.RecordSet);
+					if (!tmpManifest)
+					{
+						this.pict.log.info(`Skipping manifest tab because manifest ${ t.Manifest } is not registered or default manifest could not be constructed.`);
+						continue;
+					}
 					if (!t.JoinField)
 					{
 						t.JoinField = `ID${ recordSetConfig.RecordSetMeadowEntity || recordSetConfig.RecordSet }`;
@@ -838,19 +855,12 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 						this.pict.AppData[`${ t.RecordSet }Details`] = tempRecord;
 					}
 				}
-				if (!t.Manifest)
-				{
-					this.pict.log.info(`Skipping manifest tab because no manifest was included.`);
-					continue;
-				}
-				const tmpManifest = this.pict.PictSectionRecordSet.getManifest(t.Manifest);
 				if (!tmpManifest)
 				{
-					this.pict.log.info(`Skipping manifest tab because manifest ${ t.Manifest } is not registered.`);
-					continue;
+					tmpManifest = this.pict.PictSectionRecordSet.getManifest(t.Manifest);
 				}
 				t.Template = /*html*/`
-					<div id="PSRS-Tab-${ t.Hash }" class="psrs-tab-body">${ this._generateManifestTemplate(config, 'RecordTab', t.Manifest, false, 'View') }</div>
+					<div id="PSRS-Tab-${ t.Hash }" class="psrs-tab-body">${ this._generateManifestTemplate(config, 'RecordTab', t.Manifest, false, 'View', recordSetConfig && !recordSetConfig.RecordSetReadManifestOnly ? tmpManifest : null) }</div>
 				`;
 				t.TabTemplate = /*html*/`
 					<div class="psrs-tab" id="PSRS-TabNav-${ t.Hash }" onclick="_Pict.views['RSP-RecordSet-Read'].setTab('${ t.Hash }')">${ t.Title }</div>
