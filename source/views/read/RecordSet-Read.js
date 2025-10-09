@@ -275,11 +275,12 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 
 	initializeDragListener()
 	{
-		const resizer = document.getElementById("psrs-resize");
-		const leftPanel = document.querySelector(".psrs-left-panel");
-		const rightPanel = document.querySelector(".psrs-right-panel");
+		let isResizing = false;
 		const handleMouseMove = (event) =>
 		{
+			const resizer = document.getElementById("psrs-resize");
+			const leftPanel = document.querySelector(".psrs-left-panel");
+			const rightPanel = document.querySelector(".psrs-right-panel");
 			if (!isResizing || !(resizer.parentNode instanceof HTMLElement && leftPanel instanceof HTMLElement && rightPanel instanceof HTMLElement))
 			{
 				return;
@@ -291,7 +292,6 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 			leftPanel.style.minWidth = `${newLeftWidth}px`;
 			rightPanel.style.width = `${newRightWidth}px`;
 		}
-		let isResizing = false;
 		if (!this.mouseHandler)
 		{
 			this.mouseHandler = (event) =>
@@ -307,6 +307,7 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 				});
 			};
 		}
+		const resizer = document.getElementById("psrs-resize");
 		resizer.removeEventListener('mousedown', this.mouseHandler);
 		resizer.addEventListener("mousedown", this.mouseHandler);
 	}
@@ -460,7 +461,7 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 
 		// If the record configuration does not have a GUID, try to infer one from the RecordSet name
 		// TODO: This should be coming from the schema but that can come after we discuss how we deal with default routing
-		tmpRecordReadData.GUIDAddress = `GUID${this.pict.providers[pProviderHash].options.Entity}`;
+		tmpRecordReadData.GUIDAddress = `GUID${ this.pict.providers[pProviderHash].options.Entity }`;
 
 		tmpRecordReadData.Record = await this.pict.providers[pProviderHash].getRecordByGUID(pRecordGUID);
 		tmpRecordReadData.RecordSchema = await this.pict.providers[pProviderHash].getRecordSchema();
@@ -505,7 +506,7 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 			let rowCounter = 1;
 			for (const p of Object.keys(tmpRecordReadData.RecordSchema.properties))
 			{
-				const exclusionSet = [`ID${ tmpRecordReadData.RecordSet }`, `GUID${ tmpRecordReadData.RecordSet }`, 'CreatingIDUser', 'UpdatingIDUser', 'DeletingIDUser', 'Deleted', 'CreateDate', 'UpdateDate', 'DeleteDate', 'Deleted'];
+				const exclusionSet = [`ID${ this.pict.providers[this.providerHash].options.Entity  }`, `GUID${ this.pict.providers[this.providerHash].options.Entity  }`, 'CreatingIDUser', 'UpdatingIDUser', 'DeletingIDUser', 'Deleted', 'CreateDate', 'UpdateDate', 'DeleteDate', 'Deleted'];
 				if (exclusionSet.includes(p))
 				{
 					continue;
@@ -513,7 +514,7 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 				const tmpDescriptor =
 				{
 					"Name": `${ this.pict.providers[pProviderHash].getHumanReadableFieldName?.() || p }`,
-					"Hash": `${ tmpRecordReadData.RecordSet }-${ p }`,
+					"Hash": `${ this.pict.providers[this.providerHash].options.Entity  }-${ p }`,
 					"DataType": "String",
 					"PictForm": 
 					{
@@ -804,13 +805,13 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 					t.Manifest = recordSetConfig.RecordSetReadDefaultManifestView || recordSetConfig.RecordSetReadManifestsView?.[0];
 					if (!t.JoinField)
 					{
-						t.JoinField = `ID${ t.RecordSet }`;
+						t.JoinField = `ID${ recordSetConfig.RecordSetMeadowEntity || recordSetConfig.RecordSet }`;
 					}
 					if (t.JoiningRecordSet)
 					{
 						if (!t.BaseField)
 						{
-							t.BaseField = `ID${ config.RecordSet }`;
+							t.BaseField = `ID${ config.RecordSetMeadowEntity || config.RecordSet }`;
 						}
 						if (!record[t.BaseField])
 						{
@@ -823,7 +824,7 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 							this.pict.log.info(`Skipping attached record tab because joining field ${ t.JoinField } does not exist on this record.`);
 							continue;
 						}
-						const tempRecord = await getMethod(t.RecordSet, tempJoin[t.JoinField]);
+						const tempRecord = await getMethod(recordSetConfig.RecordSetMeadowEntity || recordSetConfig.RecordSet, tempJoin[t.JoinField]);
 						this.pict.AppData[`${ t.RecordSet }Details`] = tempRecord;
 					}
 					else
@@ -833,7 +834,7 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 							this.pict.log.info(`Skipping attached record tab because joining field ${ t.JoinField } does not exist on this record.`);
 							continue;
 						}
-						const tempRecord = await getMethod(t.RecordSet, record[t.Joinfield]);
+						const tempRecord = await getMethod(recordSetConfig.RecordSetMeadowEntity || recordSetConfig.RecordSet, record[t.Joinfield]);
 						this.pict.AppData[`${ t.RecordSet }Details`] = tempRecord;
 					}
 				}

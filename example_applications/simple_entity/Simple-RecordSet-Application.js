@@ -660,6 +660,7 @@ module.exports.default_configuration.pict_configuration = (
 				},
 
 				"RecordSetReadManifestOnly": true,
+				"RecordSetReadDefaultManifestView": "Book-View",
 				"RecordSetReadManifestsView": [ "Book-View" ],
 
 				"ReadLayout": "Split",

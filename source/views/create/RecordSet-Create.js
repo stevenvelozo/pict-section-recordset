@@ -126,7 +126,7 @@ class viewRecordSetCreate extends libPictRecordSetRecordView
 		await this.onBeforeSave();
 		const resultingRecord = await this.pict.providers[this.providerHash].createRecord(this.pict.AppData[`${ this.RecordSet }Details`]);
 
-		this.fable.providers.RecordSetRouter.pictRouter.navigate(`/PSRS/${ this.RecordSet }/View/${ resultingRecord[`GUID${ this.RecordSet }`] }`);
+		this.fable.providers.RecordSetRouter.pictRouter.navigate(`/PSRS/${ this.RecordSet }/View/${ resultingRecord[`GUID${ this.pict.providers[this.providerHash].options.Entity }`] }`);
 	}
 
 	async onBeforeClear()
@@ -210,7 +210,7 @@ class viewRecordSetCreate extends libPictRecordSetRecordView
 			let rowCounter = 1;
 			for (const p of Object.keys(tmpRecordCreateData.RecordSchema.properties))
 			{
-				const exclusionSet = [`ID${ tmpRecordCreateData.RecordSet }`, `GUID${ tmpRecordCreateData.RecordSet }`, 'CreatingIDUser', 'UpdatingIDUser', 'DeletingIDUser', 'Deleted', 'CreateDate', 'UpdateDate', 'DeleteDate', 'Deleted'];
+				const exclusionSet = [`ID${ this.pict.providers[this.providerHash].options.Entity  }`, `GUID${ this.pict.providers[this.providerHash].options.Entity  }`, 'CreatingIDUser', 'UpdatingIDUser', 'DeletingIDUser', 'Deleted', 'CreateDate', 'UpdateDate', 'DeleteDate', 'Deleted'];
 				if (exclusionSet.includes(p))
 				{
 					continue;
