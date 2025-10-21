@@ -80,6 +80,8 @@ declare class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase 
      * @param {string|number} pIDOrGuid - The ID or GUID of the record.
      */
     getRecord(pIDOrGuid: string | number): Promise<any>;
+    getGUIDField(): any;
+    getIDField(): any;
     /**
      * Get a record by its ID or GUID.
      *

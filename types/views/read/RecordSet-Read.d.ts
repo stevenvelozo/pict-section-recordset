@@ -42,7 +42,25 @@ declare class viewRecordSetRead extends libPictRecordSetRecordView {
     onBeforeTabChange(): Promise<void>;
     renderRead(pRecordConfiguration: any, pProviderHash: any, pRecordGUID: any): Promise<boolean>;
     setTab(t: any): Promise<void>;
-    _generateManifestTemplate(config: any, section: any, specificManifest: any, setBaseManifest: any, action: string, useDefaultManifest: any): string;
+    _buildDefaultManifest(recordSet: any): Promise<{
+        Form: string;
+        Scope: string;
+        Descriptors: {};
+        Sections: {
+            Name: string;
+            Hash: string;
+            Solvers: any[];
+            ShowTitle: boolean;
+            Groups: {
+                Name: string;
+                Hash: string;
+                Rows: any[];
+                RecordSetSolvers: any[];
+                ShowTitle: boolean;
+            }[];
+        }[];
+    }>;
+    _generateManifestTemplate(config: any, section: any, specificManifest: any, setBaseManifest: any, action: string, defaultManifest: any): string;
     _structureTabs(config: any, record: any): Promise<{
         Type: string;
         RecordSet: any;

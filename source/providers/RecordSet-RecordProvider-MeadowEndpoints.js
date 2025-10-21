@@ -111,6 +111,36 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		});
 	}
 
+	getGUIDField()
+	{ 
+		if (this._Schema?.MeadowSchema?.Schema?.length)
+		{
+			for (let field of this._Schema.MeadowSchema.Schema)
+			{
+				if (field.Type == 'AutoGUID')
+				{
+					return field.Column;
+				}
+			}
+		}
+		return `GUID${ this.options.Entity }`;
+	}
+
+	getIDField()
+	{ 
+		if (this._Schema?.MeadowSchema?.Schema?.length)
+		{
+			for (let field of this._Schema.MeadowSchema.Schema)
+			{
+				if (field.Type == 'AutoIdentity')
+				{
+					return field.Column;
+				}
+			}
+		}
+		return `ID${ this.options.Entity }`;
+	}
+
 	/**
 	 * Get a record by its ID or GUID.
 	 *
@@ -128,7 +158,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		}
 		return new Promise((resolve, reject) =>
 		{
-			this.entityProvider.getEntitySet(this.options.Entity, `FBV~GUID${this.options.Entity}~EQ~${encodeURIComponent(pGuid)}`, (pError, pResult) =>
+			this.entityProvider.getEntitySet(this.options.Entity, `FBV~${ this.getGUIDField() }~EQ~${encodeURIComponent(pGuid)}`, (pError, pResult) =>
 			{
 				if (pError)
 				{
@@ -274,7 +304,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 	{
 		if (this.pict.LogNoisiness > 1)
 		{
-			this.pict.log.info(`Updating record ${this.options.Entity} ${pRecord[`ID${this.options.Entity}`]}`);
+			this.pict.log.info(`Updating record ${this.options.Entity} ${pRecord[this.getIDField()]}`);
 		}
 		return new Promise((resolve, reject) =>
 		{
@@ -301,12 +331,12 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 	{
 		if (this.pict.LogNoisiness > 1)
 		{
-			this.pict.log.info(`Deleting record ${this.options.Entity} ${pRecord[`ID${this.options.Entity}`]}`);
+			this.pict.log.info(`Deleting record ${this.options.Entity} ${pRecord[this.getIDField()]}`);
 		}
 		return new Promise((resolve, reject) =>
 		{
 			this.entityProvider.restClient.delJSON({
-				url: `${this.options.URLPrefix}${this.options.Entity}/${pRecord[`ID${this.options.Entity}`]}`,
+				url: `${this.options.URLPrefix}${this.options.Entity}/${pRecord[this.getIDField()]}`,
 				body: pRecord,
 			}, (error, response, result) =>
 			{
@@ -357,8 +387,8 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 	 */
 	cleanRecord(pRecord)
 	{
-		delete pRecord[`ID${this.options.Entity}`];
-		delete pRecord[`GUID${this.options.Entity}`];
+		delete pRecord[this.getIDField()];
+		delete pRecord[this.getGUIDField()];
 		return pRecord;
 	}
 
@@ -566,11 +596,11 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		{
 			return pSchemaField;
 		}
-		if (pSchemaField === `ID${this.options.Entity}`)
+		if (pSchemaField === this.getIDField())
 		{
 			return `${this._getHumanReadableEntityName(this.options.Entity)} Unique Database ID`;
 		}
-		if (pSchemaField === `GUID${this.options.Entity}`)
+		if (pSchemaField === this.getGUIDField())
 		{
 			return `${this._getHumanReadableEntityName(this.options.Entity)} Unique Identifier`;
 		}
@@ -701,7 +731,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 			for (const tmpFilterKey of Object.keys(this.pict.providers.FilterManager.filters))
 			{
 				const tmpFilterClause = this.pict.providers.FilterManager.filters[tmpFilterKey];
-				if (tmpFilterClause.CoreConnectionColumn === `ID${this.options.Entity}`)
+				if (tmpFilterClause.CoreConnectionColumn === this.getIDField())
 				{
 					//FIXME: I don't think using filter key is right here
 					let tmpFieldFilterSchema = this._FilterSchema[tmpFilterKey];

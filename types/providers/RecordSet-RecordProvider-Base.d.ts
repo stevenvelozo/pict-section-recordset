@@ -57,6 +57,8 @@ declare class RecordSetProviderBase extends libPictProvider {
      * @param {string|number} pGuid - The ID or GUID of the record.
      */
     getRecordByGUID(pGuid: string | number): Promise<{}>;
+    getGUIDField(): string;
+    getIDField(): string;
     /**
      * Read records from the provider.
      *

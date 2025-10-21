@@ -461,7 +461,7 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 
 		// If the record configuration does not have a GUID, try to infer one from the RecordSet name
 		// TODO: This should be coming from the schema but that can come after we discuss how we deal with default routing
-		tmpRecordReadData.GUIDAddress = `GUID${ this.pict.providers[pProviderHash].options.Entity }`;
+		tmpRecordReadData.GUIDAddress = this.pict.providers[pProviderHash].getGUIDField();
 
 		tmpRecordReadData.Record = await this.pict.providers[pProviderHash].getRecordByGUID(pRecordGUID);
 		tmpRecordReadData.RecordSchema = await this.pict.providers[pProviderHash].getRecordSchema();
@@ -616,7 +616,7 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 		const schema = await this.pict.providers[providerHash].getRecordSchema();
 		for (const p of Object.keys(schema.properties))
 		{
-			const exclusionSet = [`ID${ this.pict.providers[this.providerHash].options.Entity  }`, `GUID${ this.pict.providers[this.providerHash].options.Entity  }`, 'CreatingIDUser', 'UpdatingIDUser', 'DeletingIDUser', 'Deleted', 'CreateDate', 'UpdateDate', 'DeleteDate', 'Deleted'];
+			const exclusionSet = [this.pict.providers[this.providerHash].getIDField(), this.pict.providers[this.providerHash].getGUIDField(), 'CreatingIDUser', 'UpdatingIDUser', 'DeletingIDUser', 'Deleted', 'CreateDate', 'UpdateDate', 'DeleteDate', 'Deleted'];
 			if (exclusionSet.includes(p))
 			{
 				continue;
@@ -822,13 +822,13 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 					}
 					if (!t.JoinField)
 					{
-						t.JoinField = `ID${ recordSetConfig.RecordSetMeadowEntity || recordSetConfig.RecordSet }`;
+						t.JoinField = this.pict.providers[`RSP-Provider-${ t.RecordSet }`].getIDField();
 					}
 					if (t.JoiningRecordSet)
 					{
 						if (!t.BaseField)
 						{
-							t.BaseField = `ID${ config.RecordSetMeadowEntity || config.RecordSet }`;
+							t.BaseField = this.pict.providers[`RSP-Provider-${ config.RecordSet }`].getIDField();
 						}
 						if (!record[t.BaseField])
 						{
