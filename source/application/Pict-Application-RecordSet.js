@@ -26,6 +26,8 @@ class PictSectionRecordSetApplication extends libPictApplication
 		//FIXME: this is probably wrong, but needed for now?
 		this.pict.addServiceType('PictSectionForm', libPictSectionForm);
 
+		this.pict.addView('PictFormMetacontroller', {}, libPictSectionForm.PictFormMetacontroller);
+
 		this.fable.addProviderSingleton('DynamicRecordsetSolver', libDynamicSolver.default_configuration, libDynamicSolver);
 
 		// add the dependencies for dynamic controls

@@ -253,7 +253,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		tmpRecordListData.RecordSchema = tmpRecordSchema;
 
 		// TODO: This should be coming from the schema but that can come after we discuss how we deal with default routing
-		tmpRecordListData.GUIDAddress = `GUID${this.pict.providers[pProviderHash].options.Entity}`;
+		tmpRecordListData.GUIDAddress = this.pict.providers[pProviderHash].getGUIDField();
 
 		// Get the "page end record number" for the current page (e.g. for messaging like Record 700 to 800 of 75,000)
 		tmpRecordListData.PageEnd = Number(tmpRecordListData.Offset) + tmpRecordListData.Records.Records.length;
@@ -504,7 +504,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		tmpRecordListData.RecordSchema = await this.pict.providers[pProviderHash].getRecordSchema();
 
 		// TODO: This should be coming from the schema but that can come after we discuss how we deal with default routing
-		tmpRecordListData.GUIDAddress = `GUID${this.pict.providers[pProviderHash].options.Entity}`;
+		tmpRecordListData.GUIDAddress = this.pict.providers[pProviderHash].getGUIDField();
 
 		// Get the "page end record number" for the current page (e.g. for messaging like Record 700 to 800 of 75,000)
 		const tmpOffset = Number(tmpRecordListData.Offset);
