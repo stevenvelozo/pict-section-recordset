@@ -188,7 +188,22 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 				{
 					return reject(pError);
 				}
-				resolve({ Records: this.pict.resolveStateFromAddress(tmpExperience.ResultDestinationAddress), Facets: { } });
+				const recordsReturn = this.pict.resolveStateFromAddress(tmpExperience.ResultDestinationAddress);
+				const IDFields = ['CreatingIDUser', 'UpdatingIDUser'];
+				if (recordsReturn.length)
+				{
+					for (const k of Object.keys(recordsReturn[0]))
+					{
+						if (k.startsWith('ID') && k !== `ID${ tmpEntity }`)
+						{
+							IDFields.push(k);
+						}
+					}
+				}
+				this.pict.EntityProvider.cacheConnectedEntityRecords(recordsReturn, IDFields, ['User', 'User'], false, () => 
+				{
+					resolve({ Records: recordsReturn, Facets: { } });
+				});
 			});
 			// using a space here, otherwise you get a `//` in the URL which breaks some stuff
 		});
