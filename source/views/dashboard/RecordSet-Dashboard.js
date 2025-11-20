@@ -423,6 +423,7 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 				}
 				else
 				{
+					// @ts-ignore
 					tmpRecordDashboardData.TableCells = tmpManifest.TableCells;
 				}
 			}

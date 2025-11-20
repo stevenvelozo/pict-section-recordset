@@ -20,7 +20,7 @@ declare class RecordSetMetacontroller {
     UUID: string;
     childViews: {
         list: any;
-        edit: any;
+        create: any;
         read: any;
         dashboard: any;
     };

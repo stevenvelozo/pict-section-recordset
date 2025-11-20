@@ -41,7 +41,7 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 
 		this.childViews = {
 			list: null,
-			edit: null,
+			create: null,
 			read: null,
 			dashboard: null
 		};
