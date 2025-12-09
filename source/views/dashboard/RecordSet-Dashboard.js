@@ -279,7 +279,7 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		tmpRecordDashboardData.RecordSchema = await this.pict.providers[pProviderHash].getRecordSchema();
 
 		// TODO: This should be coming from the schema but that can come after we discuss how we deal with default routing
-		tmpRecordDashboardData.GUIDAddress = `GUID${this.pict.providers[pProviderHash].options.Entity}`;
+		tmpRecordDashboardData.GUIDAddress = this.pict.providers[pProviderHash].getGUIDField();
 
 		// Get the "page end record number" for the current page (e.g. for messaging like Record 700 to 800 of 75,000)
 		const tmpOffset = Number(tmpRecordDashboardData.Offset);
@@ -423,6 +423,7 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 				}
 				else
 				{
+					// @ts-ignore
 					tmpRecordDashboardData.TableCells = tmpManifest.TableCells;
 				}
 			}
@@ -570,7 +571,7 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		tmpRecordDashboardData.RecordSchema = tmpRecordSchema;
 
 		// TODO: This should be coming from the schema but that can come after we discuss how we deal with default routing
-		tmpRecordDashboardData.GUIDAddress = `GUID${this.pict.providers[pProviderHash].options.Entity}`;
+		tmpRecordDashboardData.GUIDAddress = this.pict.providers[pProviderHash].getGUIDField();
 
 		// Get the "page end record number" for the current page (e.g. for messaging like Record 700 to 800 of 75,000)
 		const tmpOffset = Number(tmpRecordDashboardData.Offset);

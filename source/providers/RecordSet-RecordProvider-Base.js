@@ -102,6 +102,16 @@ class RecordSetProviderBase extends libPictProvider
 	}
 	*/
 
+	getGUIDField()
+	{ 
+		return `GUID${ this.options.Entity }`;
+	}
+
+	getIDField()
+	{ 
+		return `ID${ this.options.Entity }`;
+	}
+
 	/**
 	 * Read records from the provider.
 	 *
