@@ -89,7 +89,8 @@ class ViewRecordSetSUBSETFilterBase extends libPictView
 			Hash: this.fable.DataFormat.sanitizeObjectKey(pRecord.Hash),
 			//TODO: figure out a nice pattern for extracting a name for the field from the filter - and allow the filter author to provide the label here
 			Name: pRecord.Label || pRecord.ExternalFilterByColumn || pRecord.ExternalFilterByColumns?.[0] || pRecord.FilterByColumn || pRecord.FilterByColumns?.[0] || 'Value',
-			DataType: 'String',
+			DataType: pRecord.DataType || 'String',
+			PictForm: pRecord.PictForm || {},
 		};
 	}
 
