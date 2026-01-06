@@ -34,8 +34,10 @@ class ViewRecordSetSUBSETFilterInternalJoinDateRange extends ViewRecordSetSUBSET
 	{
 		super.prepareRecord(pRecord);
 
-		pRecord.StartClauseDescriptor.DataType = 'DateTime';
-		pRecord.EndClauseDescriptor.DataType = 'DateTime';
+		pRecord.StartClauseDescriptor.DataType = pRecord.DataType || 'DateTime';
+		pRecord.StartClauseDescriptor.PictForm = pRecord.PictForm || {};
+		pRecord.EndClauseDescriptor.DataType = pRecord.DataType || 'DateTime';
+		pRecord.EndClauseDescriptor.PictForm = pRecord.PictForm || {};
 	}
 
 	getFilterFormTemplate()

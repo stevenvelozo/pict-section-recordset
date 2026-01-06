@@ -34,8 +34,10 @@ class ViewRecordSetSUBSETFilterExternalJoinNumericRange extends ViewRecordSetSUB
 	{
 		super.prepareRecord(pRecord);
 
-		pRecord.StartClauseDescriptor.DataType = 'Number';
-		pRecord.EndClauseDescriptor.DataType = 'Number';
+		pRecord.StartClauseDescriptor.DataType = pRecord.DataType || 'Number';
+		pRecord.StartClauseDescriptor.PictForm = pRecord.PictForm || {};
+		pRecord.EndClauseDescriptor.DataType = pRecord.DataType || 'Number';
+		pRecord.EndClauseDescriptor.PictForm = pRecord.PictForm || {};
 	}
 
 	getFilterFormTemplate()
