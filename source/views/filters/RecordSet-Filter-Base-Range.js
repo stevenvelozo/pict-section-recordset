@@ -1,5 +1,3 @@
-
-const Pict = require('pict');
 const ViewRecordSetSUBSETFilterBase = require('./RecordSet-Filter-Base');
 
 class ViewRecordSetSUBSETFilterBaseRange extends ViewRecordSetSUBSETFilterBase
