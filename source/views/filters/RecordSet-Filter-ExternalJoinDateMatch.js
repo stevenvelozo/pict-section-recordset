@@ -35,7 +35,8 @@ class ViewRecordSetSUBSETFilterExternalJoinDateMatch extends ViewRecordSetSUBSET
 	{
 		super.prepareRecord(pRecord);
 
-		pRecord.ClauseDescriptor.DataType = 'DateTime';
+		pRecord.ClauseDescriptor.DataType = pRecord.DataType || 'DateTime';
+		pRecord.ClauseDescriptor.PictForm = pRecord.PictForm || {};
 	}
 
 	getFilterFormTemplate()

@@ -1,4 +1,3 @@
-
 const ViewRecordSetSUBSETFilterBase = require('./RecordSet-Filter-Base');
 
 class ViewRecordSetSUBSETFilterBaseRange extends ViewRecordSetSUBSETFilterBase
@@ -24,7 +23,8 @@ class ViewRecordSetSUBSETFilterBaseRange extends ViewRecordSetSUBSETFilterBase
 			Address: pRecord.StartClauseAddress,
 			//TODO: figure out a nice pattern for extracting a name for the field from the filter - and allow the filter author to provide the label here
 			Name: pRecord.MinimumLabel || `Minimum ${pRecord.ExternalFilterByColumn || pRecord.ExternalFilterByColumns?.[0] || pRecord.FilterByColumn || pRecord.FilterByColumns?.[0] || 'Value'}`,
-			DataType: 'String',
+			DataType: pRecord.DataType || 'String',
+			PictForm: pRecord.PictForm || {},
 		};
 
 		pRecord.EndClauseDescriptor =
@@ -32,7 +32,8 @@ class ViewRecordSetSUBSETFilterBaseRange extends ViewRecordSetSUBSETFilterBase
 			Hash: this.fable.DataFormat.sanitizeObjectKey(`${pRecord.Hash}_End`),
 			Address: pRecord.EndClauseAddress,
 			Name: pRecord.MaximumLabel || `Maximum ${pRecord.ExternalFilterByColumn || pRecord.ExternalFilterByColumns?.[0] || pRecord.FilterByColumn || pRecord.FilterByColumns?.[0] || 'Value'}`,
-			DataType: 'String',
+			DataType: pRecord.DataType || 'String',
+			PictForm: pRecord.PictForm || {},
 		};
 	}
 }

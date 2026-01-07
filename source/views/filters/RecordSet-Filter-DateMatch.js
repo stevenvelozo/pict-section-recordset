@@ -35,7 +35,8 @@ class ViewRecordSetSUBSETFilterDateMatch extends ViewRecordSetSUBSETFilterBase
 	{
 		super.prepareRecord(pRecord);
 
-		pRecord.ClauseDescriptor.DataType = 'DateTime';
+		pRecord.ClauseDescriptor.DataType = pRecord.DataType || 'DateTime';
+		pRecord.ClauseDescriptor.PictForm = pRecord.PictForm || {};
 	}
 
 	getFilterFormTemplate()

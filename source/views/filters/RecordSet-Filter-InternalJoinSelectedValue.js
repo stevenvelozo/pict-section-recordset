@@ -99,7 +99,8 @@ class ViewRecordSetSUBSETFilterInternalJoinSelectedValue extends ViewRecordSetSU
 	{
 		super.prepareRecord(pRecord);
 
-		pRecord.ClauseDescriptor.DataType = 'Number';
+		pRecord.ClauseDescriptor.DataType = pRecord.DataType || 'Number';
+		pRecord.ClauseDescriptor.PictForm = pRecord.PictForm || {};
 		if (!pRecord.ExternalFilterTableLookupColumn)
 		{
 			pRecord.ExternalFilterTableLookupColumn = `ID${pRecord.RemoteTable}`;

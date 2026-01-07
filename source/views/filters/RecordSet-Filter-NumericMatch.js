@@ -33,7 +33,8 @@ class ViewRecordSetSUBSETFilterNumericMatch extends ViewRecordSetSUBSETFilterBas
 	{
 		super.prepareRecord(pRecord);
 
-		pRecord.ClauseDescriptor.DataType = 'Number';
+		pRecord.ClauseDescriptor.DataType = pRecord.DataType || 'Number';
+		pRecord.ClauseDescriptor.PictForm = pRecord.PictForm || {};
 	}
 
 	getFilterFormTemplate()
