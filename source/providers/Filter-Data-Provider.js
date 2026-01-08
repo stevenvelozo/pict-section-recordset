@@ -28,23 +28,49 @@ class FilterDataProvider extends libPictProvider
 			this.storageProvider = window.localStorage;
 		}
 
-		this.filtersMap = { };
-		this.lastFilterExperienceHashMap = { };
+		this.mapOfFilterExperiencesByRecordSet = { };
+		// what is this for??? = this.lastFilterExperienceHashMap = { };
 	}
 
 	onBeforeInitialize()
 	{
-		this.loadFilters();
 
+		this.loadAllStoredFilterExperiencesIntoMap();
 		return super.onBeforeInitialize();
 	}
 
 	/**
-	 * @return {void}
+	 * Load all stored filter experiences into the internal map for quick access.
 	 */
-	loadFilters()
+	loadAllStoredFilterExperiencesIntoMap()
 	{
-		// load all known recordsets
+		for(let i = 0; i < this.storageProvider.length; i++)
+		{
+			const tmpKey = this.storageProvider.key(i);
+			const match = tmpKey.match(/^Filter_Meta_(.+)_(.+)$/);
+			if (match)
+			{
+				const recordSet = match[1];
+				//const filterExperienceHash = match[2];
+				if (!this.mapOfFilterExperiencesByRecordSet[recordSet])
+				{
+					this.mapOfFilterExperiencesByRecordSet[recordSet] = [];
+				}
+				this.mapOfFilterExperiencesByRecordSet[recordSet].push(JSON.parse(this.storageProvider.getItem(tmpKey)));
+			}
+		}
+		return this.mapOfFilterExperiencesByRecordSet;
+	}
+
+	replaceFilterStateWithSelection(pRecordSet, pFilterExperienceHash)
+	{
+		/* 
+		 1 - update hash in filterHashMap to point to new filter experience
+		 2 - call saveFilterMeta() to update the last used filter experience hash
+		 3 - replace the active filter state from the filter in the hashMap
+		 */
+		this.pict.log.info(`Replacing filter state for record set: ${pRecordSet} with filter experience hash: ${pFilterExperienceHash}`);
+		return this.mapOfFilterExperiencesByRecordSet[pRecordSet]?.find((pFilter) => pFilter.FilterExperienceHash === pFilterExperienceHash) || null;
 	}
 
 	/**
@@ -54,12 +80,9 @@ class FilterDataProvider extends libPictProvider
 	 *
 	 * @return Array<Record<string, any>> - a list of Filters as Index/FilterExperienceHash entries
 	 */
-	listFilters(pRecordSet)
+	listAllFiltersExperiencesForRecordSet(pRecordSet)
 	{
-		this.loadFilterMeta(pRecordSet);
-		const filtersList = this.filtersMap[pRecordSet] || [];
-		const tmpFilterList = filtersList.map((pValue, pIndex) => { return { Index: pIndex, RecordSet: pRecordSet, FilterExperienceHash: pValue }; });
-		return tmpFilterList;
+		return this.mapOfFilterExperiencesByRecordSet[pRecordSet] || [];
 	}
 
 	/**
@@ -91,9 +114,9 @@ class FilterDataProvider extends libPictProvider
 		// Also.  This means users can do FUNNY BUSINESS and mess with the state if they have a 
 		// crapton of tabs open and delete a manyfest in one tab and later this check happens.
 		// Will not result in data loss but will result in flaky behavior.
-		this.loadFilterMeta(pRecordSet, false);
-		const filtersList = this.filtersMap[pRecordSet] || [];
-		return filtersList.indexOf(pFilterExperienceHash) >= 0;
+		this.loadFilterMeta(pRecordSet, pFilterExperienceHash, false);
+		const filtersList = this.mapOfFilterExperiencesByRecordSet[pRecordSet] || [];
+		return filtersList.find((pFilter) => pFilter.FilterExperienceHash === pFilterExperienceHash) !== undefined;
 	}
 
 	/**
@@ -106,10 +129,10 @@ class FilterDataProvider extends libPictProvider
 	 */
 	getFilterStorageKey(pRecordSet, pFilterExperienceHash)
 	{
-		this.loadFilterMeta(pRecordSet, false);
+		this.loadFilterMeta(pRecordSet, pFilterExperienceHash, false);
 		// Default to the loaded manyfest if nothing is passed in.
-		let tmpFilterExperienceHash = (typeof(pFilterExperienceHash) === 'string') ? pFilterExperienceHash : this.pict.AppData?.FilterRecord?.FilterExperienceHash ?? 'RECENT';
-		return `${pRecordSet}_Filter_${tmpFilterExperienceHash}`;
+		let tmpFilterExperienceHash = (typeof(pFilterExperienceHash) === 'string') ? pFilterExperienceHash : 'LATEST';
+		return `Filter_Meta_${pRecordSet}_${tmpFilterExperienceHash}`;
 	}
 
 	/**
@@ -120,10 +143,28 @@ class FilterDataProvider extends libPictProvider
 	 */
 	saveFilterMeta(pRecordSet, pRender = false)
 	{
-		const filtersList = this.filtersMap[pRecordSet] || [];
-
-		// TODO: BUG: Gotta have a more complex merge happen here for multiple tabs
-		this.storageProvider.setItem(`Filter_Meta_${pRecordSet}`, JSON.stringify({ LastFilterExperienceHash: this.lastFilterExperienceHashMap[pRecordSet] || 'RECENT', FilterList: filtersList }));
+		const filtersList = this.mapOfFilterExperiencesByRecordSet[pRecordSet] || [];
+		const filterDisplayName = this.getCurrentFilterName(pRecordSet);
+		const tmpFilterExperienceHash = filterDisplayName.replace(/[^a-zA-Z0-9_-]/g, '');
+		//const lastFilterExperienceHash = this.lastFilterExperienceHashMap[pRecordSet] || 'LATEST'
+		// Save the specific filter metadata
+		if (tmpFilterExperienceHash !== 'LATEST')
+		{
+			// TODO: BUG: Gotta have a more complex merge happen here for multiple tabs
+			this.storageProvider.setItem(`Filter_Meta_${pRecordSet}_${tmpFilterExperienceHash}`, JSON.stringify({ 
+				//LastFilterExperienceHash: lastFilterExperienceHash, 
+				RecordSet: pRecordSet,
+				FilterList: filtersList,
+				FilterDisplayName: filterDisplayName 
+			}));
+		}
+		// also set LATEST to what we just saved so that it's always up to date for the default filter experience
+		this.storageProvider.setItem(`Filter_Meta_${pRecordSet}_LATEST`, JSON.stringify({ 
+			//LastFilterExperienceHash: lastFilterExperienceHash, 
+			RecordSet: pRecordSet,
+			FilterList: filtersList,
+			FilterDisplayName: filterDisplayName 
+		}));
 
 		if (pRender && this.pict.views.FilterPersistenceView)
 		{
@@ -134,40 +175,43 @@ class FilterDataProvider extends libPictProvider
 	}
 
 	/**
+	 * Get the current filter name from the UI input (or generate a default one)
+	 * @param {string} pRecordSet - The record set to get the current filter name for
+	 * @return {string} - The current filter name
+	 */
+	getCurrentFilterName(pRecordSet)
+	{
+		/* @type {HTMLInputElement} */
+		const tmpInput = document.getElementById('FilterPersistenceView-CurrentFilterName');
+		if (tmpInput && tmpInput[0] && (tmpInput[0].value.length > 0))
+		{
+			return tmpInput[0].value;
+		}
+		return 'Unnamed Filter for ' + pRecordSet;
+	}
+
+	/**
 	 * Save the application metadata (list of Filters, last loaded FilterExperienceHash, etc.)
 	 *
 	 * @param {string} pRecordSet - The record set to save the filter for; TODO: should this have a default?
+	 * @param {string} pFilterExperienceHash - The name of the filter to load; if not provided, the 'LATEST' filter will be loaded
 	 * @param {boolean} [pRender=false] - Whether or not to also render the list of Filters in the UI automatically
 	 *
 	 * @return {Array<object>} The list of available Filters.
 	 */
-	loadFilterMeta(pRecordSet, pRender = false)
+	loadFilterMeta(pRecordSet, pFilterExperienceHash, pRender = false)
 	{
+		const tmpFilterName = pFilterExperienceHash || 'LATEST';
 		// We get this every time in case the user has multiple tabs open
-		let tmpFilterMetaJSON = this.storageProvider.getItem(`Filter_Meta_${pRecordSet}`);
-		if (!tmpFilterMetaJSON)
-		{
-			tmpFilterMetaJSON = '{}';
-		}
-		let tmpFilterMeta = JSON.parse(tmpFilterMetaJSON)
-
-		let filtersList = tmpFilterMeta.FilterList;
-		this.filtersMap[pRecordSet] = filtersList;
-		this.lastFilterExperienceHashMap[pRecordSet] = tmpFilterMeta.LastFilterExperienceHash;
-
-		if (!Array.isArray(filtersList))
-		{
-			this.filtersMap[pRecordSet] = [];
-			//this.lastFilterExperienceHashMap[pRecordSet] = 'LATEST';
-			this.saveFilterMeta(pRecordSet)
-		}
+		let tmpFilterMetaJSON = this.storageProvider.getItem(`Filter_Meta_${pRecordSet}_${tmpFilterName}`);
+		let tmpFilterMeta = tmpFilterMetaJSON ? JSON.parse(tmpFilterMetaJSON) : { /*LastFilterExperienceHash: 'LATEST'*/ FilterList: [] };
 
 		if (pRender && this.pict.views.FilterPersistenceView)
 		{
 			this.pict.views.FilterPersistenceView.render()
 		}
 
-		return filtersList;
+		return tmpFilterMeta;
 	}
 
 	/**
@@ -181,9 +225,9 @@ class FilterDataProvider extends libPictProvider
 	{
 		let tmpRender = (typeof(pRender) === 'undefined') ? true : pRender;
 
-		this.loadFilterMeta(pRecordSet);
+		this.loadFilterMeta(pRecordSet, pFilterExperienceHash, false);
 
-		const tmpFilterList = this.filtersMap[pRecordSet] || [];
+		const tmpFilterList = this.mapOfFilterExperiencesByRecordSet[pRecordSet] || [];
 
 		let tmpFilterFilterExperienceHashIndex = tmpFilterList.indexOf(pFilterExperienceHash);
 
@@ -191,11 +235,11 @@ class FilterDataProvider extends libPictProvider
 		{
 			return false;
 		}
-		const filtersList = this.filtersMap[pRecordSet] || [];
+		const filtersList = this.mapOfFilterExperiencesByRecordSet[pRecordSet] || [];
 		filtersList.push(pFilterExperienceHash);
-		this.filtersMap[pRecordSet] = filtersList;
+		this.mapOfFilterExperiencesByRecordSet[pRecordSet] = filtersList;
 
-		this.saveFilterMeta(pRecordSet);
+		this.saveFilterMeta(pRecordSet, false);
 
 		if (tmpRender && this.pict.views.FilterPersistenceView)
 		{
@@ -214,7 +258,7 @@ class FilterDataProvider extends libPictProvider
 	{
 		let tmpRender = (typeof(pRender) === 'undefined') ? true : pRender;
 
-		let tmpFilterList = this.loadFilterMeta(pRecordSet);
+		let tmpFilterList = this.loadFilterMeta(pRecordSet, pFilterExperienceHash, false);
 
 		let tmpFilterFilterExperienceHashIndex = tmpFilterList.indexOf(pFilterExperienceHash);
 
@@ -231,7 +275,7 @@ class FilterDataProvider extends libPictProvider
 				}
 			}
 
-			this.filtersMap[pRecordSet] = tmpNewFilterList;
+			this.mapOfFilterExperiencesByRecordSet[pRecordSet] = tmpNewFilterList;
 
 			this.saveFilterMeta(pRecordSet, true);
 
@@ -257,7 +301,7 @@ class FilterDataProvider extends libPictProvider
 		if (!tmpFilterExperienceHash)
 		{
 			// Autogenerate a scope
-			const filtersList = this.filtersMap[pRecordSet] || [];
+			const filtersList = this.mapOfFilterExperiencesByRecordSet[pRecordSet] || [];
 			let tmpProspectiveIndex = filtersList.length;
 
 			// If a user has more than 10,000 manifests we need to talk.  In person.
@@ -307,9 +351,9 @@ class FilterDataProvider extends libPictProvider
 	 */
 	saveFilter(pRecordSet)
 	{
-		let tmpFilterFilterExperienceHash = this.pict.AppData.FilterRecord.FilterExperienceHash;
+		let tmpFilterFilterExperienceHash = this.pict.Bundle._ActiveFilterState.FilterExperienceHash;
 		// TODO: Should this be a .... merge?  Yikes.  Multiple tabs is bonkers.
-		this.storageProvider.setItem(this.getFilterStorageKey(pRecordSet, tmpFilterFilterExperienceHash), JSON.stringify(this.pict.AppData.FilterRecord));
+		this.storageProvider.setItem(this.getFilterStorageKey(pRecordSet, tmpFilterFilterExperienceHash), JSON.stringify(this.pict.Bundle._ActiveFilterState));
 		this.addFilterExperienceHashToFilterList(pRecordSet, tmpFilterFilterExperienceHash);
 	}
 
@@ -322,7 +366,7 @@ class FilterDataProvider extends libPictProvider
 		let tmpFilterJSON = this.storageProvider.getItem(this.getFilterStorageKey(pRecordSet, pFilterFilterExperienceHash));
 		if (tmpFilterJSON)
 		{
-			this.pict.AppData.FilterRecord = JSON.parse(tmpFilterJSON);
+			this.pict.Bundle._ActiveFilterState = JSON.parse(tmpFilterJSON);
 		}
 		this.pict.providers.FilterRouter.postPersistNavigate();
 	}

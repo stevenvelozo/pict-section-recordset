@@ -38,6 +38,7 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 		</div>
 		{~T:PRSP-SUBSET-Filters-Template-Button-Fieldset~}
 		{~T:PRSP-SUBSET-Filters-Template-AddFilter-Fieldset~}
+		{~T:PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset~}
 	</form>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template] -->
 `
@@ -62,6 +63,17 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 		<button type="submit" id="PRSP_Filter_Button_Apply">Apply</button>
 	</fieldset>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-Button-Fieldset] -->
+`
+		},
+		{
+			Hash: 'PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset',
+			Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset] -->
+	<fieldset>
+		<button type="button" id="PRSP_Filter_Button_Manage" onclick="_Pict.views['PRSP-Filters'].handleManage(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Manage Filters</button>
+		<div id="FilterPersistenceView-Container"></div>
+	</fieldset>
+	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset] -->
 `
 		},
 		{
@@ -292,6 +304,24 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		//FIXME: store this filter string in the bundle so we can re-apply it on re-render
 		const tmpSearchString = this.pict.ContentAssignment.readContent(`input[name="filter"]`);
 		this.performSearch(pRecordSet, pViewContext, tmpSearchString ? String(tmpSearchString) : '');
+		// set LATEST filter experience in local storage or cookies for persistence
+		this.pict.providers.FilterDataProvider.saveFilterMeta(pRecordSet);
+	}
+
+	/**
+	 * Update the experience hash with the new filter selection and perform the search
+	 * @param {Event} pEvent - The DOM event that triggered the search
+	 * @param {string} pRecordSet - The record set being filtered
+	 * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
+	 * @param {string} pFilterExperienceHash - The filter experience hash to apply
+	 */
+	handleSearchWithExperienceHash(pEvent, pRecordSet, pViewContext, pFilterExperienceHash)
+	{
+		pEvent.preventDefault(); // don't submit the form
+		pEvent.stopPropagation();
+
+		this.pict.providers.FilterDataProvider.replaceFilterStateWithSelection(pRecordSet, pFilterExperienceHash);
+		this.performSearch(pRecordSet, pViewContext);
 	}
 
 	/**
@@ -371,6 +401,20 @@ class ViewRecordSetSUBSETFilters extends libPictView
 			}
 		}
 		this.performSearch(pRecordSet, pViewContext);
+	}
+
+	/**
+	 * @param {Event} pEvent - The DOM event that triggered the search
+	 * @param {string} pRecordSet - The record set being filtered
+	 * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
+	 * @returns {boolean} - Always returns false to prevent default action
+	*/
+	handleManage(pEvent, pRecordSet, pViewContext)
+	{
+		pEvent.preventDefault();
+		this.pict.log.info(`Managing filters for record set: ${pRecordSet} in view context: ${pViewContext}`);
+		this.pict.views.FilterPersistenceView.openFilterPersistenceUI(pRecordSet, pViewContext);
+		return false;
 	}
 
 	/**
@@ -506,6 +550,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	{
 		const cs = new DecompressionStream(encoding);
 		const writer = cs.writable.getWriter();
+		// @ts-ignore
 		writer.write(byteArray);
 		writer.close();
 		return new Response(cs.readable).arrayBuffer().then((arrayBuffer) =>
