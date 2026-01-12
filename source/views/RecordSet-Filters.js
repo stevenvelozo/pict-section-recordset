@@ -304,24 +304,8 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		//FIXME: store this filter string in the bundle so we can re-apply it on re-render
 		const tmpSearchString = this.pict.ContentAssignment.readContent(`input[name="filter"]`);
 		this.performSearch(pRecordSet, pViewContext, tmpSearchString ? String(tmpSearchString) : '');
-		// set LATEST filter experience in local storage or cookies for persistence
-		this.pict.providers.FilterDataProvider.saveFilterMeta(pRecordSet);
-	}
-
-	/**
-	 * Update the experience hash with the new filter selection and perform the search
-	 * @param {Event} pEvent - The DOM event that triggered the search
-	 * @param {string} pRecordSet - The record set being filtered
-	 * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
-	 * @param {string} pFilterExperienceHash - The filter experience hash to apply
-	 */
-	handleSearchWithExperienceHash(pEvent, pRecordSet, pViewContext, pFilterExperienceHash)
-	{
-		pEvent.preventDefault(); // don't submit the form
-		pEvent.stopPropagation();
-
-		this.pict.providers.FilterDataProvider.replaceFilterStateWithSelection(pRecordSet, pFilterExperienceHash);
-		this.performSearch(pRecordSet, pViewContext);
+		// TODO: Do we want to always set LATEST filter experience in local storage for persistence ON SEARCH or JUST MANAGE?
+		//this.pict.providers.FilterDataProvider.saveFilterMeta(pRecordSet);
 	}
 
 	/**
