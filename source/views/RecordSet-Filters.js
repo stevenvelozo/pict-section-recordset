@@ -59,6 +59,7 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-Button-Fieldset] -->
 	<fieldset>
+		<button type="button" id="PRSP_Filter_Button_Clear" onclick="_Pict.views['PRSP-Filters'].handleClear(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Clear</button>
 		<button type="button" id="PRSP_Filter_Button_Reset" onclick="_Pict.views['PRSP-Filters'].handleReset(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Reset</button>
 		<button type="submit" id="PRSP_Filter_Button_Apply">Apply</button>
 	</fieldset>
@@ -234,6 +235,22 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		}
 	}
 
+	// TODO: This isn't quite right, need to pass in pRecordSet and pViewContext and add an example to options to verify
+	// /**
+	//  * Lifecycle hook that triggers after the view is rendered.
+	//  * @param {import('pict-view').Renderable} pRenderable - The renderable that was rendered.
+	//  */
+	// onBeforeRender(pRenderable)
+	// {
+	// 	super.onBeforeRender(pRenderable);
+	// 	this.pict.log.info('RecordSet-Filters view initialized');
+	// 	// if default filter experience on load is set in provider, load it into bundle
+	// 	if (this.pict.options?.DefaultFilterExperience)
+	// 	{
+	// 		this.pict.providers.FilterDataProvider.setDefaultFilterExperienceOnLoad(this.pict.options.DefaultFilterExperience);
+	// 	}
+	// }
+
 	/**
 	 * @return {string} - The marshalling prefix configured for filters. Usually 'Bundle.'
 	 */
@@ -360,6 +377,22 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	}
 
 	/**
+	 * Clear all filter clauses for the given record set and view context.
+	 * @param {Event} pEvent - The DOM event that triggered the search
+	 * @param {string} pRecordSet - The record set being filtered
+	 * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
+	 */
+	handleClear(pEvent, pRecordSet, pViewContext)
+	{
+		if (pEvent) pEvent.preventDefault();
+		this.pict.ContentAssignment.assignContent('input[name="filter"]', '');
+		this.pict.Bundle._ActiveFilterState[pRecordSet].FilterClauses = [];
+		this.performSearch(pRecordSet, pViewContext);
+	}
+
+	// NOTE: Reset means to default state, Clear means to no filters at all
+	/**
+	 * Reset the filters to default state or fallback to to clear everything if no default exist for the given record set and view context.
 	 * @param {Event} pEvent - The DOM event that triggered the search
 	 * @param {string} pRecordSet - The record set being filtered
 	 * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
@@ -367,22 +400,18 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	handleReset(pEvent, pRecordSet, pViewContext)
 	{
 		if (pEvent) pEvent.preventDefault();
-		this.pict.ContentAssignment.assignContent('input[name="filter"]', '');
-		const tmpFilterExperienceClauses = this.pict.Bundle._ActiveFilterState[pRecordSet]?.FilterClauses;
-		if (Array.isArray(tmpFilterExperienceClauses))
+		this.pict.log.info(`Clearing filters for record set: ${pRecordSet} in view context: ${pViewContext}`);
+		// Apply default filter experience if it exists, otherwise just clear
+		const tmpDefaultFilterExperience = this.pict.providers.FilterDataProvider.getDefaultFilterExperienceOnLoad(pRecordSet, pViewContext);
+		if (tmpDefaultFilterExperience)
 		{
-			for (const tmpClause of tmpFilterExperienceClauses)
-			{
-				delete tmpClause.Value;
-				delete tmpClause.Values;
-				delete tmpClause.SearchInputValue;
-				delete tmpClause.SelectedValues;
-				delete tmpClause.SearchResults;
-				delete tmpClause.SearchResultsOffset;
-				delete tmpClause.LoadMoreEnabled;
-			}
+			this.pict.log.info(`Applying default filter experience for record set: ${pRecordSet} in view context: ${pViewContext}`);
+			this.pict.providers.FilterDataProvider.loadFilterExperience(pRecordSet, pViewContext, tmpDefaultFilterExperience);
 		}
-		this.performSearch(pRecordSet, pViewContext);
+		else 
+		{
+			this.handleClear(pEvent, pRecordSet, pViewContext);
+		}
 	}
 
 	/**

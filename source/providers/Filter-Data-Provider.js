@@ -36,6 +36,7 @@ class FilterDataProvider extends libPictProvider
 		{
 			this.storageProvider = window.localStorage;
 		}
+		this.defaultFilterExperienceOnLoad = null;
 	}
 
 	onBeforeInitialize()
@@ -286,6 +287,66 @@ class FilterDataProvider extends libPictProvider
 		}
 		// give up, fall back to default name
 		return 'New Filter';
+	}
+
+	/**
+	 * Set the default filter experience to load on application load for a given record set and filter experience hash.
+	 * @param {string} pRecordSet - The record set to set the default filter experience for
+	 * @param {string} pViewContext - The current view context
+	 * @param {string} pFilterExperienceHash - The filter experience hash to set as default on load
+	 * @param {boolean} pSetAsDefault - Whether to set as default or not
+	 * @return {boolean} - Returns true when the default filter experience has been set
+	 */
+	setDefaultFilterExperienceOnLoad(pRecordSet, pViewContext, pFilterExperienceHash, pSetAsDefault)
+	{
+		const tmpStorageKey = this.getFilterStorageKey(pRecordSet, pViewContext, pFilterExperienceHash);
+		const tmpFilterExperienceJSON = this.storageProvider.getItem(tmpStorageKey);
+		let tmpFilterExperience = tmpFilterExperienceJSON ? JSON.parse(tmpFilterExperienceJSON) : null;
+		if (!tmpFilterExperience)
+		{
+			this.pict.log.warn(`No filter experience available to set as default for record set: ${pRecordSet} with filter experience hash: ${pFilterExperienceHash}`);
+			return false;
+		}
+		// if already default, do nothing
+		if (pSetAsDefault && this.isDefaultFilterExperienceOnLoad(pRecordSet, pViewContext, tmpFilterExperience))
+		{
+			this.pict.log.info(`Filter experience 'Filter_Meta_${pRecordSet}_${pViewContext}_${pFilterExperienceHash}' is already set as default on load. No action taken.`);
+			return true;
+		}
+		// if unsetting default, but not currently default, do nothing
+		if (!pSetAsDefault && !this.isDefaultFilterExperienceOnLoad(pRecordSet, pViewContext, tmpFilterExperience))
+		{
+			this.pict.log.info(`Filter experience 'Filter_Meta_${pRecordSet}_${pViewContext}_${pFilterExperienceHash}' is not currently set as default on load. No action taken.`);
+			return true;
+		}
+		this.defaultFilterExperienceOnLoad = pSetAsDefault ? tmpFilterExperience : null;
+		return true;
+	}
+
+	/**
+	 * @return {object} - The default filter experience to load on application load
+	 */
+	getDefaultFilterExperienceOnLoad()
+	{
+		return this.defaultFilterExperienceOnLoad;
+	}
+
+	/**
+	 * Check if the given filter experience is the default filter experience to load on application load for the given record set and view context.
+	 * @param {string} pRecordSet - The record set to check
+	 * @param {string} pViewContext - The current view context
+	 * @param {object} pFilterExperience - The filter experience to check
+	 * @return {boolean} - True if the given filter experience is the default filter experience on load, false otherwise
+	 */
+	isDefaultFilterExperienceOnLoad(pRecordSet, pViewContext, pFilterExperience)
+	{
+		if (!this.defaultFilterExperienceOnLoad)
+		{
+			return false;
+		}
+		return (this.defaultFilterExperienceOnLoad.RecordSet === pRecordSet) &&
+			   (this.defaultFilterExperienceOnLoad.ViewContext === pViewContext) &&
+			   (this.defaultFilterExperienceOnLoad.FilterExperienceHash === pFilterExperience.FilterExperienceHash);
 	}
 
 	/**

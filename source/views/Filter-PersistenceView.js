@@ -37,22 +37,23 @@ const _DEFAULT_CONFIGURATION_FilterPersistenceView = (
 	</div>
 	<div id="FilterPersistenceView-Body">
 		<div class="FilterPersistenceView-ActiveSettings">
-			<label for="CurrentFilterName">Current Filter Set:</label>
+			<label for="CurrentFilterName">Current Filter Experience:</label>
 			<input type="text" id="FilterPersistenceView-CurrentFilterNameInput" name="CurrentFilterName" value="" onfocus="this.select()" />
-			<button type="button" onclick="_Pict.views['FilterPersistenceView'].saveFilterPersistenceSettings(event)">Save Filter</button>
-			<button type="button" onclick="_Pict.views['FilterPersistenceView'].clearFilterPersistenceSettings(event)">Clear Filter</button>
+			<button type="button" id="FilterPersistenceView-SaveFilterButton" onclick="_Pict.views['FilterPersistenceView'].saveFilterPersistenceSettings(event)">Save</button>
+			<button type="button" id="FilterPersistenceView-SetAsDefaultButton" onclick="_Pict.views['FilterPersistenceView'].toggleFilterExperienceAsTheDefaultOnLoad(event, true)">Set As Default</button>
+			<button type="button" id="FilterPersistenceView-RemoveAsDefaultButton" onclick="_Pict.views['FilterPersistenceView'].toggleFilterExperienceAsTheDefaultOnLoad(event, false)">Remove As Default</button>
 		</div>
 		<div class="FilterPersistenceView-StoredSettings">
-			<label for="StoredFilterName">Stored Filter Sets:</label>
+			<label for="StoredFilterName">Saved Filter Experiences:</label>
 			<select id="FilterPersistenceView-StoredFiltersSelect" onchange="_Pict.views['FilterPersistenceView'].setFilterExperienceToSelection(event)" name="StoredFilterName">
 				<!-- Options will be populated dynamically -->
 			</select>
-			<button type="button" onclick="_Pict.views['FilterPersistenceView'].loadFilterPersistenceSettings(event)">Load Filter</button>
-			<button type="button" onclick="_Pict.views['FilterPersistenceView'].deleteFilterPersistenceSettings(event)">Delete Filter</button>
+			<button type="button" id="FilterPersistenceView-LoadFilterButton" onclick="_Pict.views['FilterPersistenceView'].loadFilterPersistenceSettings(event)">Load</button>
+			<button type="button" id="FilterPersistenceView-DeleteFilterButton" onclick="_Pict.views['FilterPersistenceView'].deleteFilterPersistenceSettings(event)">Delete</button>
 		</div>
 	</div>
 	<div id="FilterPersistenceView-Footer">
-		<button type="button" onclick="_Pict.views['FilterPersistenceView'].closeFilterPersistenceUI()">Close Manage Filters</button>
+		<button type="button" id="FilterPersistenceView-CloseManageFiltersButton" onclick="_Pict.views['FilterPersistenceView'].closeFilterPersistenceUI()">Close Manage Filters</button>
 	</div>
 </div>
 <!-- DefaultPackage end view template:  [FilterPersistenceView-Container] -->
@@ -105,16 +106,23 @@ class viewFilterPersistenceView extends libPictView
 		const tmpExperienceURLParam = window.location.hash.split('/FilterExperience/')?.[1] || '';
 		// look in the map for the filter experience with the given hash
 		const filterExperiences = this.pict.providers.FilterDataProvider.getAllFiltersExperiencesForRecordSet(pRecordSet, pViewContext);
+		// BUG?: We are doing a double lookup here to match both the name and the encoded URL param, because just looking up by URL param alone can lead to issues if there are multiple experiences with the same URL param but different names.
 		const matchingExperience = filterExperiences.find((pExperience) => pExperience.FilterExperienceHash === tmpFilterExperienceList.find((exp) => exp.FilterExperienceEncodedURLParam === tmpExperienceURLParam)?.FilterExperienceHash);
-		// If we found a matching experience (both name and encoded URL param), set it as the current filter name		
+		// If we found a matching experience (both name and encoded URL param), set it as the current filter name and the active selection in the selector	
 		if (matchingExperience && (matchingExperience.FilterExperienceEncodedURLParam === tmpExperienceURLParam))
 		{
 			this.pict.providers.FilterDataProvider.setCurrentFilterName(matchingExperience, pRecordSet, pViewContext);
+			this.filterExperienceSelection = matchingExperience.FilterExperienceHash;
+			// check if the current filter experience is set as default on load, so we can set the button states accordingly
+			const isDefault = this.pict.providers.FilterDataProvider.isDefaultFilterExperienceOnLoad(pRecordSet, pViewContext, this.filterExperienceSelection);
+			this.handleDefaultButtonStates(isDefault);
 		}
 		else
 		{
 			this.pict.providers.FilterDataProvider.setCurrentFilterName(null, pRecordSet, pViewContext, null);
+			this.filterExperienceSelection = null;
 		}
+		// build the select options for available filter experiences
 		this.buildSelectOptionsForAvailableFilterExperiences();
 		return true;
 	}
@@ -144,8 +152,10 @@ class viewFilterPersistenceView extends libPictView
 	{
 		this.currentRecordSet = null;
 		this.currentViewContext = null;
+		this.filterExperienceSelection = null;
 		// show the button that was hidden when opening the UI
 		document.getElementById('PRSP_Filter_Button_Manage').style.display = 'inline-block';
+		// Clear the content of the Filter Persistence View (it will re-render next time it's opened)
 		document.getElementById('FilterPersistenceView-Content').innerHTML = '';
 		return true;
 	}
@@ -215,20 +225,47 @@ class viewFilterPersistenceView extends libPictView
 	}
 
 	/**
-	 * Clears the filter persistence settings for the current record set and view context.
+	 * Sets the filter experience as the default for the current record set and view context.
 	 * @param {Event} event - The event object.
-	 * @returns {boolean} - Returns true when the settings have been cleared.
+	 * @param {boolean} isDefault - Whether to set as default or not.
+	 * @returns {boolean} - Returns true when the settings have been set as default.
 	 */
-	clearFilterPersistenceSettings(event)
+	toggleFilterExperienceAsTheDefaultOnLoad(event, isDefault)
 	{
 		event.preventDefault();
 		event.stopPropagation();
 
-		// TODO: Just doing a reset and close here for now, but may want to do something different here? Do we need a clear button for manage filters?
-		this.pict.views['PRSP-Filters'].handleReset(event, this.currentRecordSet, this.currentViewContext);
-		this.closeFilterPersistenceUI();
-		this.pict.log.info('Filter persistence settings have been cleared.');
+		const selectedFilterExperienceHash = this.filterExperienceSelection;
+		if (!selectedFilterExperienceHash)
+		{
+			this.pict.log.warn('No filter experience selected to set as default.');
+			return false;
+		}
+		// set or unset the default filter experience on load in the provider
+		this.pict.providers.FilterDataProvider.setDefaultFilterExperienceOnLoad(this.currentRecordSet, this.currentViewContext, selectedFilterExperienceHash, isDefault);
+		this.handleDefaultButtonStates(isDefault);
+		
+		this.buildSelectOptionsForAvailableFilterExperiences();
+		this.pict.log.info(`Filter experience ${selectedFilterExperienceHash} has been ${isDefault ? 'set' : 'unset'} as the default on load.`);
 		return true;
+	}
+
+	/**
+	 * Handles the button states for setting or removing the default filter experience.
+	 * @param {boolean} isDefault - Whether the filter experience is set as default or not.
+	 */
+	handleDefaultButtonStates(isDefault)
+	{
+		if (isDefault)
+		{
+			this.pict.ContentAssignment.setAttribute('FilterPersistenceView-SetAsDefaultButton', 'disabled', 'disabled');
+			this.pict.ContentAssignment.removeAttribute('FilterPersistenceView-RemoveAsDefaultButton', 'disabled');
+		}
+		else
+		{
+			this.pict.ContentAssignment.setAttribute('FilterPersistenceView-RemoveAsDefaultButton', 'disabled', 'disabled');
+			this.pict.ContentAssignment.removeAttribute('FilterPersistenceView-SetAsDefaultButton', 'disabled');
+		}
 	}
 
 	/**
