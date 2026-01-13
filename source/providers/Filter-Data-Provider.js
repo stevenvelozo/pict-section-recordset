@@ -111,18 +111,15 @@ class FilterDataProvider extends libPictProvider
 			console.warn('No FilterExperienceEncodedURLParam found for the current filter experience; navigating to base record set URL.');
 			this.fable.providers.RecordSetRouter.pictRouter.navigate(`/PSRS/${tmpFilterMeta.RecordSet}/${tmpFilterMeta.ViewContext}`);
 		}
-		// re-render all views that are affected by the filter change
-		this.pict.views?.FilterPersistenceView?.render();
 	}
 
 	/**
 	 * Save the application metadata (list of Filters, last loaded FilterExperienceHash, etc.)
 	 * @param {string} pRecordSet - The record set to save the filter for; TODO: should this have a default?
 	 * @param {string} pViewContext - The current view context
-	 * @param {boolean} [pRender=false] - Whether or not to also render the list of Filters in the UI automatically
 	 * @return {boolean} - Returns true when the settings have been saved.
 	 */
-	saveFilterMeta(pRecordSet, pViewContext, pRender = false)
+	saveFilterMeta(pRecordSet, pViewContext)
 	{
 		const activeFilterExperienceClauses = this.pict.Bundle._ActiveFilterState[pRecordSet]?.FilterClauses || [];
 		const filterDisplayName = this.getCurrentFilterName({ FilterClauses: activeFilterExperienceClauses });
@@ -152,13 +149,61 @@ class FilterDataProvider extends libPictProvider
 			FilterExperienceHash: 'LATEST', 
 			ExcludedFromSelection: true 
 		}));
-		// re-render UI to reflect the new filter
-		this.pict.views?.FilterPersistenceView?.render();
-		// re-render views if needed
-		if (pRender)
+		return true;
+	}
+
+	/**
+	 * Save the application metadata (list of Filters, last loaded FilterExperienceHash, etc.)
+	 * @param {string} pRecordSet - The record set to save the filter for; TODO: should this have a default?
+	 * @param {string} pViewContext - The current view context
+	 * @param {string} pFilterExperienceHash - The name of the filter to load; if not provided, the 'LATEST' filter will be loaded
+	 * @return {boolean} - Returns true when the filter experience has been loaded.
+	 */
+	loadFilterMeta(pRecordSet, pViewContext, pFilterExperienceHash)
+	{
+		// We get this every time in case the user has multiple tabs open
+		const tmpKey = this.getFilterStorageKey(pRecordSet, pViewContext, pFilterExperienceHash);
+		const tmpFilterExperienceJSON = this.storageProvider.getItem(tmpKey);
+		let tmpFilterExperience = tmpFilterExperienceJSON ? JSON.parse(tmpFilterExperienceJSON) : null;
+		if (!tmpFilterExperience)
 		{
-			this.navigateToFilterExperienceRoute(newFilterExperience);
+			this.pict.log.warn(`No filter experience available to remove for record set: ${pRecordSet} with filter experience hash: ${pFilterExperienceHash}`);
+			return false;
 		}
+		// update the current filter name in the UI
+		this.setCurrentFilterName(tmpFilterExperience, pRecordSet, pViewContext);
+		// re-render views if needed
+		this.navigateToFilterExperienceRoute(tmpFilterExperience);
+		return true;
+	}
+
+	/**
+	 * Remove a filter meta from storage for a given record set and filter experience hash.
+	 * @param {string} pRecordSet - The record set to remove the filter for
+	 * @param {string} pViewContext - The current view context
+	 * @param {string} pFilterExperienceHash - The filter experience hash to remove
+	 * @return {boolean} - Returns true when the filter meta has been removed.
+	 */
+	removeFilterMeta(pRecordSet, pViewContext, pFilterExperienceHash)
+	{
+		// TODO: add confirmation dialog in the UI before removing?
+		const tmpKey = this.getFilterStorageKey(pRecordSet, pViewContext, pFilterExperienceHash);
+		const tmpFilterExperienceJSON = this.storageProvider.getItem(tmpKey);
+		let tmpFilterExperience = tmpFilterExperienceJSON ? JSON.parse(tmpFilterExperienceJSON) : null;
+		if (!tmpFilterExperience)
+		{
+			this.pict.log.warn(`No filter experience available to remove for record set: ${pRecordSet} with filter experience hash: ${pFilterExperienceHash}`);
+			return false;
+		}
+		// check if the filter being removed is the current active filter; if so, reset to base record set URL
+		if (this.isCurrentFilterExperienceHash(pRecordSet, pViewContext, pFilterExperienceHash))
+		{
+			this.pict.log.info(`The filter experience being removed is the current active filter. Navigating to base record set URL.`);
+			this.pict.views['PRSP-Filters'].handleReset(null, pRecordSet, pViewContext);
+		}
+		// remove the filter meta from localStorage
+		this.storageProvider.removeItem(tmpKey);
+
 		return true;
 	}
 
@@ -241,60 +286,6 @@ class FilterDataProvider extends libPictProvider
 		}
 		// give up, fall back to default name
 		return 'New Filter';
-	}
-
-	/**
-	 * Save the application metadata (list of Filters, last loaded FilterExperienceHash, etc.)
-	 * @param {string} pRecordSet - The record set to save the filter for; TODO: should this have a default?
-	 * @param {string} pViewContext - The current view context
-	 * @param {string} pFilterExperienceHash - The name of the filter to load; if not provided, the 'LATEST' filter will be loaded
-	 * @return {boolean} - Returns true when the filter experience has been loaded.
-	 */
-	loadFilterMeta(pRecordSet, pViewContext, pFilterExperienceHash)
-	{
-		// We get this every time in case the user has multiple tabs open
-		const tmpKey = this.getFilterStorageKey(pRecordSet, pViewContext, pFilterExperienceHash);
-		const tmpFilterExperienceJSON = this.storageProvider.getItem(tmpKey);
-		let tmpFilterExperience = tmpFilterExperienceJSON ? JSON.parse(tmpFilterExperienceJSON) : null;
-		if (!tmpFilterExperience)
-		{
-			this.pict.log.warn(`No filter experience available to remove for record set: ${pRecordSet} with filter experience hash: ${pFilterExperienceHash}`);
-			return false;
-		}
-		// update the current filter name in the UI
-		this.setCurrentFilterName(tmpFilterExperience, pRecordSet, pViewContext);
-		// re-render all views that are affected by the filter change
-		this.pict.views?.FilterPersistenceView?.render();
-		// re-render views if needed
-		this.navigateToFilterExperienceRoute(tmpFilterExperience);
-		return true;
-	}
-
-	/**
-	 * Remove a filter meta from storage for a given record set and filter experience hash.
-	 * @param {string} pRecordSet - The record set to remove the filter for
-	 * @param {string} pViewContext - The current view context
-	 * @param {string} pFilterExperienceHash - The filter experience hash to remove
-	 * @return {boolean} - Returns true when the filter meta has been removed.
-	 */
-	removeFilterMeta(pRecordSet, pViewContext, pFilterExperienceHash)
-	{
-		// TODO: add confirmation dialog in the UI before removing?
-		const tmpKey = this.getFilterStorageKey(pRecordSet, pViewContext, pFilterExperienceHash);
-		const tmpFilterExperienceJSON = this.storageProvider.getItem(tmpKey);
-		let tmpFilterExperience = tmpFilterExperienceJSON ? JSON.parse(tmpFilterExperienceJSON) : null;
-		if (!tmpFilterExperience)
-		{
-			this.pict.log.warn(`No filter experience available to remove for record set: ${pRecordSet} with filter experience hash: ${pFilterExperienceHash}`);
-			return false;
-		}
-		// TODO: if the removed filter is the current active filter, we should navigate to the LATEST or default filter - need to handle that case
-
-		// remove the filter meta from localStorage
-		this.storageProvider.removeItem(tmpKey);
-		// re-render the UI to reflect the removed filter
-		this.pict.views?.FilterPersistenceView?.render();
-		return true;
 	}
 
 	/**

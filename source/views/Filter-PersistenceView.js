@@ -38,7 +38,7 @@ const _DEFAULT_CONFIGURATION_FilterPersistenceView = (
 	<div id="FilterPersistenceView-Body">
 		<div class="FilterPersistenceView-ActiveSettings">
 			<label for="CurrentFilterName">Current Filter Set:</label>
-			<input type="text" id="FilterPersistenceView-CurrentFilterNameInput" name="CurrentFilterName" value="" />
+			<input type="text" id="FilterPersistenceView-CurrentFilterNameInput" name="CurrentFilterName" value="" onfocus="this.select()" />
 			<button type="button" onclick="_Pict.views['FilterPersistenceView'].saveFilterPersistenceSettings(event)">Save Filter</button>
 			<button type="button" onclick="_Pict.views['FilterPersistenceView'].clearFilterPersistenceSettings(event)">Clear Filter</button>
 		</div>
@@ -106,7 +106,7 @@ class viewFilterPersistenceView extends libPictView
 		// look in the map for the filter experience with the given hash
 		const filterExperiences = this.pict.providers.FilterDataProvider.getAllFiltersExperiencesForRecordSet(pRecordSet, pViewContext);
 		const matchingExperience = filterExperiences.find((pExperience) => pExperience.FilterExperienceHash === tmpFilterExperienceList.find((exp) => exp.FilterExperienceEncodedURLParam === tmpExperienceURLParam)?.FilterExperienceHash);
-		// If we found a matching experience, set it as the current filter name		
+		// If we found a matching experience (both name and encoded URL param), set it as the current filter name		
 		if (matchingExperience && (matchingExperience.FilterExperienceEncodedURLParam === tmpExperienceURLParam))
 		{
 			this.pict.providers.FilterDataProvider.setCurrentFilterName(matchingExperience, pRecordSet, pViewContext);

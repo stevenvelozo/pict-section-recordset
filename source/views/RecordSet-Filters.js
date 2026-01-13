@@ -258,7 +258,6 @@ class ViewRecordSetSUBSETFilters extends libPictView
 
 	/**
 	 * Marshals data from the view to the model, usually AppData (or configured data store).
-	 *
 	 * @returns {any} The result of the superclass's onMarshalFromView method.
 	 */
 	onMarshalFromView()
@@ -276,7 +275,6 @@ class ViewRecordSetSUBSETFilters extends libPictView
 
 	/**
 	 * Marshals the data to the view from the model, usually AppData (or configured data store).
-	 *
 	 * @returns {any} The result of the super.onMarshalToView() method.
 	 */
 	onMarshalToView()
@@ -368,7 +366,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	 */
 	handleReset(pEvent, pRecordSet, pViewContext)
 	{
-		pEvent.preventDefault();
+		if (pEvent) pEvent.preventDefault();
 		this.pict.ContentAssignment.assignContent('input[name="filter"]', '');
 		const tmpFilterExperienceClauses = this.pict.Bundle._ActiveFilterState[pRecordSet]?.FilterClauses;
 		if (Array.isArray(tmpFilterExperienceClauses))
@@ -395,7 +393,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	*/
 	handleManage(pEvent, pRecordSet, pViewContext)
 	{
-		pEvent.preventDefault();
+		if (pEvent) pEvent.preventDefault();
 		this.pict.log.info(`Managing filters for record set: ${pRecordSet} in view context: ${pViewContext}`);
 		this.pict.views.FilterPersistenceView.openFilterPersistenceUI(pRecordSet, pViewContext);
 		return false;
@@ -408,30 +406,48 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	 */
 	selectFilterToAdd(pEvent, pRecordSet, pViewContext)
 	{
-		pEvent.preventDefault();
+		if (pEvent) pEvent.preventDefault();
 		//const tmpRecordsetProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
 		//this.pict.log.info(`Selecting filter to add for record set: ${pRecordSet} in view context: ${pViewContext}`, tmpRecordsetProvider.getFilterSchema())
 		this.renderWithScope(this.pict.providers[`RSP-Provider-${pRecordSet}`], 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown', undefined, { RecordSet: pRecordSet, ViewContext: pViewContext });
 	}
 
+	/**
+	 * @param {Event} pEvent - The DOM event that triggered the search
+	 * @param {string} pRecordSet - The record set being filtered
+	 * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
+	 * @param {string} pFilterKey - The key of the filter to add
+	 * @param {string} pClauseKey - The key of the clause to add
+	 */
 	addFilter(pEvent, pRecordSet, pViewContext, pFilterKey, pClauseKey)
 	{
-		pEvent?.preventDefault();
+		if (pEvent) pEvent.preventDefault();
 		this.pict.log.info(`Adding filter: ${pFilterKey} with clause: ${pClauseKey} to record set: ${pRecordSet} in view context: ${pViewContext}`);
 		this.pict.providers[`RSP-Provider-${pRecordSet}`].addFilterClause(pFilterKey, pClauseKey);
 		//FIXME: we need the record from the original render here but no longer have it...
 		this.render(undefined, undefined, { RecordSet: pRecordSet, ViewContext: pViewContext });
 	}
 
+	/**
+	 * @param {Event} pEvent - The DOM event that triggered the search
+	 * @param {string} pRecordSet - The record set being filtered
+	 * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
+	 * @param {string} pSpecificFilterKey - The key of the specific filter to remove
+	 */
 	removeFilter(pEvent, pRecordSet, pViewContext, pSpecificFilterKey)
 	{
-		pEvent?.preventDefault();
+		if (pEvent) pEvent.preventDefault();
 		this.pict.log.info(`Removing filter: ${pSpecificFilterKey} from record set: ${pRecordSet} in view context: ${pViewContext}`);
 		this.pict.providers[`RSP-Provider-${pRecordSet}`].removeFilterClause(pSpecificFilterKey);
 		//FIXME: we need the record from the original render here but no longer have it...
 		this.render(undefined, undefined, { RecordSet: pRecordSet, ViewContext: pViewContext });
 	}
 
+	/**
+	 * Gets the filter schema for the given record set.
+	 * @param {string} pRecordSet - The record set to get the filter schema for
+	 * @return {Array<any>} - The filter schema for the given record set
+	 */
 	getFilterSchema(pRecordSet)
 	{
 		const tmpRecordsetProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
@@ -440,7 +456,6 @@ class ViewRecordSetSUBSETFilters extends libPictView
 
 	/**
 	 * Lifecycle hook that triggers after the view is rendered.
-	 *
 	 * @param {import('pict-view').Renderable} pRenderable - The renderable that was rendered.
 	 */
 	onAfterRender(pRenderable)
@@ -454,7 +469,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		const tmpSelect = document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select');
 		if (tmpSelect)
 		{
-			const tmpActiveOption = document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select')?.querySelector('option:checked')
+			const tmpActiveOption = document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select')?.querySelector('option:checked');
 			const tmpRecordSet = tmpActiveOption?.getAttribute('data-i-recordset');
 			const tmpFilterKey = tmpActiveOption?.getAttribute('data-i-filter-key');
 			const tmpViewContext = tmpSelect?.getAttribute('data-i-view-context');
@@ -478,6 +493,11 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		return res;
 	}
 
+	/**
+	 * Encodes the filter experience to a string.
+	 * @param {Record<string, any>} pExperience - The filter experience to serialize.
+	 * @return {Promise<string>} - The serialized filter experience as a string.
+	 */
 	async serializeFilterExperience(pExperience)
 	{
 		if (!pExperience || typeof pExperience !== 'object')
@@ -496,8 +516,8 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	}
 
 	/**
+	 * Decodes the filter experience from a string.
 	 * @param {string} pExperience - The serialized filter experience as a string.
-	 *
 	 * @return {Promise<Record<string, any>>} - The serialized filter experience as a string.
 	 */
 	async deserializeFilterExperience(pExperience)
@@ -513,7 +533,6 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	/**
 	 * @param {string} string - The string to compress.
 	 * @param {CompressionFormat} [encoding='gzip'] - The encoding to use for compression, defaults to 'gzip'.
-	 *
 	 * @return {Promise<ArrayBuffer>} - The compressed byte array.
 	 */
 	async compress(string, encoding = 'gzip')
@@ -545,7 +564,6 @@ class ViewRecordSetSUBSETFilters extends libPictView
 
 	/**
 	 * @param {ArrayBuffer} arraybuffer - The ArrayBuffer to encode to Base64.
-	 *
 	 * @return {string} - The Base64 encoded string.
 	 */
 	encode(arraybuffer)
@@ -577,7 +595,6 @@ class ViewRecordSetSUBSETFilters extends libPictView
 
 	/**
 	 * @param {string} base64 - The Base64 encoded string to decode to an ArrayBuffer.
-	 *
 	 * @return {ArrayBuffer} - The decoded ArrayBuffer.
 	 */
 	decode(base64)
