@@ -304,8 +304,8 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		//FIXME: store this filter string in the bundle so we can re-apply it on re-render
 		const tmpSearchString = this.pict.ContentAssignment.readContent(`input[name="filter"]`);
 		this.performSearch(pRecordSet, pViewContext, tmpSearchString ? String(tmpSearchString) : '');
-		// TODO: Do we want to always set LATEST filter experience in local storage for persistence ON SEARCH or JUST MANAGE?
-		//this.pict.providers.FilterDataProvider.saveFilterMeta(pRecordSet);
+		// TODO: Do we want to always set LATEST filter experience in local storage for persistence ON SEARCH or JUST MANAGE Filter Experiences?
+		//this.pict.providers.FilterDataProvider.saveFilterMeta(pRecordSet, pViewContext, false);
 	}
 
 	/**

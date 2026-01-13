@@ -44,7 +44,7 @@ const _DEFAULT_CONFIGURATION_FilterPersistenceView = (
 		</div>
 		<div class="FilterPersistenceView-StoredSettings">
 			<label for="StoredFilterName">Stored Filter Sets:</label>
-			<select id="FilterPersistenceView-StoredFiltersSelect" onchange="_Pict.views['FilterPersistenceView'].setFilterExperienceToLoad(event)" name="StoredFilterName">
+			<select id="FilterPersistenceView-StoredFiltersSelect" onchange="_Pict.views['FilterPersistenceView'].setFilterExperienceToSelection(event)" name="StoredFilterName">
 				<!-- Options will be populated dynamically -->
 			</select>
 			<button type="button" onclick="_Pict.views['FilterPersistenceView'].loadFilterPersistenceSettings(event)">Load Filter</button>
@@ -83,12 +83,11 @@ class viewFilterPersistenceView extends libPictView
 
 		this.currentRecordSet = null;
 		this.currentViewContext = null;
-		this.filterExperienceToLoad = null;
+		this.filterExperienceSelection = null;
 	}
 
 	/**
 	 * Toggles the filter persistence UI for a given record set and view context.
-	 *
 	 * @param {string} pRecordSet - The identifier of the record set.
 	 * @param {string} pViewContext - The context of the view.
 	 * @returns {boolean} - Returns true when the UI has been toggled.
@@ -101,31 +100,44 @@ class viewFilterPersistenceView extends libPictView
 		document.getElementById('PRSP_Filter_Button_Manage').style.display = 'none';
 		// Implement the logic for toggling filter persistence UI here
 		this.render('FilterPersistenceView-Renderable', undefined, { RecordSet: pRecordSet, ViewContext: pViewContext });
-		this.pict.providers.FilterDataProvider.setCurrentFilterName(null, pRecordSet);
+		const tmpFilterExperienceList = this.pict.providers.FilterDataProvider.getAllFiltersExperiencesForRecordSet(pRecordSet, pViewContext);
+		// get the current filter experience hash from the URL
+		const tmpExperienceURLParam = window.location.hash.split('/FilterExperience/')?.[1] || '';
+		// look in the map for the filter experience with the given hash
+		const filterExperiences = this.pict.providers.FilterDataProvider.getAllFiltersExperiencesForRecordSet(pRecordSet, pViewContext);
+		const matchingExperience = filterExperiences.find((pExperience) => pExperience.FilterExperienceHash === tmpFilterExperienceList.find((exp) => exp.FilterExperienceEncodedURLParam === tmpExperienceURLParam)?.FilterExperienceHash);
+		// If we found a matching experience, set it as the current filter name		
+		if (matchingExperience && (matchingExperience.FilterExperienceEncodedURLParam === tmpExperienceURLParam))
+		{
+			this.pict.providers.FilterDataProvider.setCurrentFilterName(matchingExperience, pRecordSet, pViewContext);
+		}
+		else
+		{
+			this.pict.providers.FilterDataProvider.setCurrentFilterName(null, pRecordSet, pViewContext, null);
+		}
 		this.buildSelectOptionsForAvailableFilterExperiences();
 		return true;
 	}
 
 	/**
 	 * Sets the filter experience to load based on user selection.
-	 *
 	 * @param {Event} event - The event object.
 	 * @returns {boolean} - Returns true when the filter experience has been set.
 	 */
-	setFilterExperienceToLoad(event)
+	setFilterExperienceToSelection(event)
 	{
 		event.preventDefault();
 		event.stopPropagation();
 
 		/* @type {HTMLSelectElement} */
 		const selectedFilterSelectElement = document.getElementById('FilterPersistenceView-StoredFiltersSelect');
-		this.filterExperienceToLoad = selectedFilterSelectElement ? selectedFilterSelectElement.value : null;
+		// @ts-ignore
+		this.filterExperienceSelection = selectedFilterSelectElement ? selectedFilterSelectElement.value : null;
 		return true;
 	}
 
 	/**
 	 * Closes the filter persistence UI.
-	 *
 	 * @returns {boolean} - Returns true when the UI has been closed.
 	 */
 	closeFilterPersistenceUI()
@@ -134,24 +146,27 @@ class viewFilterPersistenceView extends libPictView
 		this.currentViewContext = null;
 		// show the button that was hidden when opening the UI
 		document.getElementById('PRSP_Filter_Button_Manage').style.display = 'inline-block';
-		// Implement the logic for closing/hiding filter persistence UI here
 		document.getElementById('FilterPersistenceView-Content').innerHTML = '';
 		return true;
 	}
 
-	
+	/**
+	 * Builds the select options for available filter experiences. Sets the current filter as selected and indicates it in the option text.
+	 * @returns {boolean} - Returns true when the options have been built.
+	 */
 	buildSelectOptionsForAvailableFilterExperiences()
 	{
-		// for each, make it a selectable option in the UI
 		let optionList = []
-		const filterMetaList = this.pict.providers.FilterDataProvider.getAllFiltersExperiencesForRecordSet(this.currentRecordSet, this.currentViewContext);
-		for (const i in filterMetaList)
+		const filterExperienceList = this.pict.providers.FilterDataProvider.getAllFiltersExperiencesForRecordSet(this.currentRecordSet, this.currentViewContext);
+		// add a default option at the top
+		optionList.push('<option value="">-- Select a Stored Filter --</option>');
+		for (const i in filterExperienceList)
 		{
-			if (filterMetaList[i].FilterExperienceHash === 'LATEST') continue; // skip the LATEST pseudo-filter
+			if (filterExperienceList[i].ExcludedFromSelection) continue; // skip excluded ones (like LATEST, DEFAULT, etc)
 			// if the current filter is the active one, mention that in the option text
-			const isCurrent = this.pict.providers.FilterDataProvider.isCurrentFilterExperienceHash(this.currentRecordSet, this.currentViewContext, filterMetaList[i].FilterExperienceHash);
+			const isCurrent = this.pict.providers.FilterDataProvider.isCurrentFilterExperienceHash(this.currentRecordSet, this.currentViewContext, filterExperienceList[i].FilterExperienceHash);
 			const selectedText = isCurrent ? ' (Current)' : '';
-			const optionElement = `<option value="${filterMetaList[i].FilterExperienceHash}">${filterMetaList[i].FilterDisplayName || filterMetaList[i].FilterExperienceHash}${selectedText}</option>`;
+			const optionElement = `<option ${isCurrent ? 'selected' : ''} value="${filterExperienceList[i].FilterExperienceHash}">${filterExperienceList[i].FilterDisplayName || filterExperienceList[i].FilterExperienceHash}${selectedText}</option>`;
 			optionList.push(optionElement);
 		}
 		/* @type {HTMLSelectElement} */
@@ -172,14 +187,14 @@ class viewFilterPersistenceView extends libPictView
 	{
 		event.preventDefault();
 		event.stopPropagation();
-		const selectedFilterHash = this.filterExperienceToLoad;
-		if (!selectedFilterHash)
+		const selectedFilterExperienceHash = this.filterExperienceSelection;
+		if (!selectedFilterExperienceHash)
 		{
 			this.pict.log.warn('No filter experience selected to load.');
 			return false;
 		}
-		this.pict.providers.FilterDataProvider.loadFilterMeta(this.currentRecordSet, this.currentViewContext, selectedFilterHash, true);
-		this.pict.log.info(`Filter persistence settings have been loaded for filter: ${selectedFilterHash}`);
+		this.pict.providers.FilterDataProvider.loadFilterMeta(this.currentRecordSet, this.currentViewContext, selectedFilterExperienceHash);
+		this.pict.log.info(`Filter persistence settings have been loaded for filter: ${selectedFilterExperienceHash}`);
 		return true;
 	}
 
@@ -193,9 +208,8 @@ class viewFilterPersistenceView extends libPictView
 		event.preventDefault();
 		event.stopPropagation();
 	
-		this.pict.providers.FilterDataProvider.saveFilterMeta(this.currentRecordSet, this.currentViewContext, false, () => {
-			this.buildSelectOptionsForAvailableFilterExperiences();
-		});
+		this.pict.providers.FilterDataProvider.saveFilterMeta(this.currentRecordSet, this.currentViewContext, false);
+		this.buildSelectOptionsForAvailableFilterExperiences();
 		this.pict.log.info('Filter persistence settings have been saved.');
 		return true;
 	}
@@ -210,10 +224,32 @@ class viewFilterPersistenceView extends libPictView
 		event.preventDefault();
 		event.stopPropagation();
 
-		// TODO: Just doing a reset and close here for now, but may want to do something different later?
-		this.pict.providers['PRSP-Filters'].handleReset(event, this.currentRecordSet, this.currentViewContext);
+		// TODO: Just doing a reset and close here for now, but may want to do something different here? Do we need a clear button for manage filters?
+		this.pict.views['PRSP-Filters'].handleReset(event, this.currentRecordSet, this.currentViewContext);
 		this.closeFilterPersistenceUI();
 		this.pict.log.info('Filter persistence settings have been cleared.');
+		return true;
+	}
+
+	/**
+	 * Deletes the filter persistence settings for the current selection of filter experiences.
+	 * @param {Event} event - The event object.
+	 * @returns {boolean} - Returns true when the settings have been deleted.
+	 */
+	deleteFilterPersistenceSettings(event)
+	{
+		event.preventDefault();
+		event.stopPropagation();
+
+		const selectedFilterExperienceHash = this.filterExperienceSelection;
+		if (!selectedFilterExperienceHash)
+		{
+			this.pict.log.warn('No filter experience selected to delete.');
+			return false;
+		}
+		this.pict.providers.FilterDataProvider.removeFilterMeta(this.currentRecordSet, this.currentViewContext, selectedFilterExperienceHash);
+		this.buildSelectOptionsForAvailableFilterExperiences();
+		this.pict.log.info(`Filter persistence settings have been deleted for filter: ${selectedFilterExperienceHash}`);
 		return true;
 	}
 }
