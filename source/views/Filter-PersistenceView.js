@@ -40,16 +40,23 @@ const _DEFAULT_CONFIGURATION_FilterPersistenceView = (
 			<label for="CurrentFilterName">Current Filter Experience:</label>
 			<input type="text" id="FilterPersistenceView-CurrentFilterNameInput" name="CurrentFilterName" value="" onfocus="this.select()" />
 			<button type="button" id="FilterPersistenceView-SaveFilterButton" onclick="_Pict.views['FilterPersistenceView'].saveFilterPersistenceSettings(event)">Save</button>
-			<button type="button" id="FilterPersistenceView-SetAsDefaultButton" onclick="_Pict.views['FilterPersistenceView'].toggleFilterExperienceAsTheDefaultOnLoad(event, true)">Set As Default</button>
-			<button type="button" id="FilterPersistenceView-RemoveAsDefaultButton" onclick="_Pict.views['FilterPersistenceView'].toggleFilterExperienceAsTheDefaultOnLoad(event, false)">Remove As Default</button>
 		</div>
 		<div class="FilterPersistenceView-StoredSettings">
-			<label for="StoredFilterName">Saved Filter Experiences:</label>
+			<label for="StoredFilterName">Stored Filter Experiences:</label>
 			<select id="FilterPersistenceView-StoredFiltersSelect" onchange="_Pict.views['FilterPersistenceView'].setFilterExperienceToSelection(event)" name="StoredFilterName">
 				<!-- Options will be populated dynamically -->
 			</select>
 			<button type="button" id="FilterPersistenceView-LoadFilterButton" onclick="_Pict.views['FilterPersistenceView'].loadFilterPersistenceSettings(event)">Load</button>
+			<button type="button" id="FilterPersistenceView-SetAsDefaultButton" onclick="_Pict.views['FilterPersistenceView'].toggleFilterExperienceAsTheDefault(event, true)">Set As Default</button>
+			<button type="button" id="FilterPersistenceView-RemoveAsDefaultButton" onclick="_Pict.views['FilterPersistenceView'].toggleFilterExperienceAsTheDefault(event, false)">Remove As Default</button>
 			<button type="button" id="FilterPersistenceView-DeleteFilterButton" onclick="_Pict.views['FilterPersistenceView'].deleteFilterPersistenceSettings(event)">Delete</button>
+		</div>
+		<div class="FilterPersistenceView-OptionalSettings">
+			<label for="OptionalSettings">Optional Settings:</label>
+			<label for="OptionalSettings-RememberLastUsed">
+				<input type="checkbox" id="OptionalSettings-RememberLastUsed" name="RememberLastUsed" onchange="_Pict.views['FilterPersistenceView'].toggleRememberLastUsedFilterExperience(event)"	 />
+				Remember my last search filter experience
+			</label>
 		</div>
 	</div>
 	<div id="FilterPersistenceView-Footer">
@@ -95,6 +102,8 @@ class viewFilterPersistenceView extends libPictView
 	 */
 	openFilterPersistenceUI(pRecordSet, pViewContext)
 	{
+		this.pict.providers.FilterDataProvider.initializeFilterExperienceSettings(pRecordSet, pViewContext);
+
 		this.currentRecordSet = pRecordSet;
 		this.currentViewContext = pViewContext;
 		// hide the button that was just clicked on (will use a different button to close the UI)
@@ -114,16 +123,46 @@ class viewFilterPersistenceView extends libPictView
 			this.pict.providers.FilterDataProvider.setCurrentFilterName(matchingExperience, pRecordSet, pViewContext);
 			this.filterExperienceSelection = matchingExperience.FilterExperienceHash;
 			// check if the current filter experience is set as default on load, so we can set the button states accordingly
-			const isDefault = this.pict.providers.FilterDataProvider.isDefaultFilterExperienceOnLoad(pRecordSet, pViewContext, this.filterExperienceSelection);
-			this.handleDefaultButtonStates(isDefault);
+			const isDefault = this.pict.providers.FilterDataProvider.isDefaultFilterExperience(pRecordSet, pViewContext, this.filterExperienceSelection);
+			this.handleSelectionButtonStates(isDefault);
 		}
 		else
 		{
 			this.pict.providers.FilterDataProvider.setCurrentFilterName(null, pRecordSet, pViewContext, null);
 			this.filterExperienceSelection = null;
+			this.handleSelectionButtonStates(null);
+		}
+		// set checkbox for "Remember Last Used Filter Experience" based on provider setting
+		const checkboxElement = document.getElementById('OptionalSettings-RememberLastUsed');
+		if (checkboxElement)
+		{
+			// @ts-ignore
+			checkboxElement.checked = this.pict.providers.FilterDataProvider.getRememberLastUsedFilterExperience(this.currentRecordSet, this.currentViewContext);
 		}
 		// build the select options for available filter experiences
 		this.buildSelectOptionsForAvailableFilterExperiences();
+		return true;
+	}
+
+	/**
+	 * Updates the filter experience settings for a given record set and view context.
+	 * @param {string} pRecordSet - The identifier of the record set.
+	 * @param {string} pViewContext - The context of the view.
+	 * @param {object} pSettings - The settings to update.
+	 * @returns {boolean} - Returns true when the settings have been updated.
+	 */
+	updateFilterExperienceSettings(pRecordSet, pViewContext, pSettings)
+	{
+		if (pRecordSet && pViewContext)
+		{
+			this.pict.providers.FilterDataProvider.initializeFilterExperienceSettings(pRecordSet, pViewContext);
+			this.currentRecordSet = pRecordSet;
+			this.currentViewContext = pViewContext;
+			// for any settings that may have changed, update those without replacing the whole settings object
+			this.pict.providers.FilterDataProvider.updateFilterExperienceSettingsFromStorage(pRecordSet, pViewContext, pSettings);
+			// build the select options for available filter experiences
+			this.buildSelectOptionsForAvailableFilterExperiences();
+		}
 		return true;
 	}
 
@@ -141,6 +180,9 @@ class viewFilterPersistenceView extends libPictView
 		const selectedFilterSelectElement = document.getElementById('FilterPersistenceView-StoredFiltersSelect');
 		// @ts-ignore
 		this.filterExperienceSelection = selectedFilterSelectElement ? selectedFilterSelectElement.value : null;
+		// check if the selected filter experience is set as default on load, so we can set the button states accordingly
+		const isDefault = this.pict.providers.FilterDataProvider.isDefaultFilterExperience(this.currentRecordSet, this.currentViewContext, this.filterExperienceSelection);
+		this.handleSelectionButtonStates(isDefault);
 		return true;
 	}
 
@@ -153,6 +195,7 @@ class viewFilterPersistenceView extends libPictView
 		this.currentRecordSet = null;
 		this.currentViewContext = null;
 		this.filterExperienceSelection = null;
+		this.handleSelectionButtonStates(null);
 		// show the button that was hidden when opening the UI
 		document.getElementById('PRSP_Filter_Button_Manage').style.display = 'inline-block';
 		// Clear the content of the Filter Persistence View (it will re-render next time it's opened)
@@ -169,14 +212,28 @@ class viewFilterPersistenceView extends libPictView
 		let optionList = []
 		const filterExperienceList = this.pict.providers.FilterDataProvider.getAllFiltersExperiencesForRecordSet(this.currentRecordSet, this.currentViewContext);
 		// add a default option at the top
-		optionList.push('<option value="">-- Select a Stored Filter --</option>');
-		for (const i in filterExperienceList)
-		{
-			if (filterExperienceList[i].ExcludedFromSelection) continue; // skip excluded ones (like LATEST, DEFAULT, etc)
-			// if the current filter is the active one, mention that in the option text
-			const isCurrent = this.pict.providers.FilterDataProvider.isCurrentFilterExperienceHash(this.currentRecordSet, this.currentViewContext, filterExperienceList[i].FilterExperienceHash);
-			const selectedText = isCurrent ? ' (Current)' : '';
-			const optionElement = `<option ${isCurrent ? 'selected' : ''} value="${filterExperienceList[i].FilterExperienceHash}">${filterExperienceList[i].FilterDisplayName || filterExperienceList[i].FilterExperienceHash}${selectedText}</option>`;
+		optionList.push('<option value="">-- Select a stored Filter Experience --</option>');
+		// iterate through the filter experiences and build the option elements
+		for (const key in filterExperienceList)
+		{ 
+			// skip excluded ones (if needed for hidden/internal use)
+			if (filterExperienceList[key].ExcludedFromSelection) 
+			{
+				continue;
+			}
+			// if the current filter is the active/default one, mention that in the option text for clarity
+			const isCurrent = this.pict.providers.FilterDataProvider.isCurrentFilterExperience(this.currentRecordSet, this.currentViewContext, filterExperienceList[key].FilterExperienceHash);
+			const isDefault = this.pict.providers.FilterDataProvider.isDefaultFilterExperience(this.currentRecordSet, this.currentViewContext, filterExperienceList[key].FilterExperienceHash);
+			let addOnText = '';
+			if (isCurrent)
+			{
+				addOnText += ' (Current)';
+			}
+			if (isDefault)
+			{
+				addOnText += ' (Default)';
+			}
+			const optionElement = `<option ${ isCurrent ? 'selected' : ''} value="${filterExperienceList[key].FilterExperienceHash}">${filterExperienceList[key].FilterDisplayName || filterExperienceList[key].FilterExperienceHash}${addOnText}</option>`;
 			optionList.push(optionElement);
 		}
 		/* @type {HTMLSelectElement} */
@@ -185,6 +242,25 @@ class viewFilterPersistenceView extends libPictView
 		{
 			storedFiltersSelect.innerHTML = optionList.join('\n');
 		}
+		return true;
+	}
+
+	/**
+	 * Toggles the "Remember Last Used Filter Experience" setting in the Filter Data Provider.
+	 * @param {Event} event - The event object.
+	 * @returns {boolean} - Returns true when the setting has been toggled.
+	 */
+	toggleRememberLastUsedFilterExperience(event)
+	{
+		event.preventDefault();
+		event.stopPropagation();
+
+		const checkboxElement = document.getElementById('OptionalSettings-RememberLastUsed');
+		// @ts-ignore
+		const rememberLastUsed = checkboxElement ? checkboxElement.checked : false;
+
+		this.pict.providers.FilterDataProvider.setRememberLastUsedFilterExperience(this.currentRecordSet, this.currentViewContext, rememberLastUsed);
+		this.pict.log.info(`Remember Last Used Filter Experience has been ${rememberLastUsed ? 'enabled' : 'disabled'}.`);
 		return true;
 	}
 
@@ -230,7 +306,7 @@ class viewFilterPersistenceView extends libPictView
 	 * @param {boolean} isDefault - Whether to set as default or not.
 	 * @returns {boolean} - Returns true when the settings have been set as default.
 	 */
-	toggleFilterExperienceAsTheDefaultOnLoad(event, isDefault)
+	toggleFilterExperienceAsTheDefault(event, isDefault)
 	{
 		event.preventDefault();
 		event.stopPropagation();
@@ -242,8 +318,8 @@ class viewFilterPersistenceView extends libPictView
 			return false;
 		}
 		// set or unset the default filter experience on load in the provider
-		this.pict.providers.FilterDataProvider.setDefaultFilterExperienceOnLoad(this.currentRecordSet, this.currentViewContext, selectedFilterExperienceHash, isDefault);
-		this.handleDefaultButtonStates(isDefault);
+		this.pict.providers.FilterDataProvider.setDefaultFilterExperience(this.currentRecordSet, this.currentViewContext, selectedFilterExperienceHash, isDefault);
+		this.handleSelectionButtonStates(isDefault);
 		
 		this.buildSelectOptionsForAvailableFilterExperiences();
 		this.pict.log.info(`Filter experience ${selectedFilterExperienceHash} has been ${isDefault ? 'set' : 'unset'} as the default on load.`);
@@ -251,20 +327,34 @@ class viewFilterPersistenceView extends libPictView
 	}
 
 	/**
-	 * Handles the button states for setting or removing the default filter experience.
+	 * Handles the button states for the filter experience selection.
 	 * @param {boolean} isDefault - Whether the filter experience is set as default or not.
 	 */
-	handleDefaultButtonStates(isDefault)
+	handleSelectionButtonStates(isDefault)
 	{
-		if (isDefault)
+		if (!this.filterExperienceSelection)
 		{
-			this.pict.ContentAssignment.setAttribute('FilterPersistenceView-SetAsDefaultButton', 'disabled', 'disabled');
-			this.pict.ContentAssignment.removeAttribute('FilterPersistenceView-RemoveAsDefaultButton', 'disabled');
+			this.pict.ContentAssignment.setAttribute('#FilterPersistenceView-LoadFilterButton', 'style', 'display: none;');
+			this.pict.ContentAssignment.setAttribute('#FilterPersistenceView-SetAsDefaultButton', 'style', 'display: none;');
+			this.pict.ContentAssignment.setAttribute('#FilterPersistenceView-RemoveAsDefaultButton', 'style', 'display: none;');
+			this.pict.ContentAssignment.setAttribute('#FilterPersistenceView-DeleteFilterButton', 'style', 'display: none;');
+			return;
 		}
 		else
 		{
-			this.pict.ContentAssignment.setAttribute('FilterPersistenceView-RemoveAsDefaultButton', 'disabled', 'disabled');
-			this.pict.ContentAssignment.removeAttribute('FilterPersistenceView-SetAsDefaultButton', 'disabled');
+			this.pict.ContentAssignment.setAttribute('#FilterPersistenceView-LoadFilterButton', 'style', 'display: inline-block;');
+			this.pict.ContentAssignment.setAttribute('#FilterPersistenceView-DeleteFilterButton', 'style', 'display: inline-block;');
+		}
+		// handle the set/remove default buttons separately when we have a selection
+		if (isDefault)
+		{
+			this.pict.ContentAssignment.setAttribute('#FilterPersistenceView-SetAsDefaultButton', 'style', 'display: none;');
+			this.pict.ContentAssignment.setAttribute('#FilterPersistenceView-RemoveAsDefaultButton', 'style', 'display: inline-block;');
+		}
+		else
+		{
+			this.pict.ContentAssignment.setAttribute('#FilterPersistenceView-SetAsDefaultButton', 'style', 'display: inline-block;');
+			this.pict.ContentAssignment.setAttribute('#FilterPersistenceView-RemoveAsDefaultButton', 'style', 'display: none;');
 		}
 	}
 

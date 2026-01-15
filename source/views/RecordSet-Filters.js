@@ -59,8 +59,8 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-Button-Fieldset] -->
 	<fieldset>
-		<button type="button" id="PRSP_Filter_Button_Clear" onclick="_Pict.views['PRSP-Filters'].handleClear(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Clear</button>
-		<button type="button" id="PRSP_Filter_Button_Reset" onclick="_Pict.views['PRSP-Filters'].handleReset(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Reset</button>
+		<button type="button" id="PRSP_Filter_Button_Clear" title="Clear all filters to a blank state" onclick="_Pict.views['PRSP-Filters'].handleClear(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Clear</button>
+		<button type="button" id="PRSP_Filter_Button_Reset" title="Reset all filters to the last saved/defaulted state" onclick="_Pict.views['PRSP-Filters'].handleReset(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Reset</button>
 		<button type="submit" id="PRSP_Filter_Button_Apply">Apply</button>
 	</fieldset>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-Button-Fieldset] -->
@@ -71,7 +71,7 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset] -->
 	<fieldset>
-		<button type="button" id="PRSP_Filter_Button_Manage" onclick="_Pict.views['PRSP-Filters'].handleManage(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Manage Filters</button>
+		<button type="button" id="PRSP_Filter_Button_Manage" title="Manage saved filter experiences" onclick="_Pict.views['PRSP-Filters'].handleManage(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Manage Filters</button>
 		<div id="FilterPersistenceView-Container"></div>
 	</fieldset>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset] -->
@@ -82,7 +82,7 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-AddFilter-Fieldset] -->
 	<fieldset>
-		<button type="button" id="PRSP_Filter_Button_Add" onclick="_Pict.views['PRSP-Filters'].selectFilterToAdd(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">+</button>
+		<button type="button" id="PRSP_Filter_Button_Add" title="Add a new filter clause" onclick="_Pict.views['PRSP-Filters'].selectFilterToAdd(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">+</button>
 		<div id="PRSP-SUBSET-Filters-Template-AddFilter-Dropdown"></div>
 	</fieldset>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-AddFilter-Fieldset] -->
@@ -235,22 +235,6 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		}
 	}
 
-	// TODO: This isn't quite right, need to pass in pRecordSet and pViewContext and add an example to options to verify
-	// /**
-	//  * Lifecycle hook that triggers after the view is rendered.
-	//  * @param {import('pict-view').Renderable} pRenderable - The renderable that was rendered.
-	//  */
-	// onBeforeRender(pRenderable)
-	// {
-	// 	super.onBeforeRender(pRenderable);
-	// 	this.pict.log.info('RecordSet-Filters view initialized');
-	// 	// if default filter experience on load is set in provider, load it into bundle
-	// 	if (this.pict.options?.DefaultFilterExperience)
-	// 	{
-	// 		this.pict.providers.FilterDataProvider.setDefaultFilterExperienceOnLoad(this.pict.options.DefaultFilterExperience);
-	// 	}
-	// }
-
 	/**
 	 * @return {string} - The marshalling prefix configured for filters. Usually 'Bundle.'
 	 */
@@ -319,8 +303,6 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		//FIXME: store this filter string in the bundle so we can re-apply it on re-render
 		const tmpSearchString = this.pict.ContentAssignment.readContent(`input[name="filter"]`);
 		this.performSearch(pRecordSet, pViewContext, tmpSearchString ? String(tmpSearchString) : '');
-		// TODO: Do we want to always set LATEST filter experience in local storage for persistence ON SEARCH or JUST MANAGE Filter Experiences?
-		//this.pict.providers.FilterDataProvider.saveFilterMeta(pRecordSet, pViewContext, false);
 	}
 
 	/**
@@ -373,6 +355,8 @@ class ViewRecordSetSUBSETFilters extends libPictView
 			}
 			//FIXME: this doesn't force a re-render if other filters have changes, but aren't in the URL - so we either need to put them in the URL, or force a re-render based on the filter states
 			tmpPictRouter.router.navigate(tmpURL);
+			// always store the last used filter experience search, even if they don't save it
+			this.pict.providers.FilterDataProvider.setLastUsedFilterExperience(null, pRecordSet, pViewContext);
 		});
 	}
 
@@ -387,7 +371,8 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		if (pEvent) pEvent.preventDefault();
 		this.pict.ContentAssignment.assignContent('input[name="filter"]', '');
 		this.pict.Bundle._ActiveFilterState[pRecordSet].FilterClauses = [];
-		this.performSearch(pRecordSet, pViewContext);
+		this.pict.providers.FilterDataProvider.removeDefaultFilterExperience(pRecordSet, pViewContext);
+		this.performSearch(pRecordSet, pViewContext, '');
 	}
 
 	// NOTE: Reset means to default state, Clear means to no filters at all
@@ -400,13 +385,14 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	handleReset(pEvent, pRecordSet, pViewContext)
 	{
 		if (pEvent) pEvent.preventDefault();
+		this.pict.providers.FilterDataProvider.removeLastUsedFilterExperience(pRecordSet, pViewContext);
 		this.pict.log.info(`Clearing filters for record set: ${pRecordSet} in view context: ${pViewContext}`);
 		// Apply default filter experience if it exists, otherwise just clear
-		const tmpDefaultFilterExperience = this.pict.providers.FilterDataProvider.getDefaultFilterExperienceOnLoad(pRecordSet, pViewContext);
+		const tmpDefaultFilterExperience = this.pict.providers.FilterDataProvider.getDefaultFilterExperience(pRecordSet, pViewContext);
 		if (tmpDefaultFilterExperience)
 		{
 			this.pict.log.info(`Applying default filter experience for record set: ${pRecordSet} in view context: ${pViewContext}`);
-			this.pict.providers.FilterDataProvider.loadFilterExperience(pRecordSet, pViewContext, tmpDefaultFilterExperience);
+			this.pict.providers.FilterDataProvider.applyExpectedFilterExperience(pRecordSet, pViewContext, tmpDefaultFilterExperience.FilterExperienceHash, false);
 		}
 		else 
 		{
@@ -519,6 +505,10 @@ class ViewRecordSetSUBSETFilters extends libPictView
 			}
 		}
 		this.onMarshalToView();
+
+		// TODO: this should probably go elsewhere? This is where we ensure the filter experience is applied after a render.
+		this.pict.providers.FilterDataProvider.applyExpectedFilterExperience();
+
 		return res;
 	}
 
