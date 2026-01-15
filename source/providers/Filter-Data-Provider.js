@@ -22,7 +22,33 @@ const _DEFAULT_PROVIDER_CONFIGURATION =
  * - Remove Filter Meta from LocalStorage when requested.
  * - List all Filter Experiences for a given Record Set by scanning LocalStorage keys.
  * - Manage default and last used Filter Experiences for each Record Set and View Context. (last used takes priority over default on load, if the check is enabled)
- */
+
+ * Storage Key Structure:
+ * - Filter_Meta_{RecordSet}_{ViewContext}_{FilterExperienceHash} : stores the Filter Meta JSON.
+
+ * Object Shape for Filter Meta (filter experience):
+ * {
+ *   RecordSet: string, (auto-filled on save)
+ *   ViewContext: string, (auto-filled on save)
+ *   LastModifiedDate: string (ISO date) (auto-filled on save)
+ *   FilterClauses: Array<{ Label: string, ExactMatch: boolean, Value: string }>,
+ *   FilterDisplayName: string,
+ *   FilterExperienceHash: string, (display name converted to hash)
+ *   FilterExperienceEncodedURLParam: string, (URL-encoded filter state)
+ 
+ * Object Shape for Filter Experience Settings:
+ * {
+ *   ExcludedFromSelection: boolean,
+ *   RememberLastUsedFilterExperience: boolean,
+ *   LastUsedFilterExperienceHash: string | null,
+ *   LastUsedFilterExperienceURLParam: string | null,
+ *   DefaultFilterExperienceHash: string | null,
+ *   DefaultFilterExperienceURLParam: string | null,
+ *   FallbackDefaultExperienceURLParam: string | null,
+ * }
+*/
+
+// TODO: would nice to convert the comments above to actual types for better clarity and enforcement, but could use help on how to do that.
 
 class FilterDataProvider extends libPictProvider
 {
@@ -142,6 +168,20 @@ class FilterDataProvider extends libPictProvider
 			this.loadFilterMeta(tmpRecordSet, tmpViewContext, tmpDefaultFilterExperience.FilterExperienceHash, true);
 			return true;
 		}
+		// finally, check for a fallback default experience URL param to load (could be server/customer provided)
+		const tmpSavedSettings = this.storageProvider.getItem(`Filter_Meta_${tmpRecordSet}_${tmpViewContext}_SETTINGS`);
+		if (tmpSavedSettings)
+		{
+			const tmpSettings = JSON.parse(tmpSavedSettings);
+			const tmpFallbackURLParam = tmpSettings.FallbackDefaultExperienceURLParam;
+			if (tmpFallbackURLParam && tmpFallbackURLParam.length > 0)
+			{
+				this.pict.log.info(`Applying fallback default filter experience URL param on load for record set: ${tmpRecordSet} with view context: ${tmpViewContext}`);
+				this.fable.providers.RecordSetRouter.pictRouter.navigate(`/PSRS/${tmpRecordSet}/${tmpViewContext}/FilterExperience/${tmpFallbackURLParam}`);
+				return true;
+			}
+		}
+		// no filter experience to apply
 		return false;
 	}
 
@@ -151,9 +191,10 @@ class FilterDataProvider extends libPictProvider
 	 * Initialize the filter experience settings for a given record set and view context if they do not already exist.
 	 * @param {string} pRecordSet - The record set to initialize the settings for
 	 * @param {string} pViewContext - The current view context
+	 * @param {object} [pAdditionalSettings] - Additional settings to initialize with (pass through for future use)
 	 * @return {string} - The filter experience settings object stringifyed (as if it was just read from storage).
 	 */
-	initializeFilterExperienceSettings(pRecordSet, pViewContext)
+	initializeFilterExperienceSettings(pRecordSet, pViewContext, pAdditionalSettings)
 	{
 		for (const recordSet in this.storageProvider)
 		{
@@ -165,7 +206,19 @@ class FilterDataProvider extends libPictProvider
 		const defaultSettings = {
 			ExcludedFromSelection: true, // this one is excluded from the selection list (it's just settings, not a real filter experience)
 			RememberLastUsedFilterExperience: false,
+			LastUsedFilterExperienceHash: null,
+			LastUsedFilterExperienceURLParam: null,
+			DefaultFilterExperienceHash: null,
+			DefaultFilterExperienceURLParam: null,
+			FallbackDefaultExperienceURLParam: null, // in case the default filter experience is deleted, what URL param to fall back to (could be a server/customer provided fallback)
 		};
+		// if additional settings were provided, merge them in
+		if (pAdditionalSettings && typeof(pAdditionalSettings) === 'object')
+		{
+			Object.assign(defaultSettings, pAdditionalSettings);
+			// ex: set 'FallbackDefaultExperienceURLParam' here for future use
+		}
+		// save the default settings to storage
 		this.storageProvider.setItem(`Filter_Meta_${pRecordSet}_${pViewContext}_SETTINGS`, JSON.stringify(defaultSettings));
 		return JSON.stringify(defaultSettings);
 	}
@@ -339,7 +392,17 @@ class FilterDataProvider extends libPictProvider
 			this.pict.log.warn(`No filter experience available to remove for record set: ${pRecordSet} with filter experience hash: ${pFilterExperienceHash}`);
 			return false;
 		}
-		// check if the filter being removed is the current active filter; if so, reset to base record set URL
+		// check if the filter being removed is set as last used or default; if so, clear those settings too
+		if (this.isLastUsedFilterExperienceHash(pRecordSet, pViewContext, pFilterExperienceHash))
+		{
+			this.pict.log.info(`The filter experience being removed is set as the last used filter experience. Clearing last used filter experience settings.`);
+			this.updateFilterExperienceSettingsFromStorage(pRecordSet, pViewContext, { LastUsedFilterExperienceHash: null, LastUsedFilterExperienceURLParam: null });
+		}
+		if (this.isDefaultFilterExperience(pRecordSet, pViewContext, pFilterExperienceHash))
+		{
+			this.pict.log.info(`The filter experience being removed is set as the default filter experience. Clearing default filter experience settings.`);
+			this.updateFilterExperienceSettingsFromStorage(pRecordSet, pViewContext, { DefaultFilterExperienceHash: null, DefaultFilterExperienceURLParam: null });
+		}
 		if (this.isCurrentFilterExperience(pRecordSet, pViewContext, pFilterExperienceHash))
 		{
 			this.pict.log.info(`The filter experience being removed is the current active filter. Navigating to base record set URL.`);
@@ -405,7 +468,7 @@ class FilterDataProvider extends libPictProvider
 
 		// NOTE: We probably don't want to save EVERY. SINGLE. SEARCH. so if no filter experience is provided (new unsaved search), we can just redirect to the url param rather than create a new saved filter experience
 		const filterMetaSettings = { 
-			LastUsedFilterExperience: pFilterExperience?.FilterExperienceHash || tmpFilterExperienceHash,
+			LastUsedFilterExperienceHash: pFilterExperience?.FilterExperienceHash || tmpFilterExperienceHash,
 			LastUsedFilterExperienceURLParam: pFilterExperience?.FilterExperienceEncodedURLParam || window.location.hash.split('/FilterExperience/')?.[1] || '',
 		}
 		this.updateFilterExperienceSettingsFromStorage(pRecordSet, pViewContext, filterMetaSettings);
@@ -421,7 +484,7 @@ class FilterDataProvider extends libPictProvider
 	 */
 	removeLastUsedFilterExperience(pRecordSet, pViewContext)
 	{
-		this.updateFilterExperienceSettingsFromStorage(pRecordSet, pViewContext, { LastUsedFilterExperience: null, LastUsedFilterExperienceURLParam: null });
+		this.updateFilterExperienceSettingsFromStorage(pRecordSet, pViewContext, { LastUsedFilterExperienceHash: null, LastUsedFilterExperienceURLParam: null });
 		return true;
 	}
 
@@ -617,10 +680,12 @@ class FilterDataProvider extends libPictProvider
 		}
 		const tmpSettings = JSON.parse(tmpSavedSettings);
 		const tmpExpectedHash = tmpSettings.DefaultFilterExperienceHash;
-		const tmpKey = this.getFilterStorageKey(pRecordSet, pViewContext, tmpExpectedHash);
-		const tmpFilterExperienceJSON = this.storageProvider.getItem(tmpKey);
-		let tmpFilterExperience = tmpFilterExperienceJSON ? JSON.parse(tmpFilterExperienceJSON) : null;
-		return tmpFilterExperience;
+		if (!tmpExpectedHash || tmpExpectedHash.length === 0)
+		{
+			return null;
+		}
+		// look up the filter experience by hash (it's expected all Default hashes are saved filter experiences)
+		return this.getFilterExperienceByHash(pRecordSet, pViewContext, tmpExpectedHash);
 	}
 
 	/**
