@@ -198,8 +198,33 @@ class FilterDataProvider extends libPictProvider
 	}	
 
 	/**
-	 * List all available Filters (from the Filter Meta data) for a given record set and return them as an array of filter meta objects.
-	 * @param {string} pRecordSet - the record set to list the filters for
+	 * Get a single filter experience by its hash for a given record set and view context.
+	 * @param {string} pRecordSet - The record set to get the filter experience for
+	 * @param {string} pViewContext - The current view context
+	 * @param {string} pFilterExperienceHash - The filter experience hash to get
+	 * @return {object} - The filter experience object
+	 */
+	getFilterExperienceByHash(pRecordSet, pViewContext, pFilterExperienceHash)
+	{
+		if (!pRecordSet || !pViewContext)
+		{
+			console.error('No record set or view context provided to get filter experience.');
+			return null;
+		}
+		if (!pFilterExperienceHash || pFilterExperienceHash.length === 0)
+		{
+			console.warn('No filter experience hash provided to get filter experience.');
+			return null;
+		}
+		const tmpKey = this.getFilterStorageKey(pRecordSet, pViewContext, pFilterExperienceHash);
+		const tmpFilterExperienceJSON = this.storageProvider.getItem(tmpKey);
+		let tmpFilterExperience = tmpFilterExperienceJSON ? JSON.parse(tmpFilterExperienceJSON) : null;
+		return tmpFilterExperience;
+	}
+
+	/**
+	 * List all available filter experiences (from the Filter Meta data) for a given record set and return them as an array of filter meta objects.
+	 * @param {string} pRecordSet - the record set to list the filter experiences for
 	 * @param {string} pViewContext - the current view context	 
 	 * @return {Array<object>} - An array of filter meta objects for the given record set.
 	 */

@@ -33,7 +33,7 @@ const _DEFAULT_CONFIGURATION_FilterPersistenceView = (
 <div id="FilterPersistenceView-Content">
 	<!-- Content for Filter Persistence View goes here -->
 	<div id="FilterPersistenceView-Header">
-		<h3>Filter Persistence Settings</h3>
+		<h3>Filter Experience Settings</h3>
 	</div>
 	<div id="FilterPersistenceView-Body">
 		<div class="FilterPersistenceView-ActiveSettings">
@@ -60,7 +60,7 @@ const _DEFAULT_CONFIGURATION_FilterPersistenceView = (
 		</div>
 	</div>
 	<div id="FilterPersistenceView-Footer">
-		<button type="button" id="FilterPersistenceView-CloseManageFiltersButton" onclick="_Pict.views['FilterPersistenceView'].closeFilterPersistenceUI()">Close Manage Filters</button>
+		<button type="button" id="FilterPersistenceView-CloseManageFiltersButton" onclick="_Pict.views['FilterPersistenceView'].closeFilterPersistenceUI()">Close</button>
 	</div>
 </div>
 <!-- DefaultPackage end view template:  [FilterPersistenceView-Container] -->
@@ -183,6 +183,14 @@ class viewFilterPersistenceView extends libPictView
 		// check if the selected filter experience is set as default on load, so we can set the button states accordingly
 		const isDefault = this.pict.providers.FilterDataProvider.isDefaultFilterExperience(this.currentRecordSet, this.currentViewContext, this.filterExperienceSelection);
 		this.handleSelectionButtonStates(isDefault);
+		// set the current filter name in the provider to match the selection
+		const tmpSelectedFilterExperience = this.pict.providers.FilterDataProvider.getFilterExperienceByHash(this.currentRecordSet, this.currentViewContext, this.filterExperienceSelection);
+		let tmpBackupDisplayName = '';
+		if (!tmpSelectedFilterExperience)
+		{
+			tmpBackupDisplayName = `New ${this.currentViewContext} Filter`;
+		}
+		this.pict.providers.FilterDataProvider.setCurrentFilterName(tmpSelectedFilterExperience, this.currentRecordSet, this.currentViewContext, tmpBackupDisplayName);
 		return true;
 	}
 

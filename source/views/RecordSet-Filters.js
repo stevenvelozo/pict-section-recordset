@@ -71,7 +71,7 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset] -->
 	<fieldset>
-		<button type="button" id="PRSP_Filter_Button_Manage" title="Manage saved filter experiences" onclick="_Pict.views['PRSP-Filters'].handleManage(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Manage Filters</button>
+		<button type="button" id="PRSP_Filter_Button_Manage" title="Manage saved filter experiences" onclick="_Pict.views['PRSP-Filters'].handleManage(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Manage Filter Experience</button>
 		<div id="FilterPersistenceView-Container"></div>
 	</fieldset>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset] -->
