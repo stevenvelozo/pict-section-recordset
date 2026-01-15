@@ -5,10 +5,11 @@
 
 // This is temporary, but enables unit tests
 const libBrowserEnv = require('browser-env');
-libBrowserEnv();
+libBrowserEnv({ url: 'http://localhost/' });
 
 const libPictView = require('pict-view');
 
+const sinon = require('sinon');
 const Chai = require('chai');
 const Expect = Chai.expect;
 
@@ -54,7 +55,26 @@ suite
 	'PictSectionRecordSet Basic',
 	() =>
 	{
-		setup(() => { });
+		let originalLocalStorage;
+
+		setup(() =>
+		{
+			originalLocalStorage = localStorage;
+			// @ts-ignore
+			localStorage = {
+				getItem: sinon.stub(),
+				setItem: sinon.stub(),
+				removeItem: sinon.stub(),
+			};
+		});
+
+		teardown(() =>
+		{
+			sinon.restore();
+			// @ts-ignore
+			delete localStorage;
+			localStorage = originalLocalStorage;
+		});
 
 		suite
 			(
@@ -67,9 +87,12 @@ suite
 							{
 								let _Pict = new libPict();
 								_Pict.LogNoisiness = 1;
-								let _PictEnvironment = new libPict.EnvironmentObject(_Pict);
+								//let _PictEnvironment = new libPict.EnvironmentObject(_Pict);
+								localStorage = originalLocalStorage;
 
+								// Define view configuration
 								let _Application = new DoNothingApplication(_Pict, {});
+								
 
 								Expect(_Application).to.be.an('object', 'Application should be an object.');
 								Expect(_Application).to.be.an.instanceof(libPictSectionRecordSet.PictRecordSetApplication, 'Application should be an instance of PictRecordSetApplication.');

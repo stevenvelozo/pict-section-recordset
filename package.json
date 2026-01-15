@@ -45,7 +45,8 @@
     "pict-router": "^1.0.4",
     "pict-section-form": "^1.0.110",
     "pict-template": "^1.0.13",
-    "pict-view": "^1.0.63"
+    "pict-view": "^1.0.63",
+    "sinon": "^21.0.1"
   },
   "mocha": {
     "diff": true,
