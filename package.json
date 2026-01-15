@@ -27,25 +27,25 @@
   "author": "steven velozo <steven@velozo.com>",
   "license": "MIT",
   "devDependencies": {
-    "@eslint/js": "^9.28.0",
+    "@eslint/js": "^9.39.2",
     "@types/mocha": "^10.0.10",
     "@types/node": "^16.18.126",
     "browser-env": "^3.3.0",
     "eslint": "^9.28.0",
     "jquery": "^3.7.1",
-    "pict": "^1.0.324",
-    "pict-application": "^1.0.27",
-    "pict-service-commandlineutility": "^1.0.15",
-    "quackage": "^1.0.42",
-    "typescript": "^5.9.2"
+    "pict": "^1.0.343",
+    "pict-application": "^1.0.30",
+    "pict-service-commandlineutility": "^1.0.17",
+    "quackage": "^1.0.45",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "fable-serviceproviderbase": "^3.0.15",
-    "pict-provider": "^1.0.6",
+    "pict-provider": "^1.0.7",
     "pict-router": "^1.0.4",
-    "pict-section-form": "^1.0.110",
+    "pict-section-form": "^1.0.178",
     "pict-template": "^1.0.13",
-    "pict-view": "^1.0.63",
+    "pict-view": "^1.0.64",
     "sinon": "^21.0.1"
   },
   "mocha": {
