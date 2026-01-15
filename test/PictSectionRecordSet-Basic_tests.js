@@ -1,11 +1,9 @@
 /*
 	Unit tests for PictSectionRecordSet Basic
-	
+
 */
 
-// This is temporary, but enables unit tests
 const libBrowserEnv = require('browser-env');
-libBrowserEnv({ url: 'http://localhost/' });
 
 const libPictView = require('pict-view');
 
@@ -59,6 +57,9 @@ suite
 
 		setup(() =>
 		{
+			libBrowserEnv({
+				url: "http://localhost/",
+			});
 			originalLocalStorage = localStorage;
 			// @ts-ignore
 			localStorage = {
@@ -92,7 +93,7 @@ suite
 
 								// Define view configuration
 								let _Application = new DoNothingApplication(_Pict, {});
-								
+
 
 								Expect(_Application).to.be.an('object', 'Application should be an object.');
 								Expect(_Application).to.be.an.instanceof(libPictSectionRecordSet.PictRecordSetApplication, 'Application should be an instance of PictRecordSetApplication.');
