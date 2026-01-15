@@ -128,56 +128,52 @@ class FilterDataProvider extends libPictProvider
 	}
 
 	/**
-	 * Apply the expected filter experience to load on application load for a given record set and view context. Last Used takes priority over Default.
+	 * Apply the expected filter experience to load on application load for a given record set and view context. Last Used takes priority over Default. 
+	 * This is the main entry point to set the default/latest filter experience on app load for a given record set and view context.
 	 * @param {string} pRecordSet - The record set to set the default filter experience for
 	 * @param {string} pViewContext - The current view context
 	 * @return {boolean} - Returns true when the default filter experience has been set
 	 */
 	applyExpectedFilterExperience(pRecordSet, pViewContext)
 	{
-		// TODO: this seems brittle; we should have a better way to pass in the record set and view context
-		const tmpRecordSet = pRecordSet || window.location.hash.split('/')[2];
-		const tmpViewContext = pViewContext || window.location.hash.split('/')[3];
-		const applyLastUsed = this.getRememberLastUsedFilterExperience(tmpRecordSet, tmpViewContext);
+		const applyLastUsed = this.getRememberLastUsedFilterExperience(pRecordSet, pViewContext);
 		if (applyLastUsed)
 		{
 			// first try to set last used filter experience as default on load
-			const tmpLastUsedFilterExperience = this.getLastUsedFilterExperience(tmpRecordSet, tmpViewContext);
+			const tmpLastUsedFilterExperience = this.getLastUsedFilterExperience(pRecordSet, pViewContext);
 			if (tmpLastUsedFilterExperience)
 			{
-				this.pict.log.info(`Applying last used filter experience on load for record set: ${tmpRecordSet} with view context: ${tmpViewContext}`);
+				this.pict.log.info(`Applying last used filter experience on load for record set: ${pRecordSet} with view context: ${pViewContext}`);
 				// if we are already on the last used filter experience by URL, skip loading it again
-				if (this.isCurrentFilterExperience(tmpRecordSet, tmpViewContext, tmpLastUsedFilterExperience.FilterExperienceHash))
+				if (this.isCurrentFilterExperience(pRecordSet, pViewContext, tmpLastUsedFilterExperience.FilterExperienceHash))
 				{
 					return true;
 				}
-				this.loadFilterMeta(tmpRecordSet, tmpViewContext, tmpLastUsedFilterExperience.FilterExperienceHash, true);
+				this.loadFilterMeta(pRecordSet, pViewContext, tmpLastUsedFilterExperience.FilterExperienceHash, true);
 				return true;
 			}
 		}
 		// if no last used filter experience, fall back to default filter experience on load
-		const tmpDefaultFilterExperience = this.getDefaultFilterExperience(tmpRecordSet, tmpViewContext);
+		const tmpDefaultFilterExperience = this.getDefaultFilterExperience(pRecordSet, pViewContext);
 		if (tmpDefaultFilterExperience)
 		{
-			this.pict.log.info(`Applying default filter experience on load for record set: ${tmpRecordSet} with view context: ${tmpViewContext}`);
+			this.pict.log.info(`Applying default filter experience on load for record set: ${pRecordSet} with view context: ${pViewContext}`);
 			// if we are already on the default filter experience by URL, skip loading it again
-			if (this.isCurrentFilterExperience(tmpRecordSet, tmpViewContext, tmpDefaultFilterExperience.FilterExperienceHash))
+			if (this.isCurrentFilterExperience(pRecordSet, pViewContext, tmpDefaultFilterExperience.FilterExperienceHash))
 			{
 				return true;
 			}
-			this.loadFilterMeta(tmpRecordSet, tmpViewContext, tmpDefaultFilterExperience.FilterExperienceHash, true);
+			this.loadFilterMeta(pRecordSet, pViewContext, tmpDefaultFilterExperience.FilterExperienceHash, true);
 			return true;
 		}
 		// finally, check for a fallback default experience URL param to load (could be server/customer provided)
-		const tmpSavedSettings = this.storageProvider.getItem(`Filter_Meta_${tmpRecordSet}_${tmpViewContext}_SETTINGS`);
-		if (tmpSavedSettings)
+		const tmpFallbackDefaultExperienceURLParam = this.getFallbackDefaultFilterExperienceSettings(pRecordSet, pViewContext);
+		if (tmpFallbackDefaultExperienceURLParam)
 		{
-			const tmpSettings = JSON.parse(tmpSavedSettings);
-			const tmpFallbackURLParam = tmpSettings.FallbackDefaultExperienceURLParam;
-			if (tmpFallbackURLParam && tmpFallbackURLParam.length > 0)
+			if (tmpFallbackDefaultExperienceURLParam && tmpFallbackDefaultExperienceURLParam.length > 0)
 			{
-				this.pict.log.info(`Applying fallback default filter experience URL param on load for record set: ${tmpRecordSet} with view context: ${tmpViewContext}`);
-				this.fable.providers.RecordSetRouter.pictRouter.navigate(`/PSRS/${tmpRecordSet}/${tmpViewContext}/FilterExperience/${tmpFallbackURLParam}`);
+				this.pict.log.info(`Applying fallback default filter experience URL param on load for record set: ${pRecordSet} with view context: ${pViewContext}`);
+				this.fable.providers.RecordSetRouter.pictRouter.navigate(`/PSRS/${pRecordSet}/${pViewContext}/FilterExperience/${tmpFallbackDefaultExperienceURLParam}`);
 				return true;
 			}
 		}
@@ -704,6 +700,36 @@ class FilterDataProvider extends libPictProvider
 		}
 		const tmpSettings = JSON.parse(tmpSavedSettings);
 		return (tmpSettings.DefaultFilterExperienceHash === pFilterExperienceHash);
+	}
+
+	/**
+	 * Get the fallback default filter experience URL param to load on application load for a given record set and view context.
+	 * @param {string} pRecordSet - The record set to get the fallback default filter experience for
+	 * @param {string} pViewContext - The current view context
+	 * @return {string|null} - The fallback default filter experience URL param to load on application load (could be server/customer provided)
+	 */
+	getFallbackDefaultFilterExperienceSettings(pRecordSet, pViewContext)
+	{
+		const tmpSavedSettings = this.storageProvider.getItem(`Filter_Meta_${pRecordSet}_${pViewContext}_SETTINGS`);
+		if (!tmpSavedSettings)
+		{
+			return null;
+		}
+		const tmpSettings = JSON.parse(tmpSavedSettings);
+		return tmpSettings.FallbackDefaultExperienceURLParam || null;
+	}
+
+	/**
+	 * Set the fallback default filter experience URL param to load on application load for a given record set and view context. Expected to be used for server/customer provided fallbacks.
+	 * @param {string} pRecordSet - The record set to set the fallback default filter experience for
+	 * @param {string} pViewContext - The current view context
+	 * @param {string} pURLParam - The fallback default filter experience URL param to set
+	 * @return {boolean} - Returns true when the fallback default filter experience URL param has been set
+	 */
+	setFallbackDefaultFilterExperienceSettings(pRecordSet, pViewContext, pURLParam)
+	{
+		this.updateFilterExperienceSettingsFromStorage(pRecordSet, pViewContext, { FallbackDefaultExperienceURLParam: pURLParam });
+		return true;
 	}
 
 	/** ===== SIMPLE KEY-VALUE CACHE ============= */
