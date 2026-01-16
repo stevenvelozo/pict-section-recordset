@@ -229,6 +229,14 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 				{
 					providerConfiguration.Entity = pRecordSetConfiguration.RecordSet;
 				}
+				if (`FilterEndpointOverride` in pRecordSetConfiguration)
+				{
+					providerConfiguration.FilterEndpointOverride = pRecordSetConfiguration.FilterEndpointOverride;
+				}
+				else
+				{
+					providerConfiguration.FilterEndpointOverride = null;
+				}
 				// Default the URLPrefix to the base URLPrefix
 				if (`RecordSetURLPrefix` in pRecordSetConfiguration)
 				{

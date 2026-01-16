@@ -212,6 +212,37 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		return new Promise((resolve, reject) =>
 		{
 			const [ tmpClauses, tmpExperience ] = this._prepareFilterState(tmpEntity, pOptions);
+			if (this.options.FilterEndpointOverride)
+			{
+				// Call the filtering endpoint with the clauses and experience.
+				this.entityProvider.restClient.postJSON({
+					url: `${ this.options.URLPrefix }${ this.options.FilterEndpointOverride }/${ pOptions.Offset || 0 }/${ pOptions.PageSize || 250 }`,
+					body: { Clauses: tmpClauses, Experience: tmpExperience },
+				}, (pError, response, result) =>
+				{
+					if (pError)
+					{
+						return reject(pError);
+					}
+					const recordsReturn = result;
+					const IDFields = ['CreatingIDUser', 'UpdatingIDUser'];
+					if (recordsReturn.length)
+					{
+						for (const k of Object.keys(recordsReturn[0]))
+						{
+							if (k.startsWith('ID') && k !== `ID${ tmpEntity }`)
+							{
+								IDFields.push(k);
+							}
+						}
+					}
+					this.pict.EntityProvider.cacheConnectedEntityRecords(recordsReturn, IDFields, ['User', 'User'], false, () => 
+					{
+						resolve({ Records: recordsReturn, Facets: { } });
+					});
+				});
+				return;
+			}
 			this.pict.providers.FilterManager.loadRecordPageByFilterUsingProvider(this.entityProvider, tmpClauses, tmpExperience, pOptions.Offset || 0, pOptions.PageSize || 250, (pError) =>
 			{
 				if (pError)
@@ -272,6 +303,22 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		return new Promise((resolve, reject) =>
 		{
 			const [ tmpClauses, tmpExperience ] = this._prepareFilterState(tmpEntity, pOptions, 'Count');
+			if (this.options.FilterEndpointOverride)
+			{
+				// Call the filtering endpoint with the clauses and experience.
+				this.entityProvider.restClient.postJSON({
+					url: `${ this.options.URLPrefix }${ this.options.FilterEndpointOverride }/Count`,
+					body: { Clauses: tmpClauses, Experience: tmpExperience },
+				}, (error, response, result) =>
+				{
+					if (error)
+					{
+						return reject(error);
+					}
+					resolve(result);
+				});
+				return;
+			}
 			this.pict.providers.FilterManager.countRecordsByFilterUsingProivider(this.entityProvider, tmpClauses, tmpExperience, (pError) =>
 			{
 				if (pError)
