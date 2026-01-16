@@ -102,20 +102,19 @@ suite
 
 								_Application.initialize();
 
+								let _PictSectionRecordSet = _Pict.addView(tmpViewHash, tmpViewConfiguration, libPictSectionRecordSet);
 
-								// let _PictSectionRecordSet = _Pict.addView(tmpViewHash, tmpViewConfiguration, libPictSectionRecordSet);
+								Expect(_PictSectionRecordSet).to.be.an('object');
 
-								// Expect(_PictSectionRecordSet).to.be.an('object');
+								// Test package anthropology
+								Expect(_PictSectionRecordSet._PackageFableServiceProvider).to.be.an('object', 'Fable should have a _PackageFableServiceProvider object.');
+								Expect(_PictSectionRecordSet._PackageFableServiceProvider.name).equal('fable-serviceproviderbase', 'Fable _PackageFableServiceProvider.package.name should be set.');
+								Expect(_PictSectionRecordSet._PackagePictView).to.be.an('object', 'Should have a _PackagePictView object.');
+								Expect(_PictSectionRecordSet._PackagePictView.name).to.equal('pict-view', '_PackagePictView.package.name should be set.');
+								Expect(_PictSectionRecordSet._Package).to.be.an('object', 'Should have a _Package object.');
+								Expect(_PictSectionRecordSet._Package.name).to.equal('pict-section-recordset', '_Package.package.name should be set.');
 
-								// // Test package anthropology
-								// Expect(_PictSectionRecordSet._PackageFableServiceProvider).to.be.an('object', 'Fable should have a _PackageFableServiceProvider object.');
-								// Expect(_PictSectionRecordSet._PackageFableServiceProvider.name).equal('fable-serviceproviderbase', 'Fable _PackageFableServiceProvider.package.name should be set.');
-								// Expect(_PictSectionRecordSet._PackagePictView).to.be.an('object', 'Should have a _PackagePictView object.');
-								// Expect(_PictSectionRecordSet._PackagePictView.name).to.equal('pict-view', '_PackagePictView.package.name should be set.');
-								// Expect(_PictSectionRecordSet._Package).to.be.an('object', 'Should have a _Package object.');
-								// Expect(_PictSectionRecordSet._Package.name).to.equal('pict-section-recordset', '_Package.package.name should be set.');
-
-								// return fDone();
+								return fDone();
 							}
 						);
 					});
