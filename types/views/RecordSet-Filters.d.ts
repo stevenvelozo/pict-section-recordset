@@ -25,13 +25,11 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
     getInformaryScopedValue(pAddress: string): any;
     /**
      * Marshals data from the view to the model, usually AppData (or configured data store).
-     *
      * @returns {any} The result of the superclass's onMarshalFromView method.
      */
     onMarshalFromView(): any;
     /**
      * Marshals the data to the view from the model, usually AppData (or configured data store).
-     *
      * @returns {any} The result of the super.onMarshalToView() method.
      */
     onMarshalToView(): any;
@@ -48,6 +46,14 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
      */
     performSearch(pRecordSet: string, pViewContext: string, pFilterString?: string): void;
     /**
+     * Clear all filter clauses for the given record set and view context.
+     * @param {Event} pEvent - The DOM event that triggered the search
+     * @param {string} pRecordSet - The record set being filtered
+     * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
+     */
+    handleClear(pEvent: Event, pRecordSet: string, pViewContext: string): void;
+    /**
+     * Reset the filters to default state or fallback to to clear everything if no default exist for the given record set and view context.
      * @param {Event} pEvent - The DOM event that triggered the search
      * @param {string} pRecordSet - The record set being filtered
      * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
@@ -57,22 +63,51 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
      * @param {Event} pEvent - The DOM event that triggered the search
      * @param {string} pRecordSet - The record set being filtered
      * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
+     * @returns {boolean} - Always returns false to prevent default action
+    */
+    handleManage(pEvent: Event, pRecordSet: string, pViewContext: string): boolean;
+    /**
+     * @param {Event} pEvent - The DOM event that triggered the search
+     * @param {string} pRecordSet - The record set being filtered
+     * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
      */
     selectFilterToAdd(pEvent: Event, pRecordSet: string, pViewContext: string): void;
-    addFilter(pEvent: any, pRecordSet: any, pViewContext: any, pFilterKey: any, pClauseKey: any): void;
-    removeFilter(pEvent: any, pRecordSet: any, pViewContext: any, pSpecificFilterKey: any): void;
-    getFilterSchema(pRecordSet: any): any[];
-    serializeFilterExperience(pExperience: any): Promise<string>;
     /**
+     * @param {Event} pEvent - The DOM event that triggered the search
+     * @param {string} pRecordSet - The record set being filtered
+     * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
+     * @param {string} pFilterKey - The key of the filter to add
+     * @param {string} pClauseKey - The key of the clause to add
+     */
+    addFilter(pEvent: Event, pRecordSet: string, pViewContext: string, pFilterKey: string, pClauseKey: string): void;
+    /**
+     * @param {Event} pEvent - The DOM event that triggered the search
+     * @param {string} pRecordSet - The record set being filtered
+     * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
+     * @param {string} pSpecificFilterKey - The key of the specific filter to remove
+     */
+    removeFilter(pEvent: Event, pRecordSet: string, pViewContext: string, pSpecificFilterKey: string): void;
+    /**
+     * Gets the filter schema for the given record set.
+     * @param {string} pRecordSet - The record set to get the filter schema for
+     * @return {Array<any>} - The filter schema for the given record set
+     */
+    getFilterSchema(pRecordSet: string): Array<any>;
+    /**
+     * Encodes the filter experience to a string.
+     * @param {Record<string, any>} pExperience - The filter experience to serialize.
+     * @return {Promise<string>} - The serialized filter experience as a string.
+     */
+    serializeFilterExperience(pExperience: Record<string, any>): Promise<string>;
+    /**
+     * Decodes the filter experience from a string.
      * @param {string} pExperience - The serialized filter experience as a string.
-     *
      * @return {Promise<Record<string, any>>} - The serialized filter experience as a string.
      */
     deserializeFilterExperience(pExperience: string): Promise<Record<string, any>>;
     /**
      * @param {string} string - The string to compress.
      * @param {CompressionFormat} [encoding='gzip'] - The encoding to use for compression, defaults to 'gzip'.
-     *
      * @return {Promise<ArrayBuffer>} - The compressed byte array.
      */
     compress(string: string, encoding?: CompressionFormat): Promise<ArrayBuffer>;
@@ -83,13 +118,11 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
     decompress(byteArray: Uint8Array, encoding?: CompressionFormat): Promise<string>;
     /**
      * @param {ArrayBuffer} arraybuffer - The ArrayBuffer to encode to Base64.
-     *
      * @return {string} - The Base64 encoded string.
      */
     encode(arraybuffer: ArrayBuffer): string;
     /**
      * @param {string} base64 - The Base64 encoded string to decode to an ArrayBuffer.
-     *
      * @return {ArrayBuffer} - The decoded ArrayBuffer.
      */
     decode(base64: string): ArrayBuffer;

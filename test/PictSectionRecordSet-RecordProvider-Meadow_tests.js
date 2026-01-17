@@ -1,11 +1,10 @@
 /*
 	Unit tests for PictSectionRecordSet Basic
-	
+
 */
 
 // This is temporary, but enables unit tests
 const libBrowserEnv = require('browser-env');
-libBrowserEnv();
 
 const libPictApplication = require('pict-application');
 const libPictView = require('pict-view');
@@ -59,7 +58,10 @@ suite
 	'PictSectionRecordSet RecordProvider MeadowEndpoints Tests',
 	() =>
 	{
-		setup(() => { });
+		setup(() =>
+		{
+			libBrowserEnv({ url: 'http://localhost/' });
+		});
 
 		suite
 			(
