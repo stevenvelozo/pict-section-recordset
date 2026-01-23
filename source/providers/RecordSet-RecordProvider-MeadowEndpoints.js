@@ -224,6 +224,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 					{
 						return reject(pError);
 					}
+					this.fable.manifest.setValueByHash(this.pict, tmpExperience.ResultDestinationAddress, result);
 					const recordsReturn = result;
 					const IDFields = ['CreatingIDUser', 'UpdatingIDUser'];
 					if (recordsReturn.length)
@@ -315,6 +316,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 					{
 						return reject(error);
 					}
+					this.fable.manifest.setValueByHash(this.pict, tmpExperience.ResultDestinationAddress, result);
 					resolve(result);
 				});
 				return;
