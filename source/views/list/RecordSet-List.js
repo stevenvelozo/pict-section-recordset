@@ -559,7 +559,7 @@ class viewRecordSetList extends libPictRecordSetRecordView
 					{
 						Page: 1,
 						RelativeOffset: -tmpRecordListData.PageLinkBookmarks.Current,
-						URL: `#/PSRS/${tmpRecordListData.RecordSet}/list/FilteredTo/${tmpRecordListData.FilterString}/${tmpRecordListData.PageSize}/${tmpRecordListData.PageSize}`
+						URL: `#/PSRS/${tmpRecordListData.RecordSet}/List/FilteredTo/${tmpRecordListData.FilterString}/0/${tmpRecordListData.PageSize}`
 					});
 			}
 			else

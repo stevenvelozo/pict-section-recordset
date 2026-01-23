@@ -316,7 +316,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 					{
 						return reject(error);
 					}
-					this.fable.manifest.setValueByHash(this.pict, tmpExperience.ResultDestinationAddress, result);
+					this.fable.manifest.setValueByHash(this.pict, tmpExperience.ResultDestinationAddress, result?.Count || 0);
 					resolve(result);
 				});
 				return;

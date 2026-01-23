@@ -334,7 +334,7 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 					{
 						Page: 1,
 						RelativeOffset: -tmpRecordDashboardData.PageLinkBookmarks.Current,
-						URL: `#/PSRS/${tmpRecordDashboardData.RecordSet}/SpecificDashboard/${pDashboardHash}/FilteredTo/${tmpRecordDashboardData.FilterString}/${tmpRecordDashboardData.PageSize}/${tmpRecordDashboardData.PageSize}`
+						URL: `#/PSRS/${tmpRecordDashboardData.RecordSet}/SpecificDashboard/${pDashboardHash}/FilteredTo/${tmpRecordDashboardData.FilterString}/0/${tmpRecordDashboardData.PageSize}`
 					});
 			}
 			else
