@@ -12,17 +12,19 @@ suites for the framework.
 The most basic example.  Some lists, etc. for Book and Author
 records.
 
-http://localhost:9090/simple_entity/dist/index.html
+<http://localhost:9090/simple_entity/dist/index.html>
 
 ### How to run example app for developers (Docker)
 
 #### Retold Harness
+
 - Install `retold-harness` separately
 - From `retold-harness` do `npm i`
 - Run `npm run docker-dev-build`
 - Run `npm run docker-dev-run`
 
 #### In this repository
+
 - Run `npm i`
 - Run `npm run build`
 - Go to `./example_applications`

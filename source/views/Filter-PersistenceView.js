@@ -112,7 +112,7 @@ class viewFilterPersistenceView extends libPictView
 		this.render('FilterPersistenceView-Renderable', undefined, { RecordSet: pRecordSet, ViewContext: pViewContext });
 		const tmpFilterExperienceList = this.pict.providers.FilterDataProvider.getAllFiltersExperiencesForRecordSet(pRecordSet, pViewContext);
 		// get the current filter experience hash from the URL
-		const tmpExperienceURLParam = window.location.hash.split('/FilterExperience/')?.[1] || '';
+		const tmpExperienceURLParam = this.pict.providers.PictRouter.router.current[0].hashString?.split('/FilterExperience/')?.[1] || '';
 		// look in the map for the filter experience with the given hash
 		const filterExperiences = this.pict.providers.FilterDataProvider.getAllFiltersExperiencesForRecordSet(pRecordSet, pViewContext);
 		// BUG?: We are doing a double lookup here to match both the name and the encoded URL param, because just looking up by URL param alone can lead to issues if there are multiple experiences with the same URL param but different names.

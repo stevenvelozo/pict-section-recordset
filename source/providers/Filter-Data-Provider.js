@@ -99,7 +99,7 @@ class FilterDataProvider extends libPictProvider
 		if (tmpClauses && tmpClauses.length > 0)
 		{
 			const clauseSummaries = tmpClauses.map((clause) => {
-				return `${clause.Label} ${clause.ExactMatch ? 'IS' : 'CONTAINS'} ${clause.Value}`;
+				return `${clause.Label || clause.FilterByColumn} ${clause.ExactMatch ? 'IS' : 'CONTAINS'} ${clause.Value || '(unset)'}`;
 			});
 			return `${clauseSummaries.join(' AND ')}`;
 		}

@@ -508,8 +508,9 @@ class ViewRecordSetSUBSETFilters extends libPictView
 
 		// TODO: this should probably go elsewhere? feels wrong... but not sure where to get the current recordset/view in this state?
 		// NOTE: This is where we ensure the filter experience is applied after a render.
-		const tmpRecordSet = window.location.hash.split('/PSRS/')[1]?.split('/')[0];
-		const tmpViewContext = window.location.hash.split('/PSRS/')[1]?.split('/')[1];
+		const tmpRouteUrl = this.pict.providers.PictRouter.router.current[0].hashString;
+		const tmpRecordSet = tmpRouteUrl?.split('/PSRS/')[1]?.split('/')[0];
+		const tmpViewContext = tmpRouteUrl?.split('/PSRS/')[1]?.split('/')[1];
 		if (tmpRecordSet && tmpViewContext)
 		{
 			this.pict.providers.FilterDataProvider.applyExpectedFilterExperience(tmpRecordSet, tmpViewContext);
