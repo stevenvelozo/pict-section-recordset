@@ -38,6 +38,7 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 		</div>
 		{~T:PRSP-SUBSET-Filters-Template-Button-Fieldset~}
 		{~T:PRSP-SUBSET-Filters-Template-AddFilter-Fieldset~}
+		{~T:PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset~}
 	</form>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template] -->
 `
@@ -58,10 +59,22 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-Button-Fieldset] -->
 	<fieldset>
-		<button type="button" id="PRSP_Filter_Button_Reset" onclick="_Pict.views['PRSP-Filters'].handleReset(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Reset</button>
+		<button type="button" id="PRSP_Filter_Button_Clear" title="Clear all filters to a blank state" onclick="_Pict.views['PRSP-Filters'].handleClear(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Clear</button>
+		<button type="button" id="PRSP_Filter_Button_Reset" title="Reset all filters to the last saved/defaulted state" onclick="_Pict.views['PRSP-Filters'].handleReset(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Reset</button>
 		<button type="submit" id="PRSP_Filter_Button_Apply">Apply</button>
 	</fieldset>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-Button-Fieldset] -->
+`
+		},
+		{
+			Hash: 'PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset',
+			Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset] -->
+	<fieldset>
+		<button type="button" id="PRSP_Filter_Button_Manage" title="Manage saved filter experiences" onclick="_Pict.views['PRSP-Filters'].handleManage(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Manage Filter Experience</button>
+		<div id="FilterPersistenceView-Container"></div>
+	</fieldset>
+	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset] -->
 `
 		},
 		{
@@ -69,7 +82,7 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-AddFilter-Fieldset] -->
 	<fieldset>
-		<button type="button" id="PRSP_Filter_Button_Add" onclick="_Pict.views['PRSP-Filters'].selectFilterToAdd(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">+</button>
+		<button type="button" id="PRSP_Filter_Button_Add" title="Add a new filter clause" onclick="_Pict.views['PRSP-Filters'].selectFilterToAdd(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">+</button>
 		<div id="PRSP-SUBSET-Filters-Template-AddFilter-Dropdown"></div>
 	</fieldset>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-AddFilter-Fieldset] -->
@@ -246,7 +259,6 @@ class ViewRecordSetSUBSETFilters extends libPictView
 
 	/**
 	 * Marshals data from the view to the model, usually AppData (or configured data store).
-	 *
 	 * @returns {any} The result of the superclass's onMarshalFromView method.
 	 */
 	onMarshalFromView()
@@ -264,7 +276,6 @@ class ViewRecordSetSUBSETFilters extends libPictView
 
 	/**
 	 * Marshals the data to the view from the model, usually AppData (or configured data store).
-	 *
 	 * @returns {any} The result of the super.onMarshalToView() method.
 	 */
 	onMarshalToView()
@@ -344,33 +355,63 @@ class ViewRecordSetSUBSETFilters extends libPictView
 			}
 			//FIXME: this doesn't force a re-render if other filters have changes, but aren't in the URL - so we either need to put them in the URL, or force a re-render based on the filter states
 			tmpPictRouter.router.navigate(tmpURL);
+			// always store the last used filter experience search, even if they don't save it
+			this.pict.providers.FilterDataProvider.setLastUsedFilterExperience(null, pRecordSet, pViewContext);
 		});
 	}
 
 	/**
+	 * Clear all filter clauses for the given record set and view context.
+	 * @param {Event} pEvent - The DOM event that triggered the search
+	 * @param {string} pRecordSet - The record set being filtered
+	 * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
+	 */
+	handleClear(pEvent, pRecordSet, pViewContext)
+	{
+		if (pEvent) pEvent.preventDefault();
+		this.pict.ContentAssignment.assignContent('input[name="filter"]', '');
+		this.pict.Bundle._ActiveFilterState[pRecordSet].FilterClauses = [];
+		this.pict.providers.FilterDataProvider.removeDefaultFilterExperience(pRecordSet, pViewContext);
+		this.performSearch(pRecordSet, pViewContext, '');
+	}
+
+	// NOTE: Reset means to default state, Clear means to no filters at all
+	/**
+	 * Reset the filters to default state or fallback to to clear everything if no default exist for the given record set and view context.
 	 * @param {Event} pEvent - The DOM event that triggered the search
 	 * @param {string} pRecordSet - The record set being filtered
 	 * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
 	 */
 	handleReset(pEvent, pRecordSet, pViewContext)
 	{
-		pEvent.preventDefault();
-		this.pict.ContentAssignment.assignContent('input[name="filter"]', '');
-		const tmpFilterExperienceClauses = this.pict.Bundle._ActiveFilterState[pRecordSet]?.FilterClauses;
-		if (Array.isArray(tmpFilterExperienceClauses))
+		if (pEvent) pEvent.preventDefault();
+		this.pict.providers.FilterDataProvider.removeLastUsedFilterExperience(pRecordSet, pViewContext);
+		this.pict.log.info(`Clearing filters for record set: ${pRecordSet} in view context: ${pViewContext}`);
+		// Apply default filter experience if it exists, otherwise just clear
+		const tmpDefaultFilterExperience = this.pict.providers.FilterDataProvider.getDefaultFilterExperience(pRecordSet, pViewContext);
+		if (tmpDefaultFilterExperience)
 		{
-			for (const tmpClause of tmpFilterExperienceClauses)
-			{
-				delete tmpClause.Value;
-				delete tmpClause.Values;
-				delete tmpClause.SearchInputValue;
-				delete tmpClause.SelectedValues;
-				delete tmpClause.SearchResults;
-				delete tmpClause.SearchResultsOffset;
-				delete tmpClause.LoadMoreEnabled;
-			}
+			this.pict.log.info(`Applying default filter experience for record set: ${pRecordSet} in view context: ${pViewContext}`);
+			this.pict.providers.FilterDataProvider.applyExpectedFilterExperience(pRecordSet, pViewContext, tmpDefaultFilterExperience.FilterExperienceHash, false);
 		}
-		this.performSearch(pRecordSet, pViewContext);
+		else 
+		{
+			this.handleClear(pEvent, pRecordSet, pViewContext);
+		}
+	}
+
+	/**
+	 * @param {Event} pEvent - The DOM event that triggered the search
+	 * @param {string} pRecordSet - The record set being filtered
+	 * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
+	 * @returns {boolean} - Always returns false to prevent default action
+	*/
+	handleManage(pEvent, pRecordSet, pViewContext)
+	{
+		if (pEvent) pEvent.preventDefault();
+		this.pict.log.info(`Managing filters for record set: ${pRecordSet} in view context: ${pViewContext}`);
+		this.pict.views.FilterPersistenceView.openFilterPersistenceUI(pRecordSet, pViewContext);
+		return false;
 	}
 
 	/**
@@ -380,30 +421,48 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	 */
 	selectFilterToAdd(pEvent, pRecordSet, pViewContext)
 	{
-		pEvent.preventDefault();
+		if (pEvent) pEvent.preventDefault();
 		//const tmpRecordsetProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
 		//this.pict.log.info(`Selecting filter to add for record set: ${pRecordSet} in view context: ${pViewContext}`, tmpRecordsetProvider.getFilterSchema())
 		this.renderWithScope(this.pict.providers[`RSP-Provider-${pRecordSet}`], 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown', undefined, { RecordSet: pRecordSet, ViewContext: pViewContext });
 	}
 
+	/**
+	 * @param {Event} pEvent - The DOM event that triggered the search
+	 * @param {string} pRecordSet - The record set being filtered
+	 * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
+	 * @param {string} pFilterKey - The key of the filter to add
+	 * @param {string} pClauseKey - The key of the clause to add
+	 */
 	addFilter(pEvent, pRecordSet, pViewContext, pFilterKey, pClauseKey)
 	{
-		pEvent?.preventDefault();
+		if (pEvent) pEvent.preventDefault();
 		this.pict.log.info(`Adding filter: ${pFilterKey} with clause: ${pClauseKey} to record set: ${pRecordSet} in view context: ${pViewContext}`);
 		this.pict.providers[`RSP-Provider-${pRecordSet}`].addFilterClause(pFilterKey, pClauseKey);
 		//FIXME: we need the record from the original render here but no longer have it...
 		this.render(undefined, undefined, { RecordSet: pRecordSet, ViewContext: pViewContext });
 	}
 
+	/**
+	 * @param {Event} pEvent - The DOM event that triggered the search
+	 * @param {string} pRecordSet - The record set being filtered
+	 * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
+	 * @param {string} pSpecificFilterKey - The key of the specific filter to remove
+	 */
 	removeFilter(pEvent, pRecordSet, pViewContext, pSpecificFilterKey)
 	{
-		pEvent?.preventDefault();
+		if (pEvent) pEvent.preventDefault();
 		this.pict.log.info(`Removing filter: ${pSpecificFilterKey} from record set: ${pRecordSet} in view context: ${pViewContext}`);
 		this.pict.providers[`RSP-Provider-${pRecordSet}`].removeFilterClause(pSpecificFilterKey);
 		//FIXME: we need the record from the original render here but no longer have it...
 		this.render(undefined, undefined, { RecordSet: pRecordSet, ViewContext: pViewContext });
 	}
 
+	/**
+	 * Gets the filter schema for the given record set.
+	 * @param {string} pRecordSet - The record set to get the filter schema for
+	 * @return {Array<any>} - The filter schema for the given record set
+	 */
 	getFilterSchema(pRecordSet)
 	{
 		const tmpRecordsetProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
@@ -412,7 +471,6 @@ class ViewRecordSetSUBSETFilters extends libPictView
 
 	/**
 	 * Lifecycle hook that triggers after the view is rendered.
-	 *
 	 * @param {import('pict-view').Renderable} pRenderable - The renderable that was rendered.
 	 */
 	onAfterRender(pRenderable)
@@ -426,7 +484,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		const tmpSelect = document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select');
 		if (tmpSelect)
 		{
-			const tmpActiveOption = document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select')?.querySelector('option:checked')
+			const tmpActiveOption = document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select')?.querySelector('option:checked');
 			const tmpRecordSet = tmpActiveOption?.getAttribute('data-i-recordset');
 			const tmpFilterKey = tmpActiveOption?.getAttribute('data-i-filter-key');
 			const tmpViewContext = tmpSelect?.getAttribute('data-i-view-context');
@@ -447,9 +505,24 @@ class ViewRecordSetSUBSETFilters extends libPictView
 			}
 		}
 		this.onMarshalToView();
+
+		// NOTE: This is where we ensure the filter experience is applied after a render.
+		const tmpRouteUrl = this.pict.providers.PictRouter.router.current[0].hashString;
+		const tmpRecordSet = tmpRouteUrl?.split?.('/PSRS/')?.[1]?.split?.('/')?.[0];
+		const tmpViewContext = tmpRouteUrl?.split?.('/PSRS/')?.[1]?.split?.('/')?.[1];
+		if (tmpRecordSet && tmpViewContext)
+		{
+			this.pict.providers.FilterDataProvider.applyExpectedFilterExperience(tmpRecordSet, tmpViewContext);
+		}
+
 		return res;
 	}
 
+	/**
+	 * Encodes the filter experience to a string.
+	 * @param {Record<string, any>} pExperience - The filter experience to serialize.
+	 * @return {Promise<string>} - The serialized filter experience as a string.
+	 */
 	async serializeFilterExperience(pExperience)
 	{
 		if (!pExperience || typeof pExperience !== 'object')
@@ -468,8 +541,8 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	}
 
 	/**
+	 * Decodes the filter experience from a string.
 	 * @param {string} pExperience - The serialized filter experience as a string.
-	 *
 	 * @return {Promise<Record<string, any>>} - The serialized filter experience as a string.
 	 */
 	async deserializeFilterExperience(pExperience)
@@ -485,7 +558,6 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	/**
 	 * @param {string} string - The string to compress.
 	 * @param {CompressionFormat} [encoding='gzip'] - The encoding to use for compression, defaults to 'gzip'.
-	 *
 	 * @return {Promise<ArrayBuffer>} - The compressed byte array.
 	 */
 	async compress(string, encoding = 'gzip')
@@ -506,6 +578,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	{
 		const cs = new DecompressionStream(encoding);
 		const writer = cs.writable.getWriter();
+		// @ts-ignore
 		writer.write(byteArray);
 		writer.close();
 		return new Response(cs.readable).arrayBuffer().then((arrayBuffer) =>
@@ -516,7 +589,6 @@ class ViewRecordSetSUBSETFilters extends libPictView
 
 	/**
 	 * @param {ArrayBuffer} arraybuffer - The ArrayBuffer to encode to Base64.
-	 *
 	 * @return {string} - The Base64 encoded string.
 	 */
 	encode(arraybuffer)
@@ -548,7 +620,6 @@ class ViewRecordSetSUBSETFilters extends libPictView
 
 	/**
 	 * @param {string} base64 - The Base64 encoded string to decode to an ArrayBuffer.
-	 *
 	 * @return {ArrayBuffer} - The decoded ArrayBuffer.
 	 */
 	decode(base64)

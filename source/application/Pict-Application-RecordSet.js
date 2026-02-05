@@ -3,6 +3,8 @@ const libPictSectionForm = require('pict-section-form');
 
 const libPictSectionRecordSet = require('../Pict-Section-RecordSet.js');
 const libDynamicSolver = require('../providers/RecordSet-DynamicRecordsetSolver.js');
+const libFilterDataProvider = require('../providers/Filter-Data-Provider.js');
+const libFilterPersistenceView = require('../views/Filter-PersistenceView.js');
 const libPictDynamicFormDependencyManager = require('pict-section-form').PictDynamicFormDependencyManager;
 
 /**
@@ -29,6 +31,10 @@ class PictSectionRecordSetApplication extends libPictApplication
 		this.pict.addView('PictFormMetacontroller', {}, libPictSectionForm.PictFormMetacontroller);
 
 		this.fable.addProviderSingleton('DynamicRecordsetSolver', libDynamicSolver.default_configuration, libDynamicSolver);
+
+		// for filter data/persistence management
+		this.fable.addProviderSingleton('FilterDataProvider', libFilterDataProvider.default_configuration, libFilterDataProvider);
+		this.pict.addView('FilterPersistenceView', libFilterPersistenceView.default_configuration, libFilterPersistenceView);
 
 		// add the dependencies for dynamic controls
 		this.fable.addAndInstantiateSingletonService('PictDynamicFormDependencyManager', libPictDynamicFormDependencyManager.default_configuration, libPictDynamicFormDependencyManager);
