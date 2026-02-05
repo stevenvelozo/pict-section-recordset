@@ -508,8 +508,8 @@ class ViewRecordSetSUBSETFilters extends libPictView
 
 		// NOTE: This is where we ensure the filter experience is applied after a render.
 		const tmpRouteUrl = this.pict.providers.PictRouter.router.current[0].hashString;
-		const tmpRecordSet = tmpRouteUrl?.split('/PSRS/')?.[1]?.split('/')?.[0];
-		const tmpViewContext = tmpRouteUrl?.split('/PSRS/')?.[1]?.split('/')?.[1];
+		const tmpRecordSet = tmpRouteUrl?.split?.('/PSRS/')?.[1]?.split?.('/')?.[0];
+		const tmpViewContext = tmpRouteUrl?.split?.('/PSRS/')?.[1]?.split?.('/')?.[1];
 		if (tmpRecordSet && tmpViewContext)
 		{
 			this.pict.providers.FilterDataProvider.applyExpectedFilterExperience(tmpRecordSet, tmpViewContext);
