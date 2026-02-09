@@ -69,6 +69,8 @@ class FilterDataProvider extends libPictProvider
 		{
 			this.storageProvider = window.localStorage;
 		}
+		// use this to track if we have unapplied filter changes
+		this.filterExperienceModifiedFromURLHash = false;
 	}
 
 	onBeforeInitialize()
@@ -94,17 +96,28 @@ class FilterDataProvider extends libPictProvider
 			return pFilterExperience.FilterDisplayName;
 		}
 		// otherwise, generate one based on the clauses
+		const tmpDisplayClauseLimit = 3;
 		const tmpRecordSet = pFilterExperience?.RecordSet || pRecordSet || '';
 		const tmpClauses = pFilterExperience?.FilterClauses || this.pict.Bundle._ActiveFilterState[tmpRecordSet]?.FilterClauses || [];
+		const displayClauses = tmpClauses.length > tmpDisplayClauseLimit ? tmpClauses.slice(0, tmpDisplayClauseLimit) : tmpClauses;
 		if (tmpClauses && tmpClauses.length > 0)
 		{
-			const clauseSummaries = tmpClauses.map((clause) => {
-				return `${clause.Label || clause.FilterByColumn} ${clause.ExactMatch ? 'IS' : 'CONTAINS'} ${clause.Value || '(unset)'}`;
+			let tmpStringSuffix = '';
+			if (tmpClauses.length > tmpDisplayClauseLimit)
+			{
+				
+				tmpStringSuffix = `... (${tmpClauses.length} total filters)`;
+			}
+			const clauseSummaries = displayClauses.map((clause) => {
+				return `${clause.Label || clause.FilterByColumn}`;
+				// TODO: We could provide exact values, but we need to account for all the internal/external entity look ups, plus selection handlers on each filter to update the value entered
+				// 		 For now, let's just show the column/label since this is a generated suggestion name and will likely to be edited by the user to something more meaningful before saving, but this is an area we could enhance in the future to make the generated names more descriptive
+				//return `${clause.Label || clause.FilterByColumn} ${clause.ExactMatch ? 'IS' : 'CONTAINS'} ${clause.Value || clause?.Values?.join(',') || '(unset)'}`;
 			});
-			return `${clauseSummaries.join(' AND ')}`;
+			return `${clauseSummaries.join(' AND ')}${ tmpStringSuffix }`;
 		}
 		// give up, fall back to default name
-		return `New ${pViewContext} Filter`;
+		return `New ${pRecordSet} ${pViewContext} Filter`;
 	}
 
 	/**
@@ -351,6 +364,8 @@ class FilterDataProvider extends libPictProvider
 				const tmpLastUsedFilterExperience = this.getLastUsedFilterExperience(pRecordSet, pViewContext);
 				this.setCurrentFilterName(tmpLastUsedFilterExperience, pRecordSet, pViewContext, 'My Last Used Filter Experience');
 				this.navigateToFilterExperienceRoute(tmpLastUsedFilterExperience, pRecordSet, pViewContext);
+				// clear the unapplied changes flag since we just loaded a filter experience
+				this.filterExperienceModifiedFromURLHash = false;
 				return true;
 			}
 
@@ -366,7 +381,9 @@ class FilterDataProvider extends libPictProvider
 		{
 			this.setLastUsedFilterExperience(tmpFilterExperience, pRecordSet, pViewContext);
 		}
-
+		// clear the unapplied changes flag since we just loaded a filter experience
+		this.filterExperienceModifiedFromURLHash = false;
+		
 		return true;
 	}
 
@@ -443,6 +460,8 @@ class FilterDataProvider extends libPictProvider
 		this.storageProvider.setItem(`Filter_Meta_${pRecordSet}_${pViewContext}_${tmpFilterExperienceHash}`, JSON.stringify(newFilterExperience));
 		// Also set the last used filter experience (this one is reserved and continually updated)
 		this.setLastUsedFilterExperience(newFilterExperience, pRecordSet, pViewContext);
+		// they should never get here if they have unsaved changes and navigate away since we check for that in the router, but just in case, we can clear the flag that tracks whether there are unapplied changes since we just saved
+		this.filterExperienceModifiedFromURLHash = false;
 
 		return true;
 	}
@@ -502,7 +521,7 @@ class FilterDataProvider extends libPictProvider
 		{
 			return null;
 		}
-		const lastUsedFilterExperienceHash = tmpSettings.LastUsedFilterExperience;
+		const lastUsedFilterExperienceHash = tmpSettings.LastUsedFilterExperienceHash;
 		const tmpKey = this.getFilterStorageKey(pRecordSet, pViewContext, lastUsedFilterExperienceHash);
 		const tmpFilterExperienceJSON = this.storageProvider.getItem(tmpKey);
 		let tmpFilterExperience = tmpFilterExperienceJSON ? JSON.parse(tmpFilterExperienceJSON) : null;

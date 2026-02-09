@@ -233,6 +233,43 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		{
 			this.lookup[this.chars.charCodeAt(i)] = i;
 		}
+
+		this.addFilterCallback = null;
+		this.removeFilterCallback = null;
+	}
+
+	/**
+	 * Sets a callback function to be executed after a filter is added.
+	 * @param {function} pCallback - The callback function to be executed after a filter is added.
+	 */
+	setAddFilterCallback(pCallback)
+	{
+		this.addFilterCallback = pCallback;
+	}
+
+	/**
+	 * Sets a callback function to be executed after a filter is removed.
+	 * @param {function} pCallback - The callback function to be executed after a filter is removed.
+	 */
+	setRemoveFilterCallback(pCallback)
+	{
+		this.removeFilterCallback = pCallback;
+	}
+
+	/**
+	 * Removes the callback function for adding a filter.
+	 */
+	removeAddFilterCallback()
+	{
+		this.addFilterCallback = null;
+	}
+
+	/**
+	 * Removes the callback function for removing a filter.
+	 */
+	removeRemoveFilterCallback()
+	{
+		this.removeFilterCallback = null;
 	}
 
 	/**
@@ -358,6 +395,8 @@ class ViewRecordSetSUBSETFilters extends libPictView
 			// always store the last used filter experience search, even if they don't save it
 			this.pict.providers.FilterDataProvider.setLastUsedFilterExperience(null, pRecordSet, pViewContext);
 		});
+		// new search means this can't be out of date anymore
+		this.pict.providers.FilterDataProvider.filterExperienceModifiedFromURLHash = false;
 	}
 
 	/**
@@ -393,6 +432,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		{
 			this.pict.log.info(`Applying default filter experience for record set: ${pRecordSet} in view context: ${pViewContext}`);
 			this.pict.providers.FilterDataProvider.applyExpectedFilterExperience(pRecordSet, pViewContext, tmpDefaultFilterExperience.FilterExperienceHash, false);
+			this.pict.providers.FilterDataProvider.filterExperienceModifiedFromURLHash = false;
 		}
 		else 
 		{
@@ -441,6 +481,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		this.pict.providers[`RSP-Provider-${pRecordSet}`].addFilterClause(pFilterKey, pClauseKey);
 		//FIXME: we need the record from the original render here but no longer have it...
 		this.render(undefined, undefined, { RecordSet: pRecordSet, ViewContext: pViewContext });
+		if (this.addFilterCallback) this.addFilterCallback();
 	}
 
 	/**
@@ -456,6 +497,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		this.pict.providers[`RSP-Provider-${pRecordSet}`].removeFilterClause(pSpecificFilterKey);
 		//FIXME: we need the record from the original render here but no longer have it...
 		this.render(undefined, undefined, { RecordSet: pRecordSet, ViewContext: pViewContext });
+		if (this.removeFilterCallback) this.removeFilterCallback();
 	}
 
 	/**
@@ -507,9 +549,9 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		this.onMarshalToView();
 
 		// NOTE: This is where we ensure the filter experience is applied after a render.
-		const tmpRouteUrl = this.pict.providers.PictRouter.router.current[0].hashString;
-		const tmpRecordSet = tmpRouteUrl?.split?.('/PSRS/')?.[1]?.split?.('/')?.[0];
-		const tmpViewContext = tmpRouteUrl?.split?.('/PSRS/')?.[1]?.split?.('/')?.[1];
+		const tmpRouteUrl = this.pict.providers.PictRouter?.router?.current[0]?.url || this.pict.providers.PictRouter?.router?.current[0]?.hashString;
+		const tmpRecordSet = tmpRouteUrl?.split?.('PSRS/')?.[1]?.split?.('/')?.[0];
+		const tmpViewContext = tmpRouteUrl?.split?.('PSRS/')?.[1]?.split?.('/')?.[1];
 		if (tmpRecordSet && tmpViewContext)
 		{
 			this.pict.providers.FilterDataProvider.applyExpectedFilterExperience(tmpRecordSet, tmpViewContext);
