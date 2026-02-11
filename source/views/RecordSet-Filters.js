@@ -233,7 +233,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		{
 			this.lookup[this.chars.charCodeAt(i)] = i;
 		}
-
+		this.newFilterSearchApplied = false;
 		this.addFilterCallback = null;
 		this.removeFilterCallback = null;
 	}
@@ -337,6 +337,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	{
 		pEvent.preventDefault(); // don't submit the form
 		pEvent.stopPropagation();
+		this.newFilterSearchApplied = true;
 		//FIXME: store this filter string in the bundle so we can re-apply it on re-render
 		const tmpSearchString = this.pict.ContentAssignment.readContent(`input[name="filter"]`);
 		this.performSearch(pRecordSet, pViewContext, tmpSearchString ? String(tmpSearchString) : '');
@@ -397,6 +398,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		});
 		// new search means this can't be out of date anymore
 		this.pict.providers.FilterDataProvider.filterExperienceModifiedFromURLHash = false;
+		this.newFilterSearchApplied = false;
 	}
 
 	/**

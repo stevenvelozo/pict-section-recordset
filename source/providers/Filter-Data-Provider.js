@@ -150,6 +150,8 @@ class FilterDataProvider extends libPictProvider
 	applyExpectedFilterExperience(pRecordSet, pViewContext)
 	{
 		const applyLastUsed = this.getRememberLastUsedFilterExperience(pRecordSet, pViewContext);
+		const tmpDefaultFilterExperience = this.getDefaultFilterExperience(pRecordSet, pViewContext);
+		const tmpFallbackDefaultExperienceURLParam = this.getFallbackDefaultFilterExperienceSettings(pRecordSet, pViewContext);
 		if (applyLastUsed)
 		{
 			// first try to set last used filter experience as default on load
@@ -165,10 +167,9 @@ class FilterDataProvider extends libPictProvider
 				this.loadFilterMeta(pRecordSet, pViewContext, tmpLastUsedFilterExperience.FilterExperienceHash, true);
 				return true;
 			}
-		}
+		} 
 		// if no last used filter experience, fall back to default filter experience on load
-		const tmpDefaultFilterExperience = this.getDefaultFilterExperience(pRecordSet, pViewContext);
-		if (tmpDefaultFilterExperience)
+		else if (tmpDefaultFilterExperience && tmpDefaultFilterExperience.FilterExperienceHash)
 		{
 			this.pict.log.info(`Applying default filter experience on load for record set: ${pRecordSet} with view context: ${pViewContext}`);
 			// if we are already on the default filter experience by URL, skip loading it again
@@ -180,15 +181,11 @@ class FilterDataProvider extends libPictProvider
 			return true;
 		}
 		// finally, check for a fallback default experience URL param to load (could be server/customer provided)
-		const tmpFallbackDefaultExperienceURLParam = this.getFallbackDefaultFilterExperienceSettings(pRecordSet, pViewContext);
-		if (tmpFallbackDefaultExperienceURLParam)
+		else if (tmpFallbackDefaultExperienceURLParam && tmpFallbackDefaultExperienceURLParam.length > 0)
 		{
-			if (tmpFallbackDefaultExperienceURLParam && tmpFallbackDefaultExperienceURLParam.length > 0)
-			{
-				this.pict.log.info(`Applying fallback default filter experience URL param on load for record set: ${pRecordSet} with view context: ${pViewContext}`);
-				this.fable.providers.RecordSetRouter.pictRouter.navigate(`/PSRS/${pRecordSet}/${pViewContext}/FilterExperience/${tmpFallbackDefaultExperienceURLParam}`);
-				return true;
-			}
+			this.pict.log.info(`Applying fallback default filter experience URL param on load for record set: ${pRecordSet} with view context: ${pViewContext}`);
+			this.fable.providers.RecordSetRouter.pictRouter.navigate(`/PSRS/${pRecordSet}/${pViewContext}/FilterExperience/${tmpFallbackDefaultExperienceURLParam}`);
+			return true;
 		}
 		// no filter experience to apply
 		return false;
@@ -321,7 +318,7 @@ class FilterDataProvider extends libPictProvider
 		let tmpFilterExperienceHash = (typeof(pFilterExperienceHash) === 'string') ? pFilterExperienceHash : null;
 		if (!tmpFilterExperienceHash || tmpFilterExperienceHash.length === 0)
 		{
-			console.error('No filter experience hash provided to resolve storage key.');
+			console.warn('No filter experience hash provided to resolve storage key.');
 			return '';
 		}
 		return `Filter_Meta_${pRecordSet}_${pViewContext}_${tmpFilterExperienceHash}`;
