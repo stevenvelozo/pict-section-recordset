@@ -3,117 +3,144 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Example Pict-Section-Form List View </title>
+	<title>Book Read View Mock - Pict Example</title>
+	<!-- Red Rock Mesa Theme — Pict Example App -->
 	<style>
-		.grid-container {
-			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-			gap: 10px;
-		}
-		.grid-item{
-			background-color: #f0f0f0;
-			padding: 10px;
-			text-align: center;
-			border: 1px solid #ccc;
-			list-style-type: none;
-		}
-		.grid-item.active {
-			background-color: aliceblue
-		}
-		article {
-			padding: 20px;
-			border: 1px solid #ccc;
-			margin: 10px 0;
-		}
+		*, *::before, *::after { box-sizing: border-box; }
+		body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #FAEDCD; color: #264653; }
+
+		/* --- Header Bar --- */
+		.pict-example-header { display: flex; align-items: stretch; background: #264653; border-bottom: 3px solid #E76F51; }
+		.pict-example-badge { background: #E76F51; color: #fff; padding: 0.6rem 1rem; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; display: flex; align-items: center; gap: 0.5rem; }
+		.pict-example-badge svg { width: 14px; height: 14px; fill: #fff; flex-shrink: 0; }
+		.pict-example-app-name { padding: 0.6rem 1rem; color: #FAEDCD; font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; }
+		.pict-example-module { margin-left: auto; padding: 0.6rem 1rem; color: #D4A373; font-size: 0.75rem; display: flex; align-items: center; letter-spacing: 0.03em; }
+
+		/* --- Content Area --- */
+		.pict-example-content { padding: 1.5rem; }
+
+		/* --- Record Header --- */
+		#RSP-Header-Container { margin-bottom: 1rem; }
+		#RSP-Header-Container h1 { color: #264653; font-size: 1.5rem; margin: 0 0 1rem; }
+
+		/* --- Tab Navigation --- */
+		.grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0; list-style: none; margin: 0; padding: 0; }
+		.grid-item { background: #fff; padding: 0.65rem 1rem; text-align: center; border: 1px solid #D4A373; border-bottom: 2px solid #D4A373; list-style-type: none; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+		.grid-item a { text-decoration: none; color: #264653; font-weight: 500; font-size: 0.9rem; }
+		.grid-item:hover { background: #FFF9F0; }
+		.grid-item.active { background: #264653; border-color: #264653; border-bottom-color: #E76F51; }
+		.grid-item.active a { color: #FAEDCD; }
+
+		/* --- Record Content --- */
+		#RSP-Record-Container article { background: #fff; border: 1px solid #D4A373; border-top: 4px solid #E76F51; border-radius: 0 0 6px 6px; padding: 1.25rem; margin: 0 0 1rem; box-shadow: 0 2px 8px rgba(38,70,83,0.08); }
+		#RSP-Record-Container h3 { color: #264653; font-size: 1.1rem; margin: 0 0 0.75rem; }
+		#RSP-Record-Container h4 { color: #264653; font-size: 0.95rem; margin: 1rem 0 0.5rem; }
+		#RSP-Record-Container p { color: #264653; line-height: 1.6; }
+		#RSP-Record-Container ul { padding-left: 1.25rem; }
+		#RSP-Record-Container li { padding: 0.25rem 0; color: #264653; font-size: 0.9rem; }
+		#RSP-Record-Container img { max-width: 100%; border-radius: 4px; border: 1px solid #D4A373; }
+
+		/* --- Footer --- */
+		#RSP-Footer-Container { padding: 0.5rem 0; }
+		#RSP-Record-Button { background: #E76F51; color: #fff; border: none; padding: 0.5rem 1.25rem; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+		#RSP-Record-Button:hover { background: #C45A3E; }
 	</style>
 </head>
 <body>
-	<!-- START Header template -->
-	<header id="RSP-Header-Container">
-		<!-- START Header-Title template -->
-		<h1>Book Title</h1>
-		<!-- END Header-Title template -->
-		<!-- START Header-Nav template -->
-		<nav id="RSP-Header-Nav">
-			<ul class="grid-container">
-				<li class="grid-item active"><a href="javascript:void(0);" onclick="toggleTabContent(event, 'RSP-Record-Toggleable-Content-1')">Details</a></li>
-				<li class="grid-item"><a href="javascript:void(0);" onclick="toggleTabContent(event, 'RSP-Record-Toggleable-Content-2')">Author</a></li>
-				<li class="grid-item"><a href="javascript:void(0);" onclick="toggleTabContent(event, 'RSP-Record-Toggleable-Content-3')">Series</a></li>
-			</ul>
-		</nav>
-		<!-- END Header-Nav template -->
-	</header>
-	<!-- END Header template -->
+	<div class="pict-example-header">
+		<div class="pict-example-badge">
+			<svg viewBox="0 0 16 16"><polygon points="8,1 10,6 16,6 11,9.5 13,15 8,11.5 3,15 5,9.5 0,6 6,6"/></svg>
+			Pict Example
+		</div>
+		<div class="pict-example-app-name">Book Read View Mock</div>
+		<div class="pict-example-module">pict-section-recordset</div>
+	</div>
+	<div class="pict-example-content">
+		<!-- START Header template -->
+		<header id="RSP-Header-Container">
+			<!-- START Header-Title template -->
+			<h1>Book Title</h1>
+			<!-- END Header-Title template -->
+			<!-- START Header-Nav template -->
+			<nav id="RSP-Header-Nav">
+				<ul class="grid-container">
+					<li class="grid-item active"><a href="javascript:void(0);" onclick="toggleTabContent(event, 'RSP-Record-Toggleable-Content-1')">Details</a></li>
+					<li class="grid-item"><a href="javascript:void(0);" onclick="toggleTabContent(event, 'RSP-Record-Toggleable-Content-2')">Author</a></li>
+					<li class="grid-item"><a href="javascript:void(0);" onclick="toggleTabContent(event, 'RSP-Record-Toggleable-Content-3')">Series</a></li>
+				</ul>
+			</nav>
+			<!-- END Header-Nav template -->
+		</header>
+		<!-- END Header template -->
 
-	<!-- START Record template -->
-	<section id="RSP-Record-Container">
-		<!-- START Record Content -->
-		<article id="RSP-Record-Toggleable-Content-1">
-			<!-- START Record Content-Description template -->
-			<p>Book Description</p>
-			<!-- END Record Content-Description template -->
-			<!-- START Record Content-Image template -->
-			<img src="image.jpg" alt="Book Image">
-			<!-- END Record Content-Image template -->
-			<!-- START Record Content-Details template -->
-			<h4>Book Metadata:</h4>
-			<ul>
-				<li>Info 1</li>
-				<li>Info 2</li>
-				<li>Info 3</li>
-			</ul>
-			<!-- END Record Content-Details template -->
-		</article>
-		<!-- END Record Content -->
+		<!-- START Record template -->
+		<section id="RSP-Record-Container">
+			<!-- START Record Content -->
+			<article id="RSP-Record-Toggleable-Content-1">
+				<!-- START Record Content-Description template -->
+				<p>Book Description</p>
+				<!-- END Record Content-Description template -->
+				<!-- START Record Content-Image template -->
+				<img src="image.jpg" alt="Book Image">
+				<!-- END Record Content-Image template -->
+				<!-- START Record Content-Details template -->
+				<h4>Book Metadata:</h4>
+				<ul>
+					<li>Info 1</li>
+					<li>Info 2</li>
+					<li>Info 3</li>
+				</ul>
+				<!-- END Record Content-Details template -->
+			</article>
+			<!-- END Record Content -->
 
-		<!-- START Record Content -->
-		<article id="RSP-Record-Toggleable-Content-2" style="display:none;">
-			<!-- START Record Content-Title template -->
-			<h3>Joined Entity 1 Title</h3>
-			<!-- END Record Content-Title template -->
-			<!-- START Record Content-Description template -->
-			<p>Joined Entity 1 Description</p>
-			<!-- END Record Content-Description template -->
-			<!-- START Record Content-Details template -->
-			<ul>
-				<li>Detail A</li>
-				<li>Detail B</li>
-				<li>Detail C</li>
-			</ul>
-			<!-- END Record Content-Details template -->
-		</article>
-		<!-- END Record Content -->
+			<!-- START Record Content -->
+			<article id="RSP-Record-Toggleable-Content-2" style="display:none;">
+				<!-- START Record Content-Title template -->
+				<h3>Joined Entity 1 Title</h3>
+				<!-- END Record Content-Title template -->
+				<!-- START Record Content-Description template -->
+				<p>Joined Entity 1 Description</p>
+				<!-- END Record Content-Description template -->
+				<!-- START Record Content-Details template -->
+				<ul>
+					<li>Detail A</li>
+					<li>Detail B</li>
+					<li>Detail C</li>
+				</ul>
+				<!-- END Record Content-Details template -->
+			</article>
+			<!-- END Record Content -->
 
-		<!-- START Record Content -->
-		<article id="RSP-Record-Toggleable-Content-3" style="display:none;">
-			<!-- START Record Content-Title template -->
-			<h3>Joined Entity 2 Title</h3>
-			<!-- END Record Content-Title template -->
-			<!-- START Record Content-Description template -->
-			<p>Joined Entity 2 Description</p>
-			<!-- END Record Content-Description template -->
-			<!-- START Record Content-Details template -->
-			<ul>
-				<li>Detail X</li>
-				<li>Detail Y</li>
-				<li>Detail Z</li>
-			</ul>
-			<!-- END Record Content-Details template -->
-		</article>
-		<!-- END Record Content -->
+			<!-- START Record Content -->
+			<article id="RSP-Record-Toggleable-Content-3" style="display:none;">
+				<!-- START Record Content-Title template -->
+				<h3>Joined Entity 2 Title</h3>
+				<!-- END Record Content-Title template -->
+				<!-- START Record Content-Description template -->
+				<p>Joined Entity 2 Description</p>
+				<!-- END Record Content-Description template -->
+				<!-- START Record Content-Details template -->
+				<ul>
+					<li>Detail X</li>
+					<li>Detail Y</li>
+					<li>Detail Z</li>
+				</ul>
+				<!-- END Record Content-Details template -->
+			</article>
+			<!-- END Record Content -->
+		</section>
+		<!-- END Record template -->
 
-	</section>
-	<!-- END Record template -->
-
-	<!-- Footer template -->
-	<footer id="RSP-Footer-Container">
-		<!-- NOTE: slot for additional set actions -->
-		<!-- START Record Content-Button template -->
-		<button type="button" id="RSP-Record-Button" onclick="window.location='./book-edit-view.html'">Edit Record</button>
-		<!-- END Record Content-Button template -->
-	</footer>
-	<!-- END Footer template -->
-
+		<!-- Footer template -->
+		<footer id="RSP-Footer-Container">
+			<!-- NOTE: slot for additional set actions -->
+			<!-- START Record Content-Button template -->
+			<button type="button" id="RSP-Record-Button" onclick="window.location='./book-edit-view.html'">Edit Record</button>
+			<!-- END Record Content-Button template -->
+		</footer>
+		<!-- END Footer template -->
+	</div>
 
 	<script>
 		function toggleTabContent(event, contentId) {

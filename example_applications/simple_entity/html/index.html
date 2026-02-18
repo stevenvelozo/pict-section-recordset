@@ -1,27 +1,206 @@
 <!doctype html>
 <html lang="en">
 	<head>
-		<title>Simple.</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Simple Entity - Pict Example</title>
+		<!-- PICT Dynamic View CSS Container -->
 		<style id="PICT-CSS"></style>
+		<!-- Red Rock Mesa Theme — Pict Example App -->
 		<style>
-			.is-hidden
-			{
-				display: none;
-			}
+			*, *::before, *::after { box-sizing: border-box; }
+			body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #FAEDCD; color: #264653; }
+
+			/* --- Header Bar --- */
+			.pict-example-header { display: flex; align-items: stretch; background: #264653; border-bottom: 3px solid #E76F51; }
+			.pict-example-badge { background: #E76F51; color: #fff; padding: 0.6rem 1rem; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; display: flex; align-items: center; gap: 0.5rem; }
+			.pict-example-badge svg { width: 14px; height: 14px; fill: #fff; flex-shrink: 0; }
+			.pict-example-app-name { padding: 0.6rem 1rem; color: #FAEDCD; font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; }
+			.pict-example-module { margin-left: auto; padding: 0.6rem 1rem; color: #D4A373; font-size: 0.75rem; display: flex; align-items: center; letter-spacing: 0.03em; }
+
+			/* --- Navigation Bar --- */
+			.pict-example-nav { background: #2A3F4D; padding: 0 1rem; }
+			.pict-example-nav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 0; }
+			.pict-example-nav li a { display: block; padding: 0.6rem 1rem; color: #FAEDCD; text-decoration: none; font-size: 0.85rem; font-weight: 500; border-bottom: 2px solid transparent; transition: border-color 0.15s, color 0.15s; }
+			.pict-example-nav li a:hover { color: #E76F51; border-bottom-color: #E76F51; }
+
+			/* --- Content Area --- */
+			.pict-example-content { padding: 1.5rem; }
+			#PRSP_Container { background: #fff; border: 1px solid #D4A373; border-top: 4px solid #E76F51; border-radius: 6px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(38,70,83,0.08); }
+
+			/* --- Form Element Styling --- */
+			#PRSP_Container input[type="text"],
+			#PRSP_Container input[type="number"],
+			#PRSP_Container input[type="email"],
+			#PRSP_Container input[type="date"],
+			#PRSP_Container textarea,
+			#PRSP_Container select { border: 1px solid #D4C4A8; background: #FFFCF7; padding: 0.45rem 0.6rem; border-radius: 4px; font-size: 0.9rem; color: #264653; width: 100%; }
+			#PRSP_Container input:focus,
+			#PRSP_Container textarea:focus,
+			#PRSP_Container select:focus { outline: none; border-color: #E76F51; box-shadow: 0 0 0 2px rgba(231,111,81,0.15); }
+			#PRSP_Container label { color: #264653; font-weight: 600; font-size: 0.85rem; }
+			#PRSP_Container h1, #PRSP_Container h2, #PRSP_Container h3, #PRSP_Container h4 { color: #264653; }
+			#PRSP_Container button,
+			#PRSP_Container input[type="button"],
+			#PRSP_Container input[type="submit"] { background: #E76F51; color: #fff; border: none; padding: 0.5rem 1.25rem; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+			#PRSP_Container button:hover,
+			#PRSP_Container input[type="button"]:hover,
+			#PRSP_Container input[type="submit"]:hover { background: #C45A3E; }
+			#PRSP_Container table { width: 100%; border-collapse: collapse; }
+			#PRSP_Container th { background: #264653; color: #FAEDCD; padding: 0.5rem 0.75rem; text-align: left; font-size: 0.8rem; }
+			#PRSP_Container td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #E8D9C0; font-size: 0.85rem; }
+			#PRSP_Container tr:nth-child(even) td { background: #FFF9F0; }
+
+			/* --- Title Section --- */
+			#PRSP_Title_Container { margin-bottom: 1rem; }
+			#PRSP_Title_Container h1 { margin: 0 0 0.15rem; font-size: 1.4rem; }
+			#PRSP_Title_Container h2 { margin: 0; font-size: 0.95rem; font-weight: 400; color: #D4A373; }
+
+			/* --- Filter Section --- */
+			#PRSP_Filters_Container { background: #FFF9F0; border: 1px solid #D4A373; border-radius: 6px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+			#PRSP_Filter_Form { display: flex; flex-direction: column; gap: 0.75rem; }
+			#PRSP_Filter_Form > fieldset { border: none; padding: 0; margin: 0; }
+
+			/* Search filter row */
+			#PRSP_Filter_Form > fieldset:first-child { display: flex; align-items: center; gap: 0.75rem; }
+			#PRSP_Filter_Form > fieldset:first-child label { flex-shrink: 0; font-weight: 600; font-size: 0.85rem; color: #264653; }
+			#PRSP_Filter_Form > fieldset:first-child input[type="text"] { flex: 1; }
+
+			/* Filter instances container */
+			#PRSP_Filter_Instances { display: flex; flex-direction: column; gap: 0.5rem; }
+			#PRSP_Filter_Instances > div { display: flex; align-items: center; gap: 0.5rem; background: #fff; border: 1px solid #E8D9C0; border-radius: 4px; padding: 0.5rem 0.75rem; flex-wrap: wrap; }
+
+			/* Remove (-) buttons in filter rows */
+			#PRSP_Filter_Instances > div > button[type="button"] { background: #B33030; color: #fff; border: none; width: 1.6rem; height: 1.6rem; border-radius: 50%; font-size: 0.85rem; font-weight: 700; cursor: pointer; flex-shrink: 0; padding: 0; display: flex; align-items: center; justify-content: center; line-height: 1; }
+			#PRSP_Filter_Instances > div > button[type="button"]:hover { background: #8B2020; }
+
+			/* Filter labels (spans) */
+			#PRSP_Filter_Instances span { font-size: 0.85rem; font-weight: 600; color: #264653; white-space: nowrap; }
+
+			/* Date inputs in filters */
+			#PRSP_Filter_Instances input[type="datetime-local"] { border: 1px solid #D4C4A8; background: #FFFCF7; padding: 0.35rem 0.5rem; border-radius: 4px; font-size: 0.85rem; color: #264653; }
+			#PRSP_Filter_Instances input[type="datetime-local"]:focus { outline: none; border-color: #E76F51; box-shadow: 0 0 0 2px rgba(231,111,81,0.15); }
+
+			/* Text inputs in filters */
+			#PRSP_Filter_Instances input[type="text"] { border: 1px solid #D4C4A8; background: #FFFCF7; padding: 0.35rem 0.5rem; border-radius: 4px; font-size: 0.85rem; color: #264653; flex: 1; min-width: 120px; }
+
+			/* Tables inside filter instances (join selectors) */
+			#PRSP_Filter_Instances table { width: auto; border-collapse: collapse; flex: 1; }
+			#PRSP_Filter_Instances table td { border: none; padding: 0.25rem 0.35rem; background: transparent !important; vertical-align: top; }
+			#PRSP_Filter_Instances table tr:nth-child(even) td { background: transparent !important; }
+			#PRSP_Filter_Instances table th { background: #264653; color: #FAEDCD; padding: 0.25rem 0.5rem; font-size: 0.75rem; }
+			#PRSP_Filter_Instances table select { border: 1px solid #D4C4A8; background: #FFFCF7; padding: 0.35rem 0.5rem; border-radius: 4px; font-size: 0.85rem; color: #264653; min-width: 100px; max-height: 150px; }
+			#PRSP_Filter_Instances table input[type="text"] { min-width: 150px; }
+			#PRSP_Filter_Instances table label { font-size: 0.8rem; font-weight: 600; color: #264653; white-space: nowrap; }
+			#PRSP_Filter_Instances table button[type="submit"],
+			#PRSP_Filter_Instances table button[type="button"] { background: #264653; color: #FAEDCD; border: none; padding: 0.35rem 0.75rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+			#PRSP_Filter_Instances table button[type="submit"]:hover,
+			#PRSP_Filter_Instances table button[type="button"]:hover { background: #1A3340; }
+
+			/* Constrain large multi-select boxes in join filters */
+			#PRSP_Filter_Instances > div > table > tbody > tr > td > select[size] { max-height: 120px; overflow-y: auto; }
+			/* Direct selects in filter containers */
+			#PRSP_Filter_Instances select[size] { max-height: 120px; overflow-y: auto; }
+
+			/* Hidden inputs in filters shouldn't take space */
+			#PRSP_Filter_Instances input[type="hidden"] { display: none; }
+
+			/* Action button fieldsets (Clear/Reset/Apply, +, Manage) */
+			#PRSP_Filter_Form > fieldset:nth-child(n+3) { display: flex; align-items: center; gap: 0.5rem; padding-top: 0.35rem; }
+			/* First action row gets a separator line */
+			#PRSP_Filter_Form > fieldset:nth-child(3) { border-top: 1px solid #E8D9C0; margin-top: 0.25rem; padding-top: 0.6rem; }
+			#PRSP_Filter_Button_Clear { background: #264653 !important; color: #FAEDCD !important; }
+			#PRSP_Filter_Button_Clear:hover { background: #1A3340 !important; }
+			#PRSP_Filter_Button_Reset { background: #D4A373 !important; color: #fff !important; }
+			#PRSP_Filter_Button_Reset:hover { background: #B88A5C !important; }
+			#PRSP_Filter_Button_Apply { background: #E76F51 !important; color: #fff !important; }
+			#PRSP_Filter_Button_Apply:hover { background: #C45A3E !important; }
+			#PRSP_Filter_Button_Add { background: #264653 !important; color: #FAEDCD !important; width: 2rem; height: 2rem; border-radius: 50% !important; font-size: 1rem; font-weight: 700; display: flex !important; align-items: center; justify-content: center; padding: 0 !important; }
+			#PRSP_Filter_Button_Add:hover { background: #1A3340 !important; }
+			#PRSP_Filter_Button_Manage { background: #264653 !important; color: #FAEDCD !important; }
+			#PRSP_Filter_Button_Manage:hover { background: #1A3340 !important; }
+
+			/* Dropdowns / popovers inside filters */
+			#PRSP-SUBSET-Filters-Template-Add-Filter-Container { background: #fff; border: 1px solid #D4A373; border-radius: 4px; padding: 0.5rem; margin-top: 0.25rem; box-shadow: 0 2px 8px rgba(38,70,83,0.12); }
+			#FilterPersistenceView-Container { background: #fff; border: 1px solid #D4A373; border-radius: 4px; padding: 0.5rem; margin-top: 0.25rem; box-shadow: 0 2px 8px rgba(38,70,83,0.12); }
+
+			/* --- Pagination --- */
+			#RSP_Upper_Pagination_Container,
+			#RSP_Lower_Pagination_Container { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; margin-bottom: 0.25rem; font-size: 0.85rem; color: #264653; }
+			#RSP_Upper_Pagination_Container div,
+			#RSP_Lower_Pagination_Container div { display: flex; align-items: center; gap: 0.35rem; }
+			#RSP_Upper_Pagination_Container div span,
+			#RSP_Lower_Pagination_Container div span { font-size: 0.85rem; }
+			#RSP_Upper_Pagination_Container ul,
+			#RSP_Lower_Pagination_Container ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 0.25rem; }
+			#RSP_Upper_Pagination_Container ul li a,
+			#RSP_Lower_Pagination_Container ul li a { display: block; padding: 0.35rem 0.75rem; border: 1px solid #D4A373; border-radius: 4px; text-decoration: none; color: #264653; font-size: 0.8rem; font-weight: 500; transition: background 0.15s, color 0.15s; }
+			#RSP_Upper_Pagination_Container ul li a:hover,
+			#RSP_Lower_Pagination_Container ul li a:hover { background: #E76F51; color: #fff; border-color: #E76F51; }
+
+			/* --- Page Number Links --- */
+			#PRSP_List_Container > div { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 0.5rem; }
+			a[class^="page-offset"] { display: inline-block; padding: 0.3rem 0.6rem; border: 1px solid #D4A373; border-radius: 4px; text-decoration: none; color: #264653; font-size: 0.8rem; font-weight: 500; transition: background 0.15s, color 0.15s; background: #fff; }
+			a[class^="page-offset"]:hover { background: #E76F51; color: #fff; border-color: #E76F51; }
+
+			/* --- List Table Refinements --- */
+			#PRSP_List_Table { width: 100%; border-collapse: collapse; }
+			#PRSP_List_Table th { background: #264653 !important; color: #FAEDCD !important; padding: 0.6rem 0.75rem !important; border-bottom: none !important; text-align: left; font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
+			#PRSP_List_Table td { padding: 0.6rem 0.75rem !important; border-bottom: 1px solid #E8D9C0 !important; font-size: 0.85rem; background: #fff; vertical-align: middle; }
+			#PRSP_List_Table tr:nth-child(even) td { background: #FFF9F0; }
+			#PRSP_List_Table tr:hover td { background: #FFF0E0; }
+			#PRSP_List_Table img { max-width: 80px; max-height: 100px; border-radius: 3px; border: 1px solid #E8D9C0; }
+			#PRSP_List_Table a { color: #E76F51; font-weight: 600; text-decoration: none; }
+			#PRSP_List_Table a:hover { color: #C45A3E; text-decoration: underline; }
+
+			/* List container wrapper (contains title, filters, pagination, AND table) */
+			#PRSP_List_Container { margin-bottom: 0.5rem; }
+
+			/* The actual list table wrapper */
+			#PRSP_List_Container > section { border: 1px solid #D4A373; border-top: 4px solid #E76F51; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 8px rgba(38,70,83,0.08); margin-bottom: 0.5rem; }
+
+			/* --- Record View Tabs --- */
+			#PRSP-Read-Tabs-Container { margin-top: 0.5rem; }
+			#PRSP-Read-Tab-Nav { display: flex; gap: 0; border-bottom: 2px solid #D4A373; margin-bottom: 0; }
+			.psrs-tab { padding: 0.55rem 1.25rem; font-size: 0.9rem; font-weight: 500; color: #264653; cursor: pointer; border: 1px solid transparent; border-bottom: none; border-radius: 4px 4px 0 0; margin-bottom: -2px; transition: background 0.15s, color 0.15s; }
+			.psrs-tab:hover { background: #FFF9F0; }
+			.psrs-tab.is-active { background: #264653; color: #FAEDCD; border-color: #264653; }
+			.psrs-tab-body { display: none; padding: 1rem 0 0; }
+			.psrs-tab-body.is-active { display: block; }
+
+			/* --- Record View Content --- */
+			#PRSP_Container h2 { font-size: 1.1rem; margin: 0.75rem 0 0.5rem; color: #264653; }
+			#PRSP_Container h3 { font-size: 0.95rem; margin: 0.5rem 0 0.35rem; color: #D4A373; }
+
+			/* --- Utility --- */
+			.is-hidden { display: none; }
 		</style>
 		<script src="./pict.js" type="text/javascript"></script>
 		<script type="text/javascript">Pict.safeOnDocumentReady(() => { Pict.safeLoadPictApplication(SimpleApplication, 1)});</script>
 	</head>
 	<body>
-		<nav>
+		<div class="pict-example-header">
+			<div class="pict-example-badge">
+				<svg viewBox="0 0 16 16"><polygon points="8,1 10,6 16,6 11,9.5 13,15 8,11.5 3,15 5,9.5 0,6 6,6"/></svg>
+				Pict Example
+			</div>
+			<div class="pict-example-app-name">Simple Entity</div>
+			<div class="pict-example-module">pict-section-recordset</div>
+		</div>
+		<nav class="pict-example-nav">
 			<ul>
 				<li><a href="#/PSRS/Book/List">Book List</a></li>
 				<li><a href="#/PSRS/Author/List">Author List</a></li>
 				<li><a href="#/PSRS/Book/Create">Book Create</a></li>
 				<li><a href="#/PSRS/Author/Create">Author Create</a></li>
+				<li><a href="#/PSRS/BookstoreInventory/Dashboard">Bestsellers</a></li>
+				<li><a href="#/PSRS/BookstoreInventory/SpecificDashboard/Underdogs">Underdogs</a></li>
+				<li><a href="#/PSRS/BookstoreInventory/SpecificDashboard/NewReleases">New Releases</a></li>
 			</ul>
 		</nav>
-		<div id="PRSP_Container"></div>
+		<div class="pict-example-content">
+			<div id="PRSP_Container"></div>
+		</div>
 		<script src="./simple_application.js" type="text/javascript"></script>
 	</body>
 </html>

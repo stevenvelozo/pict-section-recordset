@@ -3,123 +3,183 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Example Pict-Section-Form List View </title>
+	<title>List View Mock - Pict Example</title>
+	<!-- Red Rock Mesa Theme — Pict Example App -->
+	<style>
+		*, *::before, *::after { box-sizing: border-box; }
+		body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #FAEDCD; color: #264653; }
+
+		/* --- Header Bar --- */
+		.pict-example-header { display: flex; align-items: stretch; background: #264653; border-bottom: 3px solid #E76F51; }
+		.pict-example-badge { background: #E76F51; color: #fff; padding: 0.6rem 1rem; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; display: flex; align-items: center; gap: 0.5rem; }
+		.pict-example-badge svg { width: 14px; height: 14px; fill: #fff; flex-shrink: 0; }
+		.pict-example-app-name { padding: 0.6rem 1rem; color: #FAEDCD; font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; }
+		.pict-example-module { margin-left: auto; padding: 0.6rem 1rem; color: #D4A373; font-size: 0.75rem; display: flex; align-items: center; letter-spacing: 0.03em; }
+
+		/* --- Content Area --- */
+		.pict-example-content { padding: 1.5rem; }
+
+		/* --- Page Header --- */
+		#RSP-Header-Container { margin-bottom: 1rem; }
+		#RSP-Header-Container h1 { color: #264653; font-size: 1.5rem; margin: 0 0 0.25rem; }
+		#RSP-Header-Container h2 { color: #D4A373; font-size: 1rem; font-weight: 400; margin: 0; }
+
+		/* --- Filter Section --- */
+		#RSP-Filter-Container { background: #fff; border: 1px solid #D4A373; border-top: 4px solid #E76F51; border-radius: 6px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(38,70,83,0.08); }
+		#RSP-Filter-Form { display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap; }
+		#RSP-Filter-Form fieldset { border: none; padding: 0; margin: 0; flex: 1; min-width: 200px; }
+		#RSP-Filter-Form label { display: block; color: #264653; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.3rem; }
+		#RSP-Filter-Form input[type="text"] { border: 1px solid #D4C4A8; background: #FFFCF7; padding: 0.45rem 0.6rem; border-radius: 4px; font-size: 0.9rem; color: #264653; width: 100%; }
+		#RSP-Filter-Form input[type="text"]:focus { outline: none; border-color: #E76F51; box-shadow: 0 0 0 2px rgba(231,111,81,0.15); }
+		#RSP-Filter-Button-Container { display: flex; gap: 0.5rem; flex: none; }
+		#RSP-Filter-Button-Reset { background: #264653; color: #FAEDCD; border: none; padding: 0.5rem 1.25rem; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+		#RSP-Filter-Button-Reset:hover { background: #1A3340; }
+		#RSP-Filter-Button-Apply { background: #E76F51; color: #fff; border: none; padding: 0.5rem 1.25rem; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+		#RSP-Filter-Button-Apply:hover { background: #C45A3E; }
+
+		/* --- Pagination --- */
+		#RSP-Upper-Pagination-Container, #RSP-Lower-Pagination-Container { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; margin-bottom: 0.5rem; }
+		#RSP-Upper-Pagination-Container p, #RSP-Lower-Pagination-Container p { margin: 0; font-size: 0.85rem; color: #264653; }
+		#RSP-Upper-Pagination-Container ul, #RSP-Lower-Pagination-Container ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 0.25rem; }
+		#RSP-Upper-Pagination-Container li a, #RSP-Lower-Pagination-Container li a { display: block; padding: 0.35rem 0.75rem; border: 1px solid #D4A373; border-radius: 4px; text-decoration: none; color: #264653; font-size: 0.8rem; font-weight: 500; }
+		#RSP-Upper-Pagination-Container li a:hover, #RSP-Lower-Pagination-Container li a:hover { background: #E76F51; color: #fff; border-color: #E76F51; }
+
+		/* --- List Table --- */
+		#RSP-List-Container { background: #fff; border: 1px solid #D4A373; border-top: 4px solid #E76F51; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 8px rgba(38,70,83,0.08); }
+		#RSP-List-Table { width: 100%; border-collapse: collapse; }
+		#RSP-List-Table th { background: #264653; color: #FAEDCD; padding: 0.6rem 0.75rem; text-align: left; font-size: 0.8rem; font-weight: 600; }
+		#RSP-List-Table td { padding: 0.6rem 0.75rem; border-bottom: 1px solid #E8D9C0; font-size: 0.85rem; }
+		#RSP-List-Table tr:nth-child(even) td { background: #FFF9F0; }
+		#RSP-List-Table tr:hover td { background: #FFF0E0; }
+
+		/* --- Footer --- */
+		#RSP-Footer-Container { padding: 1rem 0 0; }
+	</style>
 </head>
 <body>
-	<!-- START Header template -->
-	<header id="RSP-Header-Container">
-		<!-- START Header-Title template -->
-		<h1>Title of Entity</h1>
-		<!-- END Header-Title template -->
-		<!-- START Header-Subtitle template -->
-		<h2>Subtitle of Entity</h2>
-		<!-- END Header-Subtitle template -->
-	</header>
-	<!-- END Header template -->
+	<div class="pict-example-header">
+		<div class="pict-example-badge">
+			<svg viewBox="0 0 16 16"><polygon points="8,1 10,6 16,6 11,9.5 13,15 8,11.5 3,15 5,9.5 0,6 6,6"/></svg>
+			Pict Example
+		</div>
+		<div class="pict-example-app-name">List View Mock</div>
+		<div class="pict-example-module">pict-section-recordset</div>
+	</div>
+	<div class="pict-example-content">
+		<!-- START Header template -->
+		<header id="RSP-Header-Container">
+			<!-- START Header-Title template -->
+			<h1>Title of Entity</h1>
+			<!-- END Header-Title template -->
+			<!-- START Header-Subtitle template -->
+			<h2>Subtitle of Entity</h2>
+			<!-- END Header-Subtitle template -->
+		</header>
+		<!-- END Header template -->
 
-	<!-- START Filter template-->
-	<section id="RSP-Filter-Container">
-		<form id="RSP-Filter-Form">
-			<!-- START Filter-Input-Container template -->
-			<fieldset>
-				<!-- START Filter-Input-Label template -->
-				<label for="filter">Filter:</label>
-				<!-- END Filter-Input-Label template -->
-				<!-- START Filter-Input template -->
-				<input type="text" id="filter" name="filter">
-				<!-- END Filter-Input template -->
-			</fieldset>
-			<!-- END Filter-Input-Container template -->
-			<!-- START Filter-Button-Container template -->
-			<fieldset id="RSP-Filter-Button-Container">
-				<!-- START Filter-Button-Reset template -->
-				<button type="button" id="RSP-Filter-Button-Reset">Reset</button>
-				<!-- END Filter-Button-Reset template -->
+		<!-- START Filter template-->
+		<section id="RSP-Filter-Container">
+			<form id="RSP-Filter-Form">
+				<!-- START Filter-Input-Container template -->
+				<fieldset>
+					<!-- START Filter-Input-Label template -->
+					<label for="filter">Filter:</label>
+					<!-- END Filter-Input-Label template -->
+					<!-- START Filter-Input template -->
+					<input type="text" id="filter" name="filter">
+					<!-- END Filter-Input template -->
+				</fieldset>
+				<!-- END Filter-Input-Container template -->
+				<!-- START Filter-Button-Container template -->
+				<fieldset id="RSP-Filter-Button-Container">
+					<!-- START Filter-Button-Reset template -->
+					<button type="button" id="RSP-Filter-Button-Reset">Reset</button>
+					<!-- END Filter-Button-Reset template -->
+					<!-- START Filter-Button-Apply template -->
+					<button type="submit" id="RSP-Filter-Button-Apply">Apply</button>
+					<!-- END Filter-Button-Apply template -->
+				</fieldset>
+				<!-- END Filter-Button-Container template -->
+			</form>
+		</section>
+		<!-- END Filter template-->
 
-				<!-- START Filter-Button-Apply template -->
-				<button type="submit" id="RSP-Filter-Button-Apply">Apply</button>
-				<!-- END Filter-Button-Apply template -->
-			</fieldset>
-			<!-- END Filter-Button-Container template -->
-		</form>
-	</section>
-	<!-- END Filter template-->
-
-	<!-- START Upper Pagination template -->
-	<nav id="RSP-Upper-Pagination-Container">
-		<!-- START Upper Pagination-Description template -->
-		<p>Showing 1-25 of 100</p>
-		<!-- END Upper Pagination-Description template -->
-		<!-- START Upper Pagination-Button-Container template -->
-		<ul>
-			<!-- START Upper Pagination Button Previous template -->
-			<li><a href="#">&laquo; Previous</a></li>
-			<!-- END Upper Pagination Button Previous template -->
-			<!-- START Upper Pagination Button Page template -->
-			<li><a href="#">1</a></li>
+		<!-- START Upper Pagination template -->
+		<nav id="RSP-Upper-Pagination-Container">
+			<!-- START Upper Pagination-Description template -->
+			<p>Showing 1-25 of 100</p>
+			<!-- END Upper Pagination-Description template -->
+			<!-- START Upper Pagination-Button-Container template -->
+			<ul>
+				<!-- START Upper Pagination Button Previous template -->
+				<li><a href="#">&laquo; Previous</a></li>
+				<!-- END Upper Pagination Button Previous template -->
+				<!-- START Upper Pagination Button Page template -->
+				<li><a href="#">1</a></li>
+				<!-- END Upper Pagination Button Page template -->
+				<!-- NOTE: more as needed (for examples)-->
+				<li><a href="#">2</a></li>
+				<li><a href="#">3</a></li>
+				<li><a href="#">4</a></li>
+				<!-- START Upper Pagination Button Next template -->
+				<li><a href="#">Next &raquo;</a></li>
+				<!-- END Upper Pagination Button Next template -->
+				<!-- START Upper Pagination Button Page template -->
+			</ul>
 			<!-- END Upper Pagination Button Page template -->
-			<!-- NOTE: more as needed (for examples)-->
-			<li><a href="#">2</a></li>
-			<li><a href="#">3</a></li>
-			<li><a href="#">4</a></li>
-			<!-- START Upper Pagination Button Next template -->
-			<li><a href="#">Next &raquo;</a></li>
-			<!-- END Upper Pagination Button Next template -->
-			<!-- START Upper Pagination Button Page template -->
-		</ul>
-		<!-- END Upper Pagination Button Page template -->
-	</nav>
-	<!-- END Upper Pagination template -->
+		</nav>
+		<!-- END Upper Pagination template -->
 
-	<!-- START List template -->
-	<section id="RSP-List-Container">
-		<!-- START List-Table template -->
-		<table id="RSP-List-Table">
-			<!-- START List-Table-Header template -->
-			<thead>
-				<tr>
-					<!-- START List-Table-Header-Cell -->
-					<th>Column 1</th>
-					<!-- END List-Table-Header-Cell -->
-					<!-- NOTE: more cells as needed -->
-					<th>Column 2</th>
-					<th>Column 3</th>
-				</tr>
-			</thead>
-			<!-- END List-Table-Header template -->
-			<!-- START List-Table-Body template -->
-			<tbody>
-				<!-- START List-Table-Body-Row -->
-				<tr>
-					<!-- START List-Table-Body-Cell -->
-					<td>Row 1, Cell 1</td>
-					<!-- END List-Table-Body-Cell -->
-					<!-- NOTE: more cells as needed -->
-					<td>Row 1, Cell 2</td>
-					<td>Row 1, Cell 3</td>
-					<!-- START List-Table-Body-Extra-Cell -->
-					<td><!-- NOTE: slot for extra columns--></td>
-					<!-- END List-Table-Body-Extra-Cell -->
-				</tr>
-				<!-- END List-Table-Body-Row -->
-				<!-- Note: more rows as needed -->
-			</tbody>
-			<!-- END List-Table-Body template -->
-		</table>
-		<!-- END List-Table template -->
-	</section>
-	<!-- END List template -->
+		<!-- START List template -->
+		<section id="RSP-List-Container">
+			<!-- START List-Table template -->
+			<table id="RSP-List-Table">
+				<!-- START List-Table-Header template -->
+				<thead>
+					<tr>
+						<!-- START List-Table-Header-Cell -->
+						<th>Column 1</th>
+						<!-- END List-Table-Header-Cell -->
+						<!-- NOTE: more cells as needed -->
+						<th>Column 2</th>
+						<th>Column 3</th>
+					</tr>
+				</thead>
+				<!-- END List-Table-Header template -->
+				<!-- START List-Table-Body template -->
+				<tbody>
+					<!-- START List-Table-Body-Row -->
+					<tr>
+						<!-- START List-Table-Body-Cell -->
+						<td>Row 1, Cell 1</td>
+						<!-- END List-Table-Body-Cell -->
+						<!-- NOTE: more cells as needed -->
+						<td>Row 1, Cell 2</td>
+						<td>Row 1, Cell 3</td>
+						<!-- START List-Table-Body-Extra-Cell -->
+						<td><!-- NOTE: slot for extra columns--></td>
+						<!-- END List-Table-Body-Extra-Cell -->
+					</tr>
+					<!-- END List-Table-Body-Row -->
+					<!-- Note: more rows as needed -->
+				</tbody>
+				<!-- END List-Table-Body template -->
+			</table>
+			<!-- END List-Table template -->
+		</section>
+		<!-- END List template -->
 
-	<!-- START Lower Pagination template -->
-	<nav id="RSP-Lower-Pagination-Container">
-		<!-- NOTE: Re-apply "RSP-Upper-Pagination-Container" content here to avoid duplication. -->
-	</nav>
-	<!-- END Lower Pagination template -->
+		<!-- START Lower Pagination template -->
+		<nav id="RSP-Lower-Pagination-Container">
+			<!-- NOTE: Re-apply "RSP-Upper-Pagination-Container" content here to avoid duplication. -->
+		</nav>
+		<!-- END Lower Pagination template -->
 
-	<!-- Footer template -->
-	<footer id="RSP-Footer-Container">
-		<!-- NOTE: slot for additional set actions -->
-	</footer>
-	<!-- END Footer template -->
+		<!-- Footer template -->
+		<footer id="RSP-Footer-Container">
+			<!-- NOTE: slot for additional set actions -->
+		</footer>
+		<!-- END Footer template -->
+	</div>
 </body>
 </html>
