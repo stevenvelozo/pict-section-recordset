@@ -353,6 +353,82 @@ module.exports.default_configuration.pict_configuration = (
 					}
 				]
 			},
+			"BookFormDashboardExample":
+			{
+				"Form": "BookFormManifest",
+				"Scope": "BookFormDashboardExample",
+				"TitleTemplate": "Form Dashboard Example",
+				"WithRecordsetData": true,
+				"Descriptors": 
+				{
+					"BookFormDashboard.TextExample": {
+						"Hash": "TextExample",
+						"Name": "Text Example",
+						"DataAddress": "BookFormDashboard.TextExample",
+						"DataType": "String",
+						"PictForm": {
+							"Section": "ExampleTextSection",
+							"Group": "ExampleTextGroup"
+						},
+						"Default": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+					},
+				},
+				"Sections": 
+				[
+					{
+						"Name": "ExampleTextSection",
+						"Hash": "ExampleTextSection",
+						"Solvers": [],
+						"ShowTitle": false,
+						"Groups": [
+							{
+								"Name": "ExampleTextGroup",
+								"Hash": "ExampleTextGroup",
+								"Rows": [],
+								"RecordSetSolvers": [],
+								"ShowTitle": false
+							}
+						]
+					},
+					{
+						"Name": "ExampleSection",
+						"Hash": "ExampleSection",
+						"ShowTitle": false,
+						"Solvers": [],
+						"Groups": [
+							{
+								"Name": "ExampleGroup",
+								"Hash": "ExampleGroup",
+								"Rows": [],
+								"RecordSetSolvers": [],
+								"Layout": "Tabular",
+								"RecordSetAddress": "DashboardData",
+								"RecordManifest": "ExampleReferenceManifest"
+							}
+						]
+					}
+				],
+				"ReferenceManifests": 
+				{
+					"ExampleReferenceManifest": 
+					{
+						"Scope": "ExampleReferenceManifest",
+						"Descriptors": 
+						{
+							"Authors.0.Name": 
+							{
+								"Hash": "Author",
+								"Name": "Author",
+								"DataAddress": "Authors.0.Name",
+								"DataType": "String",
+								"IsTabular": true
+							},
+						},
+						"Sections": [],
+						"ReferenceManifests": {}
+					},
+				}
+			},
 			"Bestsellers":
 			{
 				"Scope": "Bestsellers",
@@ -711,7 +787,7 @@ module.exports.default_configuration.pict_configuration = (
 
 				"RecordSetDashboardManifestOnly": true,
 
-				"RecordSetDashboardManifests": [ "Bestsellers", "Underdogs", "NewReleases" ],
+				"RecordSetDashboardManifests": [ "Bestsellers", "Underdogs", "NewReleases", "BookFormDashboardExample" ],
 
 				"RecordDecorationConfiguration":
 				[
@@ -772,6 +848,7 @@ module.exports.default_configuration.pict_configuration = (
 				//TODO: something like this to reduce boilerplate
 				"RecordSetFilterURLTemplate-Dashboard-Specific": "/PSRS/{~D:Record.RecordSet~}/SpecificDashboard/$$DASHBOARD_HASH$$/FilteredTo/{~D:Record.FilterString~}",
 				"RecordSetFilterURLTemplate-Dashboard-Bestsellers": "/PSRS/{~D:Record.RecordSet~}/SpecificDashboard/Bestsellers/FilteredTo/{~D:Record.FilterString~}",
+				"RecordSetFilterURLTemplate-Dashboard-BookFormDashboardExample": "/PSRS/{~D:Record.RecordSet~}/SpecificDashboard/BookFormDashboardExample/FilteredTo/{~D:Record.FilterString~}",
 				"RecordSetFilterURLTemplate-Dashboard-Underdogs": "/PSRS/{~D:Record.RecordSet~}/SpecificDashboard/Underdogs/FilteredTo/{~D:Record.FilterString~}",
 				"RecordSetFilterURLTemplate-Dashboard-NewReleases": "/PSRS/{~D:Record.RecordSet~}/SpecificDashboard/NewReleases/FilteredTo/{~D:Record.FilterString~}",
 

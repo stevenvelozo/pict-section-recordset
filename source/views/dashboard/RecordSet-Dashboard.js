@@ -54,6 +54,35 @@ const _DEFAULT_CONFIGURATION__Dashboard = (
 	`
 				},
 				{
+					Hash: 'PRSP-Dashboard-Template-Form-With-Recordset-Data',
+					Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-Dashboard-Template-Form-With-Recordset-Data] -->
+	<section id="PRSP_List_Container">
+		{~V:PRSP-Dashboard-Title~}
+		{~V:PRSP-Dashboard-HeaderDashboard~}
+		<section id="PRSP_Filters_Container">
+			{~FV:PRSP-Filters:Dashboard~}
+		</section>
+		{~V:PRSP-Dashboard-PaginationTop~}
+		{~T:PRSP-Dashboard-RecordDashboard-Template~}
+		{~V:PRSP-Dashboard-PaginationBottom~}
+	</section>
+	<!-- DefaultPackage end view template:  [PRSP-Dashboard-Template-Form-With-Recordset-Data] -->
+	`
+				},
+				{
+					Hash: 'PRSP-Dashboard-Template-Form',
+					Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-Dashboard-Template-Form] -->
+	<section id="PRSP_List_Container">
+		{~V:PRSP-Dashboard-Title~}
+		{~V:PRSP-Dashboard-HeaderDashboard~}
+		{~T:PRSP-Dashboard-RecordDashboard-Template~}
+	</section>
+	<!-- DefaultPackage end view template:  [PRSP-Dashboard-Template-Form] -->
+	`
+				},
+				{
 					Hash: 'PRSP-Dashboard-Template-Record',
 					Template: /*html*/`
 	<!-- DefaultPackage end view template:  [PRSP-Dashboard-Template] -->
@@ -66,6 +95,18 @@ const _DEFAULT_CONFIGURATION__Dashboard = (
 				{
 					RenderableHash: 'PRSP_Renderable_List',
 					TemplateHash: 'PRSP-Dashboard-Template',
+					DestinationAddress: '#PRSP_Container',
+					RenderMethod: 'replace'
+				},
+				{
+					RenderableHash: 'PRSP_Renderable_Form_With_Recordset_Data',
+					TemplateHash: 'PRSP-Dashboard-Template-Form-With-Recordset-Data',
+					DestinationAddress: '#PRSP_Container',
+					RenderMethod: 'replace'
+				},
+				{
+					RenderableHash: 'PRSP_Renderable_Form',
+					TemplateHash: 'PRSP-Dashboard-Template-Form',
 					DestinationAddress: '#PRSP_Container',
 					RenderMethod: 'replace'
 				}
@@ -400,11 +441,11 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 			tmpRecordDashboardData.PageLinkBookmarks.NextLink = tmpRecordDashboardData.PageLinks[tmpRecordDashboardData.PageLinkBookmarks.Next];
 		}
 
-		if (pDashboardHash)
+		if (pDashboardHash && !tmpManifestDefinition.Form)
 		{
 			tmpRecordDashboardData.TableCells = tmpManifestDefinition?.TableCells;
 		}
-		if (!tmpRecordDashboardData.TableCells)
+		if (!tmpRecordDashboardData.TableCells && !tmpManifestDefinition.Form)
 		{
 			// Put code here to preprocess columns into other data parts.
 			/*
@@ -469,9 +510,21 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 
 		tmpRecordDashboardData = this.onBeforeRenderList(tmpRecordDashboardData);
 
-		this.pict.providers.DynamicRecordsetSolver.solveDashboard(tmpManifestDefinition, tmpRecordDashboardData.Records.Records);
+		if (!tmpManifestDefinition.Form)
+		{
+			this.pict.providers.DynamicRecordsetSolver.solveDashboard(tmpManifestDefinition, tmpRecordDashboardData.Records.Records);
+		}
+		else
+		{
+			this.pict.AppData.DashboardData = tmpRecordDashboardData.Records.Records;
+			this.pict.TemplateProvider.addTemplate('PRSP-Dashboard-RecordDashboard-Template', /*html*/`
+				<!-- Manifest dynamic pict template: [PRSP-Dashboard-RecordDashboard-Template] -->
+				<div>${ this._generateFormManifestTemplate(tmpManifestDefinition, 'RecordDashboard') }</div>
+				<!-- Manifest dynamic pict end template: [PRSP-Dashboard-RecordDashboard-Template] -->
+			`);
+		}
 
-		this.renderAsync('PRSP_Renderable_List', tmpRecordDashboardData.RenderDestination, tmpRecordDashboardData,
+		this.renderAsync(tmpManifestDefinition.Form ? (tmpManifestDefinition.WithRecordsetData ? 'PRSP_Renderable_Form_With_Recordset_Data' : 'PRSP_Renderable_Form') : 'PRSP_Renderable_List', tmpRecordDashboardData.RenderDestination, tmpRecordDashboardData,
 			function (pError)
 			{
 				if (pError)
@@ -488,7 +541,50 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 				{
 					this.pict.log.info(`RecordSetDashboard: Rendered list ${tmpRecordDashboardData.RecordSet} with ${tmpRecordDashboardData.Records.Records.length} records.`);
 				}
+				for (const s of tmpManifestDefinition?.Sections || [])
+				{
+					this.pict.views[`PictSectionForm-${ s.Hash }`].render();
+					this.pict.views[`PictSectionForm-${ s.Hash }`].marshalToView();
+				}
 			}.bind(this));
+	}
+
+	_generateFormManifestTemplate(tmpManifest, section)
+	{
+		if (!tmpManifest)
+		{
+			this.pict.log.error(`RecordSetDashboard: No manifest found for dashboard. Render failed.`);
+			return '';
+		}
+		if (!tmpManifest.Descriptors)
+		{
+			this.pict.log.error(`RecordSetDashboard: No manifest descriptors found for manifest. Render failed.`);
+			return '';
+		}
+
+		this.manifest = tmpManifest;
+		let sectionsTemplate = '';
+		for (const s of tmpManifest?.Sections || [])
+		{
+			delete this.pict.views[`PictSectionForm-${ s.Hash }`]
+		}
+		this.pict.views.PictFormMetacontroller.clearManifestDescription();
+		this.pict.views.PictFormMetacontroller.bootstrapPictFormViewsFromManifest(tmpManifest);
+
+		for (const pickList of tmpManifest?.PickLists || [])
+		{
+			this.pict.providers.DynamicMetaLists.rebuildListByHash(pickList.Hash);
+		}
+
+		for (const s of tmpManifest?.Sections || [])
+		{
+			const viewSectionID = `PSRS-Dashboard-${ section }-Section-${ s.Hash }`;
+			sectionsTemplate += /*html*/`<div id="${ viewSectionID }"></div>`;
+			this.pict.views[`PictSectionForm-${ s.Hash }`].viewMarshalDestination = 'AppData';
+			this.pict.views[`PictSectionForm-${ s.Hash }`].options.DefaultDestinationAddress = `#${ viewSectionID }`;
+			this.pict.views[`PictSectionForm-${ s.Hash }`].rebuildCustomTemplate();
+		}
+		return sectionsTemplate
 	}
 
 	/**
