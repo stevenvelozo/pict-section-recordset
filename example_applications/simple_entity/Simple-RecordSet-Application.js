@@ -402,7 +402,7 @@ module.exports.default_configuration.pict_configuration = (
 								"Rows": [],
 								"RecordSetSolvers": [],
 								"Layout": "Tabular",
-								"RecordSetAddress": "DashboardData",
+								"RecordSetAddress": "PSRS-Dashboard-Data",
 								"RecordManifest": "ExampleReferenceManifest"
 							}
 						]

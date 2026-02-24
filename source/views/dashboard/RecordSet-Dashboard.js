@@ -516,7 +516,7 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 		}
 		else
 		{
-			this.pict.AppData.DashboardData = tmpRecordDashboardData.Records.Records;
+			this.pict.AppData['PSRS-Dashboard-Data'] = tmpRecordDashboardData.Records.Records;
 			this.pict.TemplateProvider.addTemplate('PRSP-Dashboard-RecordDashboard-Template', /*html*/`
 				<!-- Manifest dynamic pict template: [PRSP-Dashboard-RecordDashboard-Template] -->
 				<div>${ this._generateFormManifestTemplate(tmpManifestDefinition, 'RecordDashboard') }</div>
