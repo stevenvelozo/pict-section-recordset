@@ -36,7 +36,7 @@
     "pict": "^1.0.350",
     "pict-application": "^1.0.32",
     "pict-service-commandlineutility": "^1.0.18",
-    "quackage": "^1.0.51",
+    "quackage": "^1.0.58",
     "typescript": "^5.9.3"
   },
   "dependencies": {
