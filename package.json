@@ -16,10 +16,10 @@
   "homepage": "https://github.com/stevenvelozo/pict-section-recordset#readme",
   "scripts": {
     "start": "node source/Pict-Section-RecordSet.js",
-    "tests": "npx mocha -u tdd --exit -R spec --grep",
+    "tests": "npx quack test -g",
     "coverage": "npx quack coverage",
     "build": "npx quack build",
-    "test": "npx mocha -u tdd -R spec",
+    "test": "npx quack test",
     "lint": "eslint source",
     "types": "tsc -p tsconfig.build.json"
   },
