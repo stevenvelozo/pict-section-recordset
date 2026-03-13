@@ -1,5 +1,6 @@
 const libPictRecordSet = require('../../source/Pict-Section-RecordSet.js');
 const libPictRouter = require('pict-router');
+const libPictTemplatePreprocessor = require('pict-template-preprocessor');
 
 // Views
 const libViewLogin = require('./views/PictView-Bookstore-Login.js');
@@ -34,6 +35,134 @@ class BookstoreApplication extends libPictRecordSet.PictRecordSetApplication
 		// Content views (About, Legal) — pure JSON config, no JavaScript needed
 		this.pict.addView('Bookstore-About-View', require('./views/PictView-Bookstore-Content-About.json'));
 		this.pict.addView('Bookstore-Legal-View', require('./views/PictView-Bookstore-Content-Legal.json'));
+
+		// Template Preprocessor — register the service type so it can be toggled on/off
+		this.pict.addServiceType('PictTemplatePreprocessor', libPictTemplatePreprocessor);
+
+		// Track preprocessor state
+		this._preprocessorInstance = null;
+
+		// Check localStorage for saved preference and activate if enabled
+		this._initPreprocessorFromStorage();
+	}
+
+	// ===== Template Preprocessor Toggle =====
+
+	/**
+	 * Read the saved preprocessor preference from localStorage and
+	 * instantiate the preprocessor if it was previously enabled.
+	 * @private
+	 */
+	_initPreprocessorFromStorage()
+	{
+		try
+		{
+			let tmpSaved = (typeof localStorage !== 'undefined') ? localStorage.getItem('bookstore-preprocessor-enabled') : null;
+			if (tmpSaved === 'true')
+			{
+				this.enablePreprocessor();
+			}
+		}
+		catch (pError)
+		{
+			// localStorage may not be available (e.g., SSR or privacy mode)
+			this.pict.log.warn('Preprocessor: Could not read localStorage preference.');
+		}
+	}
+
+	/**
+	 * Enable the template preprocessor. Instantiates the service and
+	 * saves the preference to localStorage.
+	 */
+	enablePreprocessor()
+	{
+		if (this._preprocessorInstance)
+		{
+			// Already active
+			return;
+		}
+
+		this._preprocessorInstance = this.pict.instantiateServiceProviderWithoutRegistration('PictTemplatePreprocessor');
+
+		try
+		{
+			if (typeof localStorage !== 'undefined')
+			{
+				localStorage.setItem('bookstore-preprocessor-enabled', 'true');
+			}
+		}
+		catch (pError)
+		{
+			// Ignore storage errors
+		}
+
+		this.pict.log.info('Template Preprocessor: ENABLED');
+	}
+
+	/**
+	 * Disable the template preprocessor. Unwraps template functions,
+	 * clears the cache, and saves the preference to localStorage.
+	 */
+	disablePreprocessor()
+	{
+		if (!this._preprocessorInstance)
+		{
+			// Already inactive
+			return;
+		}
+
+		this._preprocessorInstance.unwrapTemplateFunctions();
+		this._preprocessorInstance.clear();
+		this._preprocessorInstance = null;
+
+		try
+		{
+			if (typeof localStorage !== 'undefined')
+			{
+				localStorage.setItem('bookstore-preprocessor-enabled', 'false');
+			}
+		}
+		catch (pError)
+		{
+			// Ignore storage errors
+		}
+
+		this.pict.log.info('Template Preprocessor: DISABLED');
+	}
+
+	/**
+	 * Toggle the preprocessor on or off.
+	 *
+	 * @return {boolean} True if the preprocessor is now enabled
+	 */
+	togglePreprocessor()
+	{
+		if (this._preprocessorInstance)
+		{
+			this.disablePreprocessor();
+		}
+		else
+		{
+			this.enablePreprocessor();
+		}
+
+		// Re-render navigation to update the toggle UI
+		if (this.pict.views['Bookstore-Navigation'])
+		{
+			this.pict.views['Bookstore-Navigation'].render();
+		}
+
+		return !!this._preprocessorInstance;
+	}
+
+	/**
+	 * Check if the preprocessor is currently active.
+	 *
+	 * @return {boolean} True if active
+	 */
+	isPreprocessorEnabled()
+	{
+		return !!this._preprocessorInstance;
 	}
 
 	onAfterInitializeAsync(fCallback)

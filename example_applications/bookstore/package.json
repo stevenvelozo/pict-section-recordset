@@ -11,7 +11,8 @@
 	"license": "MIT",
 	"devDependencies": {
 		"pict-router": "^1.0.8",
-		"pict-section-login": "file:../../../pict-section-login"
+		"pict-section-login": "file:../../../pict-section-login",
+		"pict-template-preprocessor": "^0.0.2"
 	},
 	"copyFilesSettings": {
 		"whenFileExists": "overwrite"
