@@ -1,0 +1,33 @@
+{
+	"name": "bookstore_application",
+	"version": "1.0.0",
+	"description": "A bookstore application using pict-section-recordset with pict-login authentication against retold-harness endpoints.",
+	"main": "Bookstore-Application.js",
+	"scripts": {
+		"start": "node Bookstore-Application.js",
+		"build": "npx quack build && npx quack copy"
+	},
+	"author": "steven velozo <steven@velozo.com>",
+	"license": "MIT",
+	"devDependencies": {
+		"pict-router": "^1.0.8",
+		"pict-section-login": "file:../../../pict-section-login"
+	},
+	"copyFilesSettings": {
+		"whenFileExists": "overwrite"
+	},
+	"copyFiles": [
+		{
+			"from": "./html/*",
+			"to": "./dist/"
+		},
+		{
+			"from": "./css/**",
+			"to": "./dist/css/"
+		},
+		{
+			"from": "../../node_modules/pict/dist/*",
+			"to": "./dist/js/"
+		}
+	]
+}

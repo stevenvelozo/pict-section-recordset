@@ -1,0 +1,465 @@
+const libPictRecordSet = require('../../source/Pict-Section-RecordSet.js');
+const libPictRouter = require('pict-router');
+
+// Views
+const libViewLogin = require('./views/PictView-Bookstore-Login.js');
+const libViewLayout = require('./views/PictView-Bookstore-Layout.js');
+const libViewNavigation = require('./views/PictView-Bookstore-Navigation.js');
+const libViewDashboard = require('./views/PictView-Bookstore-Dashboard.js');
+
+class BookstoreApplication extends libPictRecordSet.PictRecordSetApplication
+{
+	constructor(pFable, pOptions, pServiceHash)
+	{
+		super(pFable, pOptions, pServiceHash);
+
+		// Router provider — add BEFORE recordset initialization so the RecordSet router reuses it.
+		// SkipRouteResolveOnAdd is set in the config so routes only resolve after the layout renders.
+		this.pict.addProvider('PictRouter',
+			require('./providers/PictRouter-Bookstore.json'),
+			libPictRouter);
+
+		// Login view (extends pict-section-login)
+		this.pict.addView('Bookstore-Login', libViewLogin.default_configuration, libViewLogin);
+
+		// Layout shell (sidebar navigation + content area)
+		this.pict.addView('Bookstore-Layout', libViewLayout.default_configuration, libViewLayout);
+
+		// Sidebar navigation
+		this.pict.addView('Bookstore-Navigation', libViewNavigation.default_configuration, libViewNavigation);
+
+		// Dashboard view
+		this.pict.addView('Bookstore-Dashboard', libViewDashboard.default_configuration, libViewDashboard);
+
+		// Content views (About, Legal) — pure JSON config, no JavaScript needed
+		this.pict.addView('Bookstore-About-View', require('./views/PictView-Bookstore-Content-About.json'));
+		this.pict.addView('Bookstore-Legal-View', require('./views/PictView-Bookstore-Content-Legal.json'));
+	}
+
+	onAfterInitializeAsync(fCallback)
+	{
+		// Render the login form first
+		this.pict.views['Bookstore-Login'].render();
+
+		// Inject CSS so the login section styling is applied immediately
+		this.pict.CSSMap.injectCSS();
+
+		// Check if a session already exists (e.g. cookie from a previous visit).
+		// The login view's onSessionChecked hook will call showProtectedApp()
+		// if a valid session is found.
+		this.pict.views['Bookstore-Login'].checkSession();
+
+		return super.onAfterInitializeAsync(fCallback);
+	}
+
+	// ===== Application-Level Navigation =====
+
+	/**
+	 * Switch from the login screen to the protected application.
+	 * Called by the login view after a successful login or session check.
+	 */
+	showProtectedApp()
+	{
+		// Hide the login container
+		let tmpLoginElements = this.pict.ContentAssignment.getElement('#Bookstore-Login-Container');
+		if (tmpLoginElements && tmpLoginElements.length > 0)
+		{
+			tmpLoginElements[0].style.display = 'none';
+		}
+
+		// Show the protected app container
+		let tmpAppElements = this.pict.ContentAssignment.getElement('#Bookstore-App-Container');
+		if (tmpAppElements && tmpAppElements.length > 0)
+		{
+			tmpAppElements[0].style.display = 'block';
+		}
+
+		// Render the layout shell (triggers Navigation, CSS injection, and router resolve)
+		this.pict.views['Bookstore-Layout'].render();
+	}
+
+	/**
+	 * Switch from the protected application back to the login screen.
+	 * Called by the doLogout() method after the session is destroyed.
+	 */
+	showLogin()
+	{
+		// Clear session data
+		this.pict.AppData.Session = null;
+
+		// Hide the protected app container
+		let tmpAppElements = this.pict.ContentAssignment.getElement('#Bookstore-App-Container');
+		if (tmpAppElements && tmpAppElements.length > 0)
+		{
+			tmpAppElements[0].style.display = 'none';
+		}
+
+		// Show the login container
+		let tmpLoginElements = this.pict.ContentAssignment.getElement('#Bookstore-Login-Container');
+		if (tmpLoginElements && tmpLoginElements.length > 0)
+		{
+			tmpLoginElements[0].style.display = 'block';
+		}
+
+		// Reset the login view state and re-render
+		let tmpLoginView = this.pict.views['Bookstore-Login'];
+		if (tmpLoginView)
+		{
+			tmpLoginView.authenticated = false;
+			tmpLoginView.sessionData = null;
+			tmpLoginView.initialRenderComplete = false;
+			tmpLoginView.render();
+		}
+	}
+
+	/**
+	 * Render a specific content view into the content container.
+	 * Used by the router for custom views (Dashboard, About, Legal).
+	 *
+	 * @param {string} pViewIdentifier - The view identifier to render
+	 */
+	showView(pViewIdentifier)
+	{
+		if (pViewIdentifier in this.pict.views)
+		{
+			this.pict.views[pViewIdentifier].render();
+		}
+		else
+		{
+			this.pict.log.warn('View [' + pViewIdentifier + '] not found; falling back to Dashboard.');
+			this.pict.views['Bookstore-Dashboard'].render();
+		}
+	}
+
+	/**
+	 * Show a recordset view (List, Read, Create, Dashboard) for a given entity.
+	 * Ensures the PRSP_Container exists inside the content area, then navigates.
+	 *
+	 * @param {string} pRecordSet - The recordset name (e.g. 'Book', 'Author')
+	 * @param {string} pVerb - The verb (e.g. 'List', 'Read', 'Create', 'Dashboard')
+	 */
+	showRecordSet(pRecordSet, pVerb)
+	{
+		// Ensure the recordset container exists in the content area
+		let tmpContentElements = this.pict.ContentAssignment.getElement('#Bookstore-Content-Container');
+		if (tmpContentElements && tmpContentElements.length > 0)
+		{
+			tmpContentElements[0].innerHTML = '<div id="PRSP_Container"></div>';
+		}
+
+		// Navigate to the PSRS route
+		let tmpRoute = '/PSRS/' + pRecordSet + '/' + pVerb;
+		this.pict.providers.RecordSetRouter.navigate(tmpRoute);
+	}
+
+	// Single-argument wrappers for router templates (the {~LV:...~} macro
+	// does not reliably pass multiple arguments with backtick-delimited params).
+	showBookList() { return this.showRecordSet('Book', 'List'); }
+	showAuthorList() { return this.showRecordSet('Author', 'List'); }
+	showBookStoreList() { return this.showRecordSet('BookStore', 'List'); }
+
+	/**
+	 * Navigate to a route using pict-router.
+	 *
+	 * @param {string} pRoute - The route path (e.g. '/Dashboard', '/Books')
+	 */
+	navigateTo(pRoute)
+	{
+		this.pict.providers.PictRouter.navigate(pRoute);
+	}
+
+	/**
+	 * Log out and return to the login screen.
+	 * Called from the navigation sidebar logout button.
+	 */
+	doLogout()
+	{
+		let tmpLoginView = this.pict.views['Bookstore-Login'];
+		if (tmpLoginView)
+		{
+			tmpLoginView.logout(() =>
+			{
+				this.showLogin();
+			});
+		}
+		else
+		{
+			this.showLogin();
+		}
+	}
+}
+
+module.exports = BookstoreApplication;
+
+module.exports.default_configuration = require('./Bookstore-Application-Configuration.json');
+
+module.exports.default_configuration.pict_configuration = (
+	{
+		"Product": "Bookstore RecordSet Application",
+
+		"PictApplicationConfiguration":
+			{
+				"AutoRenderMainViewportViewAfterInitialize": false
+			},
+
+		"Manifests":
+		{
+			"Book-View":
+			{
+				"Form": "BookViewManifest",
+				"Scope": "Book-View",
+				"Descriptors":
+				{
+					"BookDetails.Title":
+					{
+						"Name": "Title",
+						"Hash": "ViewBookTitle",
+						"DataType": "String",
+						"PictForm":
+						{
+							"Row": "1",
+							"Section": "BookView",
+							"Group": "BookView"
+						}
+					},
+					"BookDetails.Genre":
+					{
+						"Name": "Genre",
+						"Hash": "ViewBookGenre",
+						"DataType": "String",
+						"PictForm":
+						{
+							"Row": "1",
+							"Section": "BookView",
+							"Group": "BookView"
+						}
+					},
+					"BookDetails.ISBN":
+					{
+						"Name": "ISBN",
+						"Hash": "ViewBookISBN",
+						"DataType": "String",
+						"PictForm":
+						{
+							"Row": "2",
+							"Section": "BookView",
+							"Group": "BookView"
+						}
+					},
+					"BookDetails.PublicationYear":
+					{
+						"Name": "Publication Year",
+						"Hash": "ViewBookYear",
+						"DataType": "Number",
+						"PictForm":
+						{
+							"Row": "2",
+							"Section": "BookView",
+							"Group": "BookView"
+						}
+					}
+				},
+				"Sections":
+				[
+					{
+						"Name": "Book Details",
+						"Hash": "BookView",
+						"Solvers": [],
+						"ShowTitle": false,
+						"Groups": [
+							{
+								"Name": "Book Details",
+								"Hash": "BookView",
+								"Rows": [],
+								"RecordSetSolvers": [],
+								"ShowTitle": false
+							}
+						]
+					}
+				]
+			},
+			"Author-View":
+			{
+				"Form": "AuthorViewManifest",
+				"Scope": "Author-View",
+				"Descriptors":
+				{
+					"AuthorDetails.Name":
+					{
+						"Name": "Author Name",
+						"Hash": "ViewAuthorName",
+						"DataType": "String",
+						"PictForm":
+						{
+							"Row": "1",
+							"Section": "AuthorView",
+							"Group": "AuthorView"
+						}
+					}
+				},
+				"Sections":
+				[
+					{
+						"Name": "Author Details",
+						"Hash": "AuthorView",
+						"Solvers": [],
+						"ShowTitle": false,
+						"Groups": [
+							{
+								"Name": "Author Details",
+								"Hash": "AuthorView",
+								"Rows": [],
+								"RecordSetSolvers": [],
+								"ShowTitle": false
+							}
+						]
+					}
+				]
+			}
+		},
+
+		"Filters":
+		{
+			"ExternalJoinBookByAuthor":
+			{
+				"Label": "Author's Name",
+				"Type": "ExternalJoinStringMatch",
+				"ExternalFilterByColumns": [ "Name" ],
+				"DisplayName": "Author's Name",
+
+				"CoreConnectionColumn": "IDBook",
+
+				"JoinTable": "BookAuthorJoin",
+				"JoinTableExternalConnectionColumn": "IDAuthor",
+				"JoinTableCoreConnectionColumn": "IDBook",
+
+				"ExternalFilterByTable": "Author",
+				"ExternalFilterByTableConnectionColumn": "IDAuthor"
+			}
+		},
+
+		"DefaultRecordSetConfigurations":
+		[
+			{
+				"RecordSet": "Book",
+
+				"RecordSetType": "MeadowEndpoint",
+				"RecordSetMeadowEntity": "Book",
+
+				"RecordSetIgnoreFilterFields": [ "Deleted", "DeletingIDUser", "DeleteDate", "UpdateDate" ],
+
+				"RecordSetListColumns": [
+					{
+						"Key": "Title",
+						"DisplayName": "Title"
+					},
+					{
+						"Key": "Genre",
+						"DisplayName": "Genre"
+					},
+					{
+						"Key": "ISBN",
+						"DisplayName": "ISBN"
+					},
+					{
+						"Key": "PublicationYear",
+						"DisplayName": "Year"
+					}
+				],
+
+				"FilterExperiences":
+				{
+					"FilterByAuthor":
+					{
+						"Ordinal": 1,
+						"FilterCriteriaHash": "FilterRecordsetByAuthor",
+						"Default": true
+					}
+				},
+
+				"RecordSetReadManifestOnly": true,
+				"RecordSetReadDefaultManifestView": "Book-View",
+				"RecordSetReadManifestsView": [ "Book-View" ],
+
+				"RecordSetReadTabs":
+				[
+					{
+						"Type": "AttachedRecord",
+						"RecordSet": "Author",
+						"Title": "Authors",
+						"JoiningRecordSet": "BookAuthorJoin"
+					}
+				],
+
+				"RecordSetListHasExtraColumns": true,
+				"RecordSetListExtraColumnsHeaderTemplate": "<th style=\"border-bottom: 1px solid #ccc; padding: 5px; background-color: #f2f2f2; color: #333;\">Cover</th>",
+				"RecordSetListExtraColumnRowTemplate": "<td><img src=\"{~D:Record.Data.ImageURL~}\" style=\"max-width:60px; max-height:80px;\"></td>",
+
+				"SearchFields": [ "Title" ],
+
+				"RecordSetURLPrefix": "/1.0/"
+			},
+			{
+				"RecordSet": "Author",
+
+				"RecordSetType": "MeadowEndpoint",
+				"RecordSetMeadowEntity": "Author",
+
+				"RecordSetURLPrefix": "/1.0/",
+
+				"RecordSetReadManifestOnly": true,
+				"RecordSetReadManifestsView": [ "Author-View" ],
+
+				"SearchFields": [ "Name" ]
+			},
+			{
+				"RecordSet": "BookStore",
+				"Title": "Book Stores",
+
+				"RecordSetType": "MeadowEndpoint",
+				"RecordSetMeadowEntity": "BookStore",
+
+				"RecordSetURLPrefix": "/1.0/",
+
+				"RecordSetListColumns": [
+					{
+						"Key": "StoreName",
+						"DisplayName": "Store Name"
+					},
+					{
+						"Key": "Address",
+						"DisplayName": "Address"
+					},
+					{
+						"Key": "City",
+						"DisplayName": "City"
+					},
+					{
+						"Key": "State",
+						"DisplayName": "State"
+					}
+				],
+
+				"SearchFields": [ "StoreName", "City" ]
+			}
+		],
+
+		"FilterCriteria":
+		{
+			"FilterRecordsetByAuthor":
+			[
+				{
+					"FilterDefinitionHash": "ExternalJoinBookByAuthor",
+					"FilterByColumn": "IDBook"
+				},
+				{
+					"Type": "StringMatch",
+					"FilterByColumn": "Title"
+				},
+				{
+					"Type": "StringMatch",
+					"FilterByColumn": "Genre"
+				}
+			]
+		}
+	});

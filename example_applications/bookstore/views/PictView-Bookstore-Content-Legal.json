@@ -1,0 +1,21 @@
+{
+	"ViewIdentifier": "Bookstore-Legal-View",
+
+	"DefaultRenderable": "Bookstore-Legal",
+	"DefaultDestinationAddress": "#Bookstore-Content-Container",
+
+	"AutoRender": false,
+
+	"Templates": [
+		{
+			"Hash": "Bookstore-Legal-Content",
+			"Template": "<div class=\"header\"><h1>Terms &amp; Legal</h1><h2>The fine print you never read but always agree to.</h2></div> <div class=\"content\"> <h2 class=\"content-subhead\">Terms of Use</h2><p>By accessing and using this bookstore application, you agree to abide by the following terms and conditions. This application is provided as a demonstration of the Retold ecosystem and pict-section-recordset module capabilities. All data presented is sample data and does not represent real books, authors, or bookstores.</p> <h2 class=\"content-subhead\">Intellectual Property</h2><p>All content, including but not limited to text, graphics, logos, and software, provided on this application is the property of the Retold project contributors and is protected under the MIT License. You are free to use, copy, modify, and distribute the software in accordance with the terms of the MIT License.</p> <h2 class=\"content-subhead\">Data &amp; Privacy</h2><p>This demonstration application stores session data locally via cookies. No personal information is transmitted to third parties. Session data is used solely for authentication purposes within the application. All data in this application is sample data generated for demonstration purposes.</p> <h2 class=\"content-subhead\">Limitation of Liability</h2><p>This software is provided \"as is\", without warranty of any kind, express or implied. In no event shall the authors or copyright holders be liable for any claim, damages, or other liability arising from the use of this software.</p> <h2 class=\"content-subhead\">Open Source License</h2><p>This application and all Retold ecosystem modules are released under the MIT License. You are encouraged to explore, modify, and build upon this codebase for your own projects. Contributions to the ecosystem are welcome via GitHub.</p></div>"
+		}
+	],
+	"Renderables": [
+		{
+			"RenderableHash": "Bookstore-Legal",
+			"TemplateHash": "Bookstore-Legal-Content"
+		}
+	]
+}

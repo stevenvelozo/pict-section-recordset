@@ -1,0 +1,32 @@
+{
+	"ProviderIdentifier": "Pict-Router",
+	"AutoInitialize": true,
+	"AutoInitializeOrdinal": 0,
+	"SkipRouteResolveOnAdd": true,
+	"Routes": [
+		{
+			"path": "/Dashboard",
+			"template": "{~LV:Pict.PictApplication.showView(`Bookstore-Dashboard`)~}"
+		},
+		{
+			"path": "/Books",
+			"template": "{~LV:Pict.PictApplication.showBookList()~}"
+		},
+		{
+			"path": "/Authors",
+			"template": "{~LV:Pict.PictApplication.showAuthorList()~}"
+		},
+		{
+			"path": "/BookStores",
+			"template": "{~LV:Pict.PictApplication.showBookStoreList()~}"
+		},
+		{
+			"path": "/About",
+			"template": "{~LV:Pict.PictApplication.showView(`Bookstore-About-View`)~}"
+		},
+		{
+			"path": "/Legal",
+			"template": "{~LV:Pict.PictApplication.showView(`Bookstore-Legal-View`)~}"
+		}
+	]
+}

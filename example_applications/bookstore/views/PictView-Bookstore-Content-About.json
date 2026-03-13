@@ -1,0 +1,21 @@
+{
+	"ViewIdentifier": "Bookstore-About-View",
+
+	"DefaultRenderable": "Bookstore-About",
+	"DefaultDestinationAddress": "#Bookstore-Content-Container",
+
+	"AutoRender": false,
+
+	"Templates": [
+		{
+			"Hash": "Bookstore-About-Content",
+			"Template": "<div class=\"header\"><h1>About the Bookstore</h1><h2>A demonstration application for the Retold ecosystem.</h2></div> <div class=\"content\"><h2 class=\"content-subhead\">What Is This?</h2><p>The Bookstore application showcases how <strong>pict-section-recordset</strong> integrates with <strong>retold-harness</strong> Meadow endpoints to provide a complete CRUD management experience. It combines authentication via <strong>pict-section-login</strong> with route-based navigation and dynamic recordset views.</p> <h2 class=\"content-subhead\">Architecture</h2><p>This application is built on the Retold module ecosystem. The backend is powered by <strong>retold-harness</strong>, which auto-generates RESTful CRUD endpoints from Meadow schema definitions. The harness serves a bookstore schema with entities for Books, Authors, BookStores, Reviews, Pricing, and Inventory.</p> <p>On the frontend, <strong>Pict</strong> provides the MVC framework. Views are registered with the application and rendered into designated DOM containers. The <strong>pict-section-recordset</strong> metacontroller manages configuration-driven record list, read, create, and dashboard views with auto-generated filtering from the Meadow schema.</p> <h2 class=\"content-subhead\">The Retold Ecosystem</h2><p>Retold is a suite of 60+ JavaScript/Node.js modules for building web applications and APIs. The ecosystem follows a service provider pattern where modules register with a Fable instance and gain access to logging, configuration, and other services through dependency injection.</p> <p>Key module groups include <strong>Fable</strong> (core DI and configuration), <strong>Meadow</strong> (data access and ORM), <strong>Orator</strong> (API server), <strong>Pict</strong> (MVC views and templates), and <strong>Utility</strong> (build tools and manifests).</p></div>"
+		}
+	],
+	"Renderables": [
+		{
+			"RenderableHash": "Bookstore-About",
+			"TemplateHash": "Bookstore-About-Content"
+		}
+	]
+}
