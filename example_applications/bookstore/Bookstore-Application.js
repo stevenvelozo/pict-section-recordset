@@ -552,7 +552,7 @@ module.exports.default_configuration.pict_configuration = (
 
 				"RecordSetListColumns": [
 					{
-						"Key": "StoreName",
+						"Key": "Name",
 						"DisplayName": "Store Name"
 					},
 					{
@@ -569,7 +569,7 @@ module.exports.default_configuration.pict_configuration = (
 					}
 				],
 
-				"SearchFields": [ "StoreName", "City" ]
+				"SearchFields": [ "Name", "City" ]
 			}
 		],
 
