@@ -464,6 +464,25 @@ module.exports.default_configuration.pict_configuration = (
 
 				"ExternalFilterByTable": "Author",
 				"ExternalFilterByTableConnectionColumn": "IDAuthor"
+			},
+			"ExternalJoinBookBySelectedAuthors":
+			{
+				"Label": "Authors",
+				"Type": "ExternalJoinSelectedValueList",
+				"ExternalFilterByColumns": [ "Name", "GUIDAuthor" ],
+				"DisplayName": "Authors (select)",
+
+				"MaximumSelectedExternalRecords": 5,
+				"ExternalRecordDisplayTemplate": "{~D:Record.Data.Name~}",
+
+				"CoreConnectionColumn": "IDBook",
+
+				"JoinTable": "BookAuthorJoin",
+				"JoinTableExternalConnectionColumn": "IDAuthor",
+				"JoinTableCoreConnectionColumn": "IDBook",
+
+				"ExternalFilterByTable": "Author",
+				"ExternalFilterByTableConnectionColumn": "IDAuthor"
 			}
 		},
 
@@ -503,6 +522,11 @@ module.exports.default_configuration.pict_configuration = (
 						"Ordinal": 1,
 						"FilterCriteriaHash": "FilterRecordsetByAuthor",
 						"Default": true
+					},
+					"AdvancedSearch":
+					{
+						"Ordinal": 2,
+						"FilterCriteriaHash": "FilterRecordsetAdvancedSearch"
 					}
 				},
 
@@ -588,6 +612,59 @@ module.exports.default_configuration.pict_configuration = (
 				{
 					"Type": "StringMatch",
 					"FilterByColumn": "Genre"
+				}
+			],
+			// The "Advanced Search" experience packs nine filter clauses onto a
+			// single dashboard render so the parallel filter fan-out added in
+			// Pict-Template-FilterInstanceViews is observable in practice. It
+			// also exercises a mix of filter types (ExternalJoinSelectedValueList,
+			// StringMatch, NumericRange, DateRange) so each filter family is
+			// touched at least once in the render path.
+			"FilterRecordsetAdvancedSearch":
+			[
+				{
+					"FilterDefinitionHash": "ExternalJoinBookBySelectedAuthors",
+					"FilterByColumn": "IDBook"
+				},
+				{
+					"Type": "StringMatch",
+					"FilterByColumn": "Title",
+					"Label": "Title"
+				},
+				{
+					"Type": "StringMatch",
+					"FilterByColumn": "Genre",
+					"Label": "Genre"
+				},
+				{
+					"Type": "StringMatch",
+					"FilterByColumn": "Type",
+					"Label": "Book Type"
+				},
+				{
+					"Type": "StringMatch",
+					"FilterByColumn": "Language",
+					"Label": "Language"
+				},
+				{
+					"Type": "StringMatch",
+					"FilterByColumn": "ISBN",
+					"Label": "ISBN"
+				},
+				{
+					"Type": "NumericRange",
+					"FilterByColumn": "PublicationYear",
+					"Label": "Publication Year"
+				},
+				{
+					"Type": "DateRange",
+					"FilterByColumn": "CreateDate",
+					"Label": "Added to Catalog"
+				},
+				{
+					"Type": "DateRange",
+					"FilterByColumn": "UpdateDate",
+					"Label": "Last Updated"
 				}
 			]
 		}

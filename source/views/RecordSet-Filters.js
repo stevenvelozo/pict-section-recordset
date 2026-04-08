@@ -236,6 +236,26 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		this.newFilterSearchApplied = false;
 		this.addFilterCallback = null;
 		this.removeFilterCallback = null;
+		// Render-epoch counter, bumped any time the filter list is re-rendered
+		// or a new filter experience is applied. Deferred filter post-render
+		// work (e.g. the setTimeout-scheduled transaction drain in
+		// Pict-Template-FilterInstanceViews) captures the epoch at schedule
+		// time and compares against the current value before running, so a
+		// stale callback doesn't clobber DOM that now belongs to a different
+		// filter experience.
+		this._renderEpoch = 0;
+	}
+
+	/**
+	 * Bump the render epoch. Call this whenever the active filter clauses are
+	 * about to change in a way that would invalidate in-flight filter renders.
+	 *
+	 * @return {number} The new epoch value.
+	 */
+	bumpRenderEpoch()
+	{
+		this._renderEpoch++;
+		return this._renderEpoch;
 	}
 
 	/**
@@ -350,6 +370,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	 */
 	performSearch(pRecordSet, pViewContext, pFilterString)
 	{
+		this.bumpRenderEpoch();
 		const tmpPictRouter = this.pict.providers.PictRouter;
 		const tmpProviderConfiguration = this.pict.PictSectionRecordSet.recordSetProviderConfigurations[pRecordSet];
 		let filterExpr = '';
@@ -410,6 +431,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	handleClear(pEvent, pRecordSet, pViewContext)
 	{
 		if (pEvent) pEvent.preventDefault();
+		this.bumpRenderEpoch();
 		this.pict.ContentAssignment.assignContent('input[name="filter"]', '');
 		this.pict.Bundle._ActiveFilterState[pRecordSet].FilterClauses = [];
 		this.pict.providers.FilterDataProvider.removeDefaultFilterExperience(pRecordSet, pViewContext);
@@ -426,6 +448,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	handleReset(pEvent, pRecordSet, pViewContext)
 	{
 		if (pEvent) pEvent.preventDefault();
+		this.bumpRenderEpoch();
 		this.pict.providers.FilterDataProvider.removeLastUsedFilterExperience(pRecordSet, pViewContext);
 		this.pict.log.info(`Clearing filters for record set: ${pRecordSet} in view context: ${pViewContext}`);
 		// Apply default filter experience if it exists, otherwise just clear
@@ -479,6 +502,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	addFilter(pEvent, pRecordSet, pViewContext, pFilterKey, pClauseKey)
 	{
 		if (pEvent) pEvent.preventDefault();
+		this.bumpRenderEpoch();
 		this.pict.log.info(`Adding filter: ${pFilterKey} with clause: ${pClauseKey} to record set: ${pRecordSet} in view context: ${pViewContext}`);
 		this.pict.providers[`RSP-Provider-${pRecordSet}`].addFilterClause(pFilterKey, pClauseKey);
 		//FIXME: we need the record from the original render here but no longer have it...
@@ -495,6 +519,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	removeFilter(pEvent, pRecordSet, pViewContext, pSpecificFilterKey)
 	{
 		if (pEvent) pEvent.preventDefault();
+		this.bumpRenderEpoch();
 		this.pict.log.info(`Removing filter: ${pSpecificFilterKey} from record set: ${pRecordSet} in view context: ${pViewContext}`);
 		this.pict.providers[`RSP-Provider-${pRecordSet}`].removeFilterClause(pSpecificFilterKey);
 		//FIXME: we need the record from the original render here but no longer have it...
