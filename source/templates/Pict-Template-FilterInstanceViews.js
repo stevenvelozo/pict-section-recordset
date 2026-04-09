@@ -310,9 +310,11 @@ class PictTemplateFilterInstanceViewInstruction extends libPictTemplate
 			{
 				tmpView.onAfterRenderAsync(() =>
 				{
-					// Plug this specific leak class that our explicit register()
-					// introduced (see class doc-comment, "Transaction leak note").
-					delete this.pict.TransactionTracking.transactionMap[tmpFilterTransactionHash];
+					// Remove the per-filter transaction we registered above
+					// once its drain completes. Pict-View will also attempt
+					// to unregister during its own onAfterRenderAsync chain;
+					// whichever call hits first wins, the other is a no-op.
+					this.pict.TransactionTracking.unregisterTransaction(tmpFilterTransactionHash);
 				}, tmpFilterRootRenderable);
 			});
 
