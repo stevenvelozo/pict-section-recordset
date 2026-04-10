@@ -1,4 +1,4 @@
-# Pict-Section-RecordSet <small>1</small>
+# Pict-Section-RecordSet
 
 > Dynamic record set management views with CRUD operations
 
