@@ -6,6 +6,8 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
         PictSectionRecordSet: {
             new (pFable: any, pOptions: any, pServiceHash: any): import("../services/RecordsSet-MetaController.js");
             default_configuration: Record<string, any>;
+            isFableService: boolean;
+            CoreServiceProviderBase: typeof import("fable-serviceproviderbase");
             PictRecordSetApplication: typeof import("../application/Pict-Application-RecordSet.js");
             RecordSetProviderBase: typeof import("../providers/RecordSet-RecordProvider-Base.js");
             RecordSetProviderMeadowEndpoints: typeof import("../providers/RecordSet-RecordProvider-MeadowEndpoints.js");
@@ -13,6 +15,35 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
     };
     chars: string;
     lookup: any[] | Uint8Array<ArrayBuffer>;
+    newFilterSearchApplied: boolean;
+    addFilterCallback: Function;
+    removeFilterCallback: Function;
+    _renderEpoch: number;
+    /**
+     * Bump the render epoch. Call this whenever the active filter clauses are
+     * about to change in a way that would invalidate in-flight filter renders.
+     *
+     * @return {number} The new epoch value.
+     */
+    bumpRenderEpoch(): number;
+    /**
+     * Sets a callback function to be executed after a filter is added.
+     * @param {function} pCallback - The callback function to be executed after a filter is added.
+     */
+    setAddFilterCallback(pCallback: Function): void;
+    /**
+     * Sets a callback function to be executed after a filter is removed.
+     * @param {function} pCallback - The callback function to be executed after a filter is removed.
+     */
+    setRemoveFilterCallback(pCallback: Function): void;
+    /**
+     * Removes the callback function for adding a filter.
+     */
+    removeAddFilterCallback(): void;
+    /**
+     * Removes the callback function for removing a filter.
+     */
+    removeRemoveFilterCallback(): void;
     /**
      * @return {string} - The marshalling prefix configured for filters. Usually 'Bundle.'
      */

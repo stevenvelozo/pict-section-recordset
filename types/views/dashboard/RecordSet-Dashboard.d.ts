@@ -25,6 +25,8 @@ declare class viewRecordSetDashboard extends libPictRecordSetRecordView {
      * @return {Promise<void>}
      */
     renderSpecificDashboard(pDashboardHash: string, pRecordSetConfiguration: Record<string, any>, pProviderHash: string, pFilterString: string, pSerializedFilterExperience: string, pOffset: number, pPageSize: number): Promise<void>;
+    _generateFormManifestTemplate(tmpManifest: any, section: any): string;
+    manifest: any;
     /**
      * @param {Record<string, any>} pRecordSetConfiguration
      * @param {string} pProviderHash

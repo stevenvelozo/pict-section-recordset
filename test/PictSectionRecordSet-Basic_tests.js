@@ -118,5 +118,88 @@ suite
 							}
 						);
 					});
+		suite
+			(
+				'MetaController addManifest',
+				() =>
+				{
+					test(
+						'should register a manifest at runtime',
+						(fDone) =>
+						{
+							let _Pict = new libPict();
+							_Pict.LogNoisiness = 0;
+							localStorage = originalLocalStorage;
+
+							let _Application = new DoNothingApplication(_Pict, {});
+							_Application.testDone = () =>
+							{
+								let _MetaController = _Pict.services.PictSectionRecordSet;
+
+								Expect(_MetaController).to.be.an('object', 'MetaController should exist.');
+								Expect(_MetaController.addManifest).to.be.a('function', 'addManifest should be a function.');
+
+								// Before adding, manifest should not exist
+								Expect(_MetaController.getManifest('TestDashboard')).to.equal(undefined);
+
+								// Add a manifest
+								_MetaController.addManifest({
+									Scope: 'TestDashboard',
+									CoreEntity: 'PhysicalAsset',
+									TitleTemplate: 'Test Dashboard',
+									Descriptors:
+									{
+										'Name':
+										{
+											'Name': 'Name',
+											'Hash': 'Name',
+											'PictDashboard': {}
+										}
+									}
+								});
+
+								// After adding, manifest should be retrievable
+								let tmpManifest = _MetaController.getManifest('TestDashboard');
+								Expect(tmpManifest).to.be.an('object', 'Manifest should be retrievable after addManifest.');
+
+								// The manifest definition should also be registered
+								Expect(_MetaController.manifestDefinitions['TestDashboard']).to.be.an('object');
+								Expect(_MetaController.manifestDefinitions['TestDashboard'].Scope).to.equal('TestDashboard');
+								Expect(_MetaController.manifestDefinitions['TestDashboard'].TitleTemplate).to.equal('Test Dashboard');
+
+								fDone();
+							};
+							_Application.initialize();
+						}
+					);
+
+					test(
+						'should reject invalid manifests',
+						(fDone) =>
+						{
+							let _Pict = new libPict();
+							_Pict.LogNoisiness = 0;
+							localStorage = originalLocalStorage;
+
+							let _Application = new DoNothingApplication(_Pict, {});
+							_Application.testDone = () =>
+							{
+								let _MetaController = _Pict.services.PictSectionRecordSet;
+
+								// Should not throw on invalid input
+								_MetaController.addManifest(null);
+								_MetaController.addManifest({});
+								_MetaController.addManifest({ Scope: 'NoDescriptors' });
+
+								// None of these should have been registered
+								Expect(_MetaController.getManifest('NoDescriptors')).to.equal(undefined);
+
+								fDone();
+							};
+							_Application.initialize();
+						}
+					);
+				}
+			);
 	}
 );

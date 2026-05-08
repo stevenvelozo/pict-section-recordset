@@ -48,6 +48,7 @@ declare class FilterDataProvider extends libPictProvider {
     constructor(pFable: import("pict"), pOptions?: Record<string, any>, pServiceHash?: string);
     storageProvider: any;
     keyCache: {};
+    filterExperienceModifiedFromURLHash: boolean;
     /** ===== UTILITY for Filter Experience ============= */
     /**
      * Using the information in the FilterClauses, try to generate a contextual default filter name for the display name of the current experience.

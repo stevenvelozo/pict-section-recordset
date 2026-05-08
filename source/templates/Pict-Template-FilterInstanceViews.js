@@ -296,6 +296,7 @@ class PictTemplateFilterInstanceViewInstruction extends libPictTemplate
 			// transaction queue instead of the dashboard's.
 			const tmpFilterTransactionHash = `FilterInstance-${tmpView.Hash}-${tmpRenderGUID}`;
 			this.pict.TransactionTracking.registerTransaction(tmpFilterTransactionHash);
+			/** @type {import('pict-view').Renderable} */
 			const tmpFilterRootRenderable =
 			{
 				RenderableHash: '__Virtual',

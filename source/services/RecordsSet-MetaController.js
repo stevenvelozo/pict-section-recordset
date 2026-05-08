@@ -518,6 +518,28 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 	}
 
 	/**
+	 * Register a manifest at runtime, after initialization. This is the
+	 * equivalent of adding a manifest to `fable.settings.Manifests` before
+	 * init, but callable after the fact.
+	 *
+	 * @param {Record<string, any>} pManifest - The manifest to register. Must have `Scope` and `Descriptors`.
+	 */
+	addManifest(pManifest)
+	{
+		if (!pManifest || !pManifest.Scope || !pManifest.Descriptors)
+		{
+			this.pict.log.error(`RecordSetMetacontroller: addManifest called with invalid manifest.`, pManifest);
+			return;
+		}
+		if (!pManifest.Form)
+		{
+			this.generateManifestTableCells(pManifest);
+		}
+		this.manifestDefinitions[pManifest.Scope] = pManifest;
+		this.manifests[pManifest.Scope] = pManifest.Form ? pManifest : this.pict.newManyfest(pManifest);
+	}
+
+	/**
 	 * @param {Record<string, any>} pManifest - The manifest to generate table cells for.
 	 */
 	generateManifestTableCells(pManifest)

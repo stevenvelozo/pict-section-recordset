@@ -22,6 +22,8 @@ declare class RecordSetDynamicRecordsetSolver extends libPictProvider {
         PictSectionRecordSet: InstanceType<{
             new (pFable: any, pOptions: any, pServiceHash: any): import("../services/RecordsSet-MetaController.js");
             default_configuration: Record<string, any>;
+            isFableService: boolean;
+            CoreServiceProviderBase: typeof import("fable-serviceproviderbase");
             PictRecordSetApplication: typeof import("../application/Pict-Application-RecordSet.js");
             RecordSetProviderBase: typeof import("./RecordSet-RecordProvider-Base.js");
             RecordSetProviderMeadowEndpoints: typeof import("./RecordSet-RecordProvider-MeadowEndpoints.js");
@@ -66,6 +68,8 @@ declare class RecordSetDynamicRecordsetSolver extends libPictProvider {
             PictSectionRecordSet: InstanceType<{
                 new (pFable: any, pOptions: any, pServiceHash: any): import("../services/RecordsSet-MetaController.js");
                 default_configuration: Record<string, any>;
+                isFableService: boolean;
+                CoreServiceProviderBase: typeof import("fable-serviceproviderbase");
                 PictRecordSetApplication: typeof import("../application/Pict-Application-RecordSet.js");
                 RecordSetProviderBase: typeof import("./RecordSet-RecordProvider-Base.js");
                 RecordSetProviderMeadowEndpoints: typeof import("./RecordSet-RecordProvider-MeadowEndpoints.js");
@@ -87,6 +91,8 @@ declare class RecordSetDynamicRecordsetSolver extends libPictProvider {
             PictSectionRecordSet: InstanceType<{
                 new (pFable: any, pOptions: any, pServiceHash: any): import("../services/RecordsSet-MetaController.js");
                 default_configuration: Record<string, any>;
+                isFableService: boolean;
+                CoreServiceProviderBase: typeof import("fable-serviceproviderbase");
                 PictRecordSetApplication: typeof import("../application/Pict-Application-RecordSet.js");
                 RecordSetProviderBase: typeof import("./RecordSet-RecordProvider-Base.js");
                 RecordSetProviderMeadowEndpoints: typeof import("./RecordSet-RecordProvider-MeadowEndpoints.js");

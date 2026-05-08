@@ -4,13 +4,35 @@ declare class viewFilterPersistenceView extends libPictView {
     currentRecordSet: string;
     currentViewContext: string;
     filterExperienceSelection: any;
+    filterExperienceInitialized: boolean;
     /**
-     * Toggles the filter persistence UI for a given record set and view context.
+     * Initializes the filter persistence view UI for a given record set and view context. This will render the UI and populate it with the relevant filter experiences for the given context.
      * @param {string} pRecordSet - The identifier of the record set.
      * @param {string} pViewContext - The context of the view.
+     * @param {function} pCallback - A callback function to be executed after initializing the UI.
+     * @returns {boolean} - Returns true when the UI has been initialized.
+     */
+    initializeFilterPersistenceViewUI(pRecordSet: string, pViewContext: string, pCallback: Function): boolean;
+    /**
+     * Updates the current filter experience name in the input field based on the current filter experience applied for the given record set and view context. This is used to ensure that if the filter experience was modified outside of the UI (ex: through the URL hash), we can reflect that in the input field and also handle the button states accordingly to prevent unintended consequences of saving in an invalid state.
+     * @param {string} pRecordSet - The identifier of the record set.
+     * @param {string} pViewContext - The context of the view.
+     * @param {boolean} pIgnoreCurrentExperienceURLParam - Whether to ignore the current experience when updating the input field, use this when in a modified state and the url is now outdated, to generate a new name.
+     */
+    updateDisplayNameInputWithCurrentFilterExperience(pRecordSet: string, pViewContext: string, pIgnoreCurrentExperienceURLParam?: boolean): void;
+    /**
+     * Toggles the filter persistence UI for a given record set and view context
+     * @param {string} pRecordSet - The identifier of the record set.
+     * @param {string} pViewContext - The context of the view.
+     * @param {function} pCallback - A callback function to be executed after toggling the UI.
      * @returns {boolean} - Returns true when the UI has been toggled.
      */
-    openFilterPersistenceUI(pRecordSet: string, pViewContext: string): boolean;
+    openFilterPersistenceUI(pRecordSet: string, pViewContext: string, pCallback: Function): boolean;
+    /**
+     * Handles the state of the filter experience when it has been modified from the URL hash instead of through the UI, which can lead to an invalid state for saving if the user tries to save without realizing the current experience was modified outside of the UI.
+     * This method will show a warning message and disable the save/set as default/remove as default/delete buttons to prevent unintended consequences of saving in that state, and will prompt the user to load a filter experience through the UI or refresh the page to reset the state before they can save. It will also disable the current filter name input and set a warning message in it to indicate that the user needs to apply or reset filters changes to be able to save settings. If the filter experience is not in that modified state, it will ensure the buttons are enabled and the current filter name input is enabled and populated with the current filter experience name for better visibility when saving.
+     */
+    handleModifiedFiltersState(): void;
     /**
      * Updates the filter experience settings for a given record set and view context.
      * @param {string} pRecordSet - The identifier of the record set.
@@ -46,20 +68,22 @@ declare class viewFilterPersistenceView extends libPictView {
      * @param {Event} event - The event object.
      * @returns {boolean} - Returns true when the settings have been loaded.
      */
-    loadFilterPersistenceSettings(event: Event): boolean;
+    loadFilterPersistenceSettings(event: Event, pCallback: any): boolean;
     /**
      * Saves the filter persistence settings for the current selection of filter experiences.
      * @param {Event} event - The event object.
+     * @param {function} [pCallback] - A callback function to be executed after saving the settings.
      * @returns {boolean} - Returns true when the settings have been saved.
      */
-    saveFilterPersistenceSettings(event: Event): boolean;
+    saveFilterPersistenceSettings(event: Event, pCallback?: Function): boolean;
     /**
      * Sets the filter experience as the default for the current record set and view context.
      * @param {Event} event - The event object.
      * @param {boolean} isDefault - Whether to set as default or not.
+     * @param {function} [pCallback] - A callback function to be executed after toggling the default setting.
      * @returns {boolean} - Returns true when the settings have been set as default.
      */
-    toggleFilterExperienceAsTheDefault(event: Event, isDefault: boolean): boolean;
+    toggleFilterExperienceAsTheDefault(event: Event, isDefault: boolean, pCallback?: Function): boolean;
     /**
      * Handles the button states for the filter experience selection.
      * @param {boolean} isDefault - Whether the filter experience is set as default or not.
@@ -68,9 +92,10 @@ declare class viewFilterPersistenceView extends libPictView {
     /**
      * Deletes the filter persistence settings for the current selection of filter experiences.
      * @param {Event} event - The event object.
+     * @param {function} [pCallback] - A callback function to be executed after deleting the settings.
      * @returns {boolean} - Returns true when the settings have been deleted.
      */
-    deleteFilterPersistenceSettings(event: Event): boolean;
+    deleteFilterPersistenceSettings(event: Event, pCallback?: Function): boolean;
 }
 declare namespace viewFilterPersistenceView {
     export { _DEFAULT_CONFIGURATION_FilterPersistenceView as default_configuration };

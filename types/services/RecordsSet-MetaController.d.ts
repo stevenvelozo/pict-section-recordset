@@ -1,5 +1,5 @@
 export = RecordSetMetacontroller;
-declare class RecordSetMetacontroller {
+declare class RecordSetMetacontroller extends libFableServiceProviderBase {
     constructor(pFable: any, pOptions: any, pServiceHash: any);
     /** @type {import('pict') & { PictSectionRecordSet: any, addAndInstantiateSingletonService: (hash: string, options: any, prototype: any) => any, newManyfest: (rec: any) => any }} */
     fable: import("pict") & {
@@ -13,11 +13,7 @@ declare class RecordSetMetacontroller {
         newManyfest: (rec: any) => any;
     };
     /** @type {any} */
-    log: any;
-    /** @type {any} */
     options: any;
-    /** @type {string} */
-    UUID: string;
     childViews: {
         list: any;
         create: any;
@@ -80,6 +76,14 @@ declare class RecordSetMetacontroller {
     initialize(): true | this;
     getManifest(pScope: any): import("manyfest");
     /**
+     * Register a manifest at runtime, after initialization. This is the
+     * equivalent of adding a manifest to `fable.settings.Manifests` before
+     * init, but callable after the fact.
+     *
+     * @param {Record<string, any>} pManifest - The manifest to register. Must have `Scope` and `Descriptors`.
+     */
+    addManifest(pManifest: Record<string, any>): void;
+    /**
      * @param {Record<string, any>} pManifest - The manifest to generate table cells for.
      */
     generateManifestTableCells(pManifest: Record<string, any>): void;
@@ -87,6 +91,7 @@ declare class RecordSetMetacontroller {
 declare namespace RecordSetMetacontroller {
     export { _DEFAULT_CONFIGURATION as default_configuration };
 }
+import libFableServiceProviderBase = require("fable-serviceproviderbase");
 /** @type {Record<string, any>} */
 declare const _DEFAULT_CONFIGURATION: Record<string, any>;
 //# sourceMappingURL=RecordsSet-MetaController.d.ts.map

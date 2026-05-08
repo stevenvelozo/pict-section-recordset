@@ -24,6 +24,8 @@ declare class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase 
             PictSectionRecordSet: InstanceType<{
                 new (pFable: any, pOptions: any, pServiceHash: any): import("../services/RecordsSet-MetaController.js");
                 default_configuration: Record<string, any>;
+                isFableService: boolean;
+                CoreServiceProviderBase: typeof import("fable-serviceproviderbase");
                 PictRecordSetApplication: typeof import("../application/Pict-Application-RecordSet.js");
                 RecordSetProviderBase: typeof libRecordSetProviderBase;
                 RecordSetProviderMeadowEndpoints: typeof MeadowEndpointsRecordSetProvider;
@@ -34,6 +36,8 @@ declare class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase 
         PictSectionRecordSet: InstanceType<{
             new (pFable: any, pOptions: any, pServiceHash: any): import("../services/RecordsSet-MetaController.js");
             default_configuration: Record<string, any>;
+            isFableService: boolean;
+            CoreServiceProviderBase: typeof import("fable-serviceproviderbase");
             PictRecordSetApplication: typeof import("../application/Pict-Application-RecordSet.js");
             RecordSetProviderBase: typeof libRecordSetProviderBase;
             RecordSetProviderMeadowEndpoints: typeof MeadowEndpointsRecordSetProvider;
@@ -45,6 +49,8 @@ declare class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase 
             PictSectionRecordSet: InstanceType<{
                 new (pFable: any, pOptions: any, pServiceHash: any): import("../services/RecordsSet-MetaController.js");
                 default_configuration: Record<string, any>;
+                isFableService: boolean;
+                CoreServiceProviderBase: typeof import("fable-serviceproviderbase");
                 PictRecordSetApplication: typeof import("../application/Pict-Application-RecordSet.js");
                 RecordSetProviderBase: typeof libRecordSetProviderBase;
                 RecordSetProviderMeadowEndpoints: typeof MeadowEndpointsRecordSetProvider;
@@ -55,6 +61,8 @@ declare class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase 
         PictSectionRecordSet: InstanceType<{
             new (pFable: any, pOptions: any, pServiceHash: any): import("../services/RecordsSet-MetaController.js");
             default_configuration: Record<string, any>;
+            isFableService: boolean;
+            CoreServiceProviderBase: typeof import("fable-serviceproviderbase");
             PictRecordSetApplication: typeof import("../application/Pict-Application-RecordSet.js");
             RecordSetProviderBase: typeof libRecordSetProviderBase;
             RecordSetProviderMeadowEndpoints: typeof MeadowEndpointsRecordSetProvider;
