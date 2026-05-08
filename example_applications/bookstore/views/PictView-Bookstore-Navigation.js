@@ -13,7 +13,7 @@ const _ViewConfiguration =
 		#Bookstore-Navigation-Container .pure-menu-heading
 		{
 			font-size: 110%;
-			color: #fff;
+			color: var(--theme-color-background-panel, #fff);
 			margin: 0;
 			background: #E76F51;
 			padding: 0.75em 0.6em;
@@ -21,9 +21,9 @@ const _ViewConfiguration =
 		.bookstore-nav-session
 		{
 			padding: 0.6em;
-			border-top: 1px solid #333;
+			border-top: 1px solid var(--theme-color-text-primary, #333);
 			font-size: 0.8rem;
-			color: #999;
+			color: var(--theme-color-text-muted, #999);
 		}
 		.bookstore-nav-session .dot
 		{
@@ -47,7 +47,7 @@ const _ViewConfiguration =
 			display: block;
 			margin-top: 0.5em;
 			background: #E76F51;
-			color: #fff;
+			color: var(--theme-color-background-panel, #fff);
 			border: none;
 			padding: 0.35em 0.75em;
 			border-radius: 4px;
@@ -65,9 +65,9 @@ const _ViewConfiguration =
 		.bookstore-nav-preprocessor
 		{
 			padding: 0.6em;
-			border-top: 1px solid #333;
+			border-top: 1px solid var(--theme-color-text-primary, #333);
 			font-size: 0.75rem;
-			color: #999;
+			color: var(--theme-color-text-muted, #999);
 		}
 		.bookstore-nav-preprocessor-label
 		{
@@ -101,7 +101,7 @@ const _ViewConfiguration =
 			left: 0;
 			right: 0;
 			bottom: 0;
-			background-color: #555;
+			background-color: var(--theme-color-text-secondary, #555);
 			transition: background-color 0.2s;
 			border-radius: 20px;
 		}
@@ -113,7 +113,7 @@ const _ViewConfiguration =
 			width: 14px;
 			left: 3px;
 			bottom: 3px;
-			background-color: #fff;
+			background-color: var(--theme-color-background-panel, #fff);
 			transition: transform 0.2s;
 			border-radius: 50%;
 		}
@@ -131,7 +131,7 @@ const _ViewConfiguration =
 			margin-left: 0.35em;
 			vertical-align: middle;
 			font-size: 0.7rem;
-			color: #999;
+			color: var(--theme-color-text-muted, #999);
 		}
 	`,
 

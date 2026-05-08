@@ -25,7 +25,7 @@ const _ViewConfiguration =
 		.bookstore-dashboard-session-info .badge
 		{
 			background: #E76F51;
-			color: #fff;
+			color: var(--theme-color-background-panel, #fff);
 			font-size: 0.7rem;
 			font-weight: 700;
 			padding: 0.15rem 0.5rem;
@@ -41,7 +41,7 @@ const _ViewConfiguration =
 		{
 			flex: 1;
 			min-width: 200px;
-			background: #fff;
+			background: var(--theme-color-background-panel, #fff);
 			border: 1px solid #D4A373;
 			border-top: 4px solid #E76F51;
 			border-radius: 6px;
@@ -65,7 +65,7 @@ const _ViewConfiguration =
 		{
 			margin: 0;
 			font-size: 0.9rem;
-			color: #666;
+			color: var(--theme-color-text-secondary, #666);
 		}
 	`,
 

@@ -138,7 +138,7 @@ appears on the left side of the page.
 		This styles a link within a selected menu item `<li>`.
 		*/
 		#menu .pure-menu-selected a {
-			color: #fff;
+			color: var(--theme-color-background-panel, #fff);
 		}
 
 	/*
@@ -146,7 +146,7 @@ appears on the left side of the page.
 	*/
 	#menu .pure-menu-heading {
 		font-size: 110%;
-		color: #fff;
+		color: var(--theme-color-background-panel, #fff);
 		margin: 0;
 	}
 
@@ -234,7 +234,7 @@ small screens.
 	margin-top: 1rem;
 	text-align: center;
 	font-size: 0.8rem;
-	color: #999;
+	color: var(--theme-color-text-muted, #999);
 }
 
 .bookstore-login-hint code {
@@ -248,7 +248,7 @@ small screens.
 /* -- PRSP RecordSet Container Styling --------------------------------------- */
 
 #PRSP_Container {
-	background: #fff;
+	background: var(--theme-color-background-panel, #fff);
 	border: 1px solid #D4A373;
 	border-top: 4px solid #E76F51;
 	border-radius: 6px;
@@ -290,7 +290,7 @@ small screens.
 #PRSP_Container input[type="button"],
 #PRSP_Container input[type="submit"] {
 	background: #E76F51;
-	color: #fff;
+	color: var(--theme-color-background-panel, #fff);
 	border: none;
 	padding: 0.5rem 1.25rem;
 	border-radius: 4px;
@@ -383,7 +383,7 @@ small screens.
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
-	background: #fff;
+	background: var(--theme-color-background-panel, #fff);
 	border: 1px solid #E8D9C0;
 	border-radius: 4px;
 	padding: 0.5rem 0.75rem;
@@ -393,7 +393,7 @@ small screens.
 /* Remove buttons in filter rows */
 #PRSP_Filter_Instances > div > button[type="button"] {
 	background: #B33030;
-	color: #fff;
+	color: var(--theme-color-background-panel, #fff);
 	border: none;
 	width: 1.6rem;
 	height: 1.6rem;
@@ -463,14 +463,14 @@ small screens.
 }
 #PRSP_Filter_Button_Reset {
 	background: #D4A373 !important;
-	color: #fff !important;
+	color: var(--theme-color-background-panel, #fff) !important;
 }
 #PRSP_Filter_Button_Reset:hover {
 	background: #B88A5C !important;
 }
 #PRSP_Filter_Button_Apply {
 	background: #E76F51 !important;
-	color: #fff !important;
+	color: var(--theme-color-background-panel, #fff) !important;
 }
 #PRSP_Filter_Button_Apply:hover {
 	background: #C45A3E !important;
@@ -501,7 +501,7 @@ small screens.
 
 /* Filter dropdowns/popovers */
 #PRSP-SUBSET-Filters-Template-Add-Filter-Container {
-	background: #fff;
+	background: var(--theme-color-background-panel, #fff);
 	border: 1px solid #D4A373;
 	border-radius: 4px;
 	padding: 0.5rem;
@@ -509,7 +509,7 @@ small screens.
 	box-shadow: 0 2px 8px rgba(38,70,83,0.12);
 }
 #FilterPersistenceView-Container {
-	background: #fff;
+	background: var(--theme-color-background-panel, #fff);
 	border: 1px solid #D4A373;
 	border-radius: 4px;
 	padding: 0.5rem;
@@ -557,7 +557,7 @@ small screens.
 #RSP_Upper_Pagination_Container ul li a:hover,
 #RSP_Lower_Pagination_Container ul li a:hover {
 	background: #E76F51;
-	color: #fff;
+	color: var(--theme-color-background-panel, #fff);
 	border-color: #E76F51;
 }
 
@@ -572,11 +572,11 @@ a[class^="page-offset"] {
 	font-size: 0.8rem;
 	font-weight: 500;
 	transition: background 0.15s, color 0.15s;
-	background: #fff;
+	background: var(--theme-color-background-panel, #fff);
 }
 a[class^="page-offset"]:hover {
 	background: #E76F51;
-	color: #fff;
+	color: var(--theme-color-background-panel, #fff);
 	border-color: #E76F51;
 }
 
@@ -599,7 +599,7 @@ a[class^="page-offset"]:hover {
 	padding: 0.6rem 0.75rem !important;
 	border-bottom: 1px solid #E8D9C0 !important;
 	font-size: 0.85rem;
-	background: #fff;
+	background: var(--theme-color-background-panel, #fff);
 	vertical-align: middle;
 }
 #PRSP_List_Table tr:nth-child(even) td {

@@ -13,8 +13,8 @@
 
 			/* --- Header Bar --- */
 			.pict-example-header { display: flex; align-items: stretch; background: #264653; border-bottom: 3px solid #E76F51; }
-			.pict-example-badge { background: #E76F51; color: #fff; padding: 0.6rem 1rem; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; display: flex; align-items: center; gap: 0.5rem; }
-			.pict-example-badge svg { width: 14px; height: 14px; fill: #fff; flex-shrink: 0; }
+			.pict-example-badge { background: #E76F51; color: var(--theme-color-background-panel, #fff); padding: 0.6rem 1rem; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; display: flex; align-items: center; gap: 0.5rem; }
+			.pict-example-badge svg { width: 14px; height: 14px; fill: var(--theme-color-background-panel, #fff); flex-shrink: 0; }
 			.pict-example-app-name { padding: 0.6rem 1rem; color: #FAEDCD; font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; }
 			.pict-example-module { margin-left: auto; padding: 0.6rem 1rem; color: #D4A373; font-size: 0.75rem; display: flex; align-items: center; letter-spacing: 0.03em; }
 
@@ -26,7 +26,7 @@
 
 			/* --- Content Area --- */
 			.pict-example-content { padding: 1.5rem; }
-			#PRSP_Container { background: #fff; border: 1px solid #D4A373; border-top: 4px solid #E76F51; border-radius: 6px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(38,70,83,0.08); }
+			#PRSP_Container { background: var(--theme-color-background-panel, #fff); border: 1px solid #D4A373; border-top: 4px solid #E76F51; border-radius: 6px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(38,70,83,0.08); }
 
 			/* --- Form Element Styling --- */
 			#PRSP_Container input[type="text"],
@@ -42,7 +42,7 @@
 			#PRSP_Container h1, #PRSP_Container h2, #PRSP_Container h3, #PRSP_Container h4 { color: #264653; }
 			#PRSP_Container button,
 			#PRSP_Container input[type="button"],
-			#PRSP_Container input[type="submit"] { background: #E76F51; color: #fff; border: none; padding: 0.5rem 1.25rem; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+			#PRSP_Container input[type="submit"] { background: #E76F51; color: var(--theme-color-background-panel, #fff); border: none; padding: 0.5rem 1.25rem; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
 			#PRSP_Container button:hover,
 			#PRSP_Container input[type="button"]:hover,
 			#PRSP_Container input[type="submit"]:hover { background: #C45A3E; }
@@ -68,10 +68,10 @@
 
 			/* Filter instances container */
 			#PRSP_Filter_Instances { display: flex; flex-direction: column; gap: 0.5rem; }
-			#PRSP_Filter_Instances > div { display: flex; align-items: center; gap: 0.5rem; background: #fff; border: 1px solid #E8D9C0; border-radius: 4px; padding: 0.5rem 0.75rem; flex-wrap: wrap; }
+			#PRSP_Filter_Instances > div { display: flex; align-items: center; gap: 0.5rem; background: var(--theme-color-background-panel, #fff); border: 1px solid #E8D9C0; border-radius: 4px; padding: 0.5rem 0.75rem; flex-wrap: wrap; }
 
 			/* Remove (-) buttons in filter rows */
-			#PRSP_Filter_Instances > div > button[type="button"] { background: #B33030; color: #fff; border: none; width: 1.6rem; height: 1.6rem; border-radius: 50%; font-size: 0.85rem; font-weight: 700; cursor: pointer; flex-shrink: 0; padding: 0; display: flex; align-items: center; justify-content: center; line-height: 1; }
+			#PRSP_Filter_Instances > div > button[type="button"] { background: #B33030; color: var(--theme-color-background-panel, #fff); border: none; width: 1.6rem; height: 1.6rem; border-radius: 50%; font-size: 0.85rem; font-weight: 700; cursor: pointer; flex-shrink: 0; padding: 0; display: flex; align-items: center; justify-content: center; line-height: 1; }
 			#PRSP_Filter_Instances > div > button[type="button"]:hover { background: #8B2020; }
 
 			/* Filter labels (spans) */
@@ -111,9 +111,9 @@
 			#PRSP_Filter_Form > fieldset:nth-child(3) { border-top: 1px solid #E8D9C0; margin-top: 0.25rem; padding-top: 0.6rem; }
 			#PRSP_Filter_Button_Clear { background: #264653 !important; color: #FAEDCD !important; }
 			#PRSP_Filter_Button_Clear:hover { background: #1A3340 !important; }
-			#PRSP_Filter_Button_Reset { background: #D4A373 !important; color: #fff !important; }
+			#PRSP_Filter_Button_Reset { background: #D4A373 !important; color: var(--theme-color-background-panel, #fff) !important; }
 			#PRSP_Filter_Button_Reset:hover { background: #B88A5C !important; }
-			#PRSP_Filter_Button_Apply { background: #E76F51 !important; color: #fff !important; }
+			#PRSP_Filter_Button_Apply { background: #E76F51 !important; color: var(--theme-color-background-panel, #fff) !important; }
 			#PRSP_Filter_Button_Apply:hover { background: #C45A3E !important; }
 			#PRSP_Filter_Button_Add { background: #264653 !important; color: #FAEDCD !important; width: 2rem; height: 2rem; border-radius: 50% !important; font-size: 1rem; font-weight: 700; display: flex !important; align-items: center; justify-content: center; padding: 0 !important; }
 			#PRSP_Filter_Button_Add:hover { background: #1A3340 !important; }
@@ -121,8 +121,8 @@
 			#PRSP_Filter_Button_Manage:hover { background: #1A3340 !important; }
 
 			/* Dropdowns / popovers inside filters */
-			#PRSP-SUBSET-Filters-Template-Add-Filter-Container { background: #fff; border: 1px solid #D4A373; border-radius: 4px; padding: 0.5rem; margin-top: 0.25rem; box-shadow: 0 2px 8px rgba(38,70,83,0.12); }
-			#FilterPersistenceView-Container { background: #fff; border: 1px solid #D4A373; border-radius: 4px; padding: 0.5rem; margin-top: 0.25rem; box-shadow: 0 2px 8px rgba(38,70,83,0.12); }
+			#PRSP-SUBSET-Filters-Template-Add-Filter-Container { background: var(--theme-color-background-panel, #fff); border: 1px solid #D4A373; border-radius: 4px; padding: 0.5rem; margin-top: 0.25rem; box-shadow: 0 2px 8px rgba(38,70,83,0.12); }
+			#FilterPersistenceView-Container { background: var(--theme-color-background-panel, #fff); border: 1px solid #D4A373; border-radius: 4px; padding: 0.5rem; margin-top: 0.25rem; box-shadow: 0 2px 8px rgba(38,70,83,0.12); }
 
 			/* --- Pagination --- */
 			#RSP_Upper_Pagination_Container,
@@ -136,17 +136,17 @@
 			#RSP_Upper_Pagination_Container ul li a,
 			#RSP_Lower_Pagination_Container ul li a { display: block; padding: 0.35rem 0.75rem; border: 1px solid #D4A373; border-radius: 4px; text-decoration: none; color: #264653; font-size: 0.8rem; font-weight: 500; transition: background 0.15s, color 0.15s; }
 			#RSP_Upper_Pagination_Container ul li a:hover,
-			#RSP_Lower_Pagination_Container ul li a:hover { background: #E76F51; color: #fff; border-color: #E76F51; }
+			#RSP_Lower_Pagination_Container ul li a:hover { background: #E76F51; color: var(--theme-color-background-panel, #fff); border-color: #E76F51; }
 
 			/* --- Page Number Links --- */
 			#PRSP_List_Container > div { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 0.5rem; }
-			a[class^="page-offset"] { display: inline-block; padding: 0.3rem 0.6rem; border: 1px solid #D4A373; border-radius: 4px; text-decoration: none; color: #264653; font-size: 0.8rem; font-weight: 500; transition: background 0.15s, color 0.15s; background: #fff; }
-			a[class^="page-offset"]:hover { background: #E76F51; color: #fff; border-color: #E76F51; }
+			a[class^="page-offset"] { display: inline-block; padding: 0.3rem 0.6rem; border: 1px solid #D4A373; border-radius: 4px; text-decoration: none; color: #264653; font-size: 0.8rem; font-weight: 500; transition: background 0.15s, color 0.15s; background: var(--theme-color-background-panel, #fff); }
+			a[class^="page-offset"]:hover { background: #E76F51; color: var(--theme-color-background-panel, #fff); border-color: #E76F51; }
 
 			/* --- List Table Refinements --- */
 			#PRSP_List_Table { width: 100%; border-collapse: collapse; }
 			#PRSP_List_Table th { background: #264653 !important; color: #FAEDCD !important; padding: 0.6rem 0.75rem !important; border-bottom: none !important; text-align: left; font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
-			#PRSP_List_Table td { padding: 0.6rem 0.75rem !important; border-bottom: 1px solid #E8D9C0 !important; font-size: 0.85rem; background: #fff; vertical-align: middle; }
+			#PRSP_List_Table td { padding: 0.6rem 0.75rem !important; border-bottom: 1px solid #E8D9C0 !important; font-size: 0.85rem; background: var(--theme-color-background-panel, #fff); vertical-align: middle; }
 			#PRSP_List_Table tr:nth-child(even) td { background: #FFF9F0; }
 			#PRSP_List_Table tr:hover td { background: #FFF0E0; }
 			#PRSP_List_Table img { max-width: 80px; max-height: 100px; border-radius: 3px; border: 1px solid #E8D9C0; }

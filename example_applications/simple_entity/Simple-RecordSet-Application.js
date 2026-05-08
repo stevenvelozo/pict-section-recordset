@@ -767,7 +767,7 @@ module.exports.default_configuration.pict_configuration = (
 				"RecordSetDashboardManifests": [ "Bestsellers" ],
 
 				"RecordSetListHasExtraColumns": true,
-				"RecordSetListExtraColumnsHeaderTemplate": "<th style=\"border-bottom: 1px solid #ccc; padding: 5px; background-color: #f2f2f2; color: #333;\">Cover</th>",
+				"RecordSetListExtraColumnsHeaderTemplate": "<th style=\"border-bottom: 1px solid var(--theme-color-border-default, #ccc); padding: 5px; background-color: var(--theme-color-background-tertiary, #f2f2f2); color: var(--theme-color-text-primary, #333);\">Cover</th>",
 				"RecordSetListExtraColumnRowTemplate": "<td><img src=\"{~D:Record.Data.ImageURL~}\"></td>",
 
 				"SearchFields": [ "Title" ],
@@ -837,7 +837,7 @@ module.exports.default_configuration.pict_configuration = (
 				"AvailableVerbs": [ "Dashboard" ],
 
 				"RecordSetListHasExtraColumns": true,
-				"RecordSetListExtraColumnsHeaderTemplate": "<th style=\"border-bottom: 1px solid #ccc; padding: 5px; background-color: #f2f2f2; color: #333;\">Cover</th>",
+				"RecordSetListExtraColumnsHeaderTemplate": "<th style=\"border-bottom: 1px solid var(--theme-color-border-default, #ccc); padding: 5px; background-color: var(--theme-color-background-tertiary, #f2f2f2); color: var(--theme-color-text-primary, #333);\">Cover</th>",
 				"RecordSetListExtraColumnRowTemplate": "<td><img src=\"{~D:Record.Data.ImageURL~}\"></td>",
 
 				"SearchFields": [ "Title" ],

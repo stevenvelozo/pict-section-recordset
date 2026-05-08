@@ -59,7 +59,7 @@ const _DEFAULT_CONFIGURATION_List_RecordListEntry = (
 				{
 					Hash: 'PRSP-Dashboard-RecordListEntry-Template-Row-Cell',
 					Template: /*html*/`
-		<td style="border-bottom: 1px solid #ccc; padding: 5px;">
+		<td style="border-bottom: 1px solid var(--theme-color-border-default, #ccc); padding: 5px;">
 			{~TBDA:Record.Data.PictDashboard.ValueTemplate~}
 		</td>
 	`
@@ -74,7 +74,7 @@ const _DEFAULT_CONFIGURATION_List_RecordListEntry = (
 					Hash: 'PRSP-Dashboard-RecordListAction-Template-Cell',
 					// FIXME: Needs a better way of getting the appropriate link templates in (likely requiring piping the RecordSet to the link manager)
 					Template: /*html*/`
-		<td style="border-bottom: 1px solid #ccc; padding: 5px;">
+		<td style="border-bottom: 1px solid var(--theme-color-border-default, #ccc); padding: 5px;">
 			<ul>
 			{~TSWP:PRSP-Dashboard-RecordListAction-Template-Cell-Datum:Pict.providers.RecordSetLinkManager.linkTemplates:Record~}
 			</ul>

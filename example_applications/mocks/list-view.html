@@ -11,8 +11,8 @@
 
 		/* --- Header Bar --- */
 		.pict-example-header { display: flex; align-items: stretch; background: #264653; border-bottom: 3px solid #E76F51; }
-		.pict-example-badge { background: #E76F51; color: #fff; padding: 0.6rem 1rem; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; display: flex; align-items: center; gap: 0.5rem; }
-		.pict-example-badge svg { width: 14px; height: 14px; fill: #fff; flex-shrink: 0; }
+		.pict-example-badge { background: #E76F51; color: var(--theme-color-background-panel, #fff); padding: 0.6rem 1rem; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; display: flex; align-items: center; gap: 0.5rem; }
+		.pict-example-badge svg { width: 14px; height: 14px; fill: var(--theme-color-background-panel, #fff); flex-shrink: 0; }
 		.pict-example-app-name { padding: 0.6rem 1rem; color: #FAEDCD; font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; }
 		.pict-example-module { margin-left: auto; padding: 0.6rem 1rem; color: #D4A373; font-size: 0.75rem; display: flex; align-items: center; letter-spacing: 0.03em; }
 
@@ -25,7 +25,7 @@
 		#RSP-Header-Container h2 { color: #D4A373; font-size: 1rem; font-weight: 400; margin: 0; }
 
 		/* --- Filter Section --- */
-		#RSP-Filter-Container { background: #fff; border: 1px solid #D4A373; border-top: 4px solid #E76F51; border-radius: 6px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(38,70,83,0.08); }
+		#RSP-Filter-Container { background: var(--theme-color-background-panel, #fff); border: 1px solid #D4A373; border-top: 4px solid #E76F51; border-radius: 6px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(38,70,83,0.08); }
 		#RSP-Filter-Form { display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap; }
 		#RSP-Filter-Form fieldset { border: none; padding: 0; margin: 0; flex: 1; min-width: 200px; }
 		#RSP-Filter-Form label { display: block; color: #264653; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.3rem; }
@@ -34,7 +34,7 @@
 		#RSP-Filter-Button-Container { display: flex; gap: 0.5rem; flex: none; }
 		#RSP-Filter-Button-Reset { background: #264653; color: #FAEDCD; border: none; padding: 0.5rem 1.25rem; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
 		#RSP-Filter-Button-Reset:hover { background: #1A3340; }
-		#RSP-Filter-Button-Apply { background: #E76F51; color: #fff; border: none; padding: 0.5rem 1.25rem; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+		#RSP-Filter-Button-Apply { background: #E76F51; color: var(--theme-color-background-panel, #fff); border: none; padding: 0.5rem 1.25rem; border-radius: 4px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
 		#RSP-Filter-Button-Apply:hover { background: #C45A3E; }
 
 		/* --- Pagination --- */
@@ -42,10 +42,10 @@
 		#RSP-Upper-Pagination-Container p, #RSP-Lower-Pagination-Container p { margin: 0; font-size: 0.85rem; color: #264653; }
 		#RSP-Upper-Pagination-Container ul, #RSP-Lower-Pagination-Container ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 0.25rem; }
 		#RSP-Upper-Pagination-Container li a, #RSP-Lower-Pagination-Container li a { display: block; padding: 0.35rem 0.75rem; border: 1px solid #D4A373; border-radius: 4px; text-decoration: none; color: #264653; font-size: 0.8rem; font-weight: 500; }
-		#RSP-Upper-Pagination-Container li a:hover, #RSP-Lower-Pagination-Container li a:hover { background: #E76F51; color: #fff; border-color: #E76F51; }
+		#RSP-Upper-Pagination-Container li a:hover, #RSP-Lower-Pagination-Container li a:hover { background: #E76F51; color: var(--theme-color-background-panel, #fff); border-color: #E76F51; }
 
 		/* --- List Table --- */
-		#RSP-List-Container { background: #fff; border: 1px solid #D4A373; border-top: 4px solid #E76F51; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 8px rgba(38,70,83,0.08); }
+		#RSP-List-Container { background: var(--theme-color-background-panel, #fff); border: 1px solid #D4A373; border-top: 4px solid #E76F51; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 8px rgba(38,70,83,0.08); }
 		#RSP-List-Table { width: 100%; border-collapse: collapse; }
 		#RSP-List-Table th { background: #264653; color: #FAEDCD; padding: 0.6rem 0.75rem; text-align: left; font-size: 0.8rem; font-weight: 600; }
 		#RSP-List-Table td { padding: 0.6rem 0.75rem; border-bottom: 1px solid #E8D9C0; font-size: 0.85rem; }
