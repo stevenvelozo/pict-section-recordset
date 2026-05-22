@@ -237,7 +237,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 							}
 						}
 					}
-					this.pict.EntityProvider.cacheConnectedEntityRecords(recordsReturn, IDFields, ['User', 'User'], false, () => 
+					this.pict.EntityProvider.cacheConnectedEntityRecordsWithoutCount(recordsReturn, IDFields, ['User', 'User'], false, () => 
 					{
 						resolve({ Records: recordsReturn, Facets: { } });
 					});
