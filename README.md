@@ -1,5 +1,7 @@
 # PICT RecordSet Section
 
+> **[&#9654; Read the Pict-Section-Recordset Documentation](https://stevenvelozo.github.io/pict-section-recordset/)** &mdash; interactive docs with the full API reference.
+
 A PICT section that provides basic CRUD views (Create, Read, Update and Delete)
 based on stable providers and configurations.
 
