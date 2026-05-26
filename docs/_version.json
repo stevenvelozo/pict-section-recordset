@@ -1,7 +1,7 @@
 {
 	"Name": "pict-section-recordset",
-	"Version": "1.0.67",
+	"Version": "1.0.69",
 	"Description": "Pict dynamic record set management views",
-	"GeneratedAt": "2026-05-22T05:46:04.282Z",
-	"GitCommit": "04189e9"
+	"GeneratedAt": "2026-05-26T18:24:43.490Z",
+	"GitCommit": "aa90460"
 }
