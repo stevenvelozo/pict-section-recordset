@@ -1,6 +1,6 @@
 # PICT RecordSet Section
 
-> **[&#9654; Read the Pict-Section-Recordset Documentation](https://stevenvelozo.github.io/pict-section-recordset/)** &mdash; interactive docs with the full API reference.
+> **[&#9654; Read the Pict-Section-Recordset Documentation](https://fable-retold.github.io/pict-section-recordset/)** &mdash; interactive docs with the full API reference.
 
 A PICT section that provides basic CRUD views (Create, Read, Update and Delete)
 based on stable providers and configurations.
@@ -13,10 +13,10 @@ can be used to programmatically create a functional provider.
 
 ## Related Packages
 
-- [pict](https://github.com/stevenvelozo/pict) - MVC application framework
-- [pict-view](https://github.com/stevenvelozo/pict-view) - View base class
-- [pict-provider](https://github.com/stevenvelozo/pict-provider) - Data provider base class
-- [pict-section-form](https://github.com/stevenvelozo/pict-section-form) - Form section component
+- [pict](https://github.com/fable-retold/pict) - MVC application framework
+- [pict-view](https://github.com/fable-retold/pict-view) - View base class
+- [pict-provider](https://github.com/fable-retold/pict-provider) - Data provider base class
+- [pict-section-form](https://github.com/fable-retold/pict-section-form) - Form section component
 
 ## License
 

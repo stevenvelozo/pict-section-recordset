@@ -8,12 +8,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/stevenvelozo/pict-section-recordset.git"
+    "url": "git+https://github.com/fable-retold/pict-section-recordset.git"
   },
   "bugs": {
-    "url": "https://github.com/stevenvelozo/pict-section-recordset/issues"
+    "url": "https://github.com/fable-retold/pict-section-recordset/issues"
   },
-  "homepage": "https://github.com/stevenvelozo/pict-section-recordset#readme",
+  "homepage": "https://github.com/fable-retold/pict-section-recordset#readme",
   "scripts": {
     "start": "node source/Pict-Section-RecordSet.js",
     "tests": "npx quack test -g",

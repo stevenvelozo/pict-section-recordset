@@ -7,5 +7,5 @@
 - Meadow endpoint integration for API-driven data
 - Extensible record providers for custom data sources
 
-[GitHub](https://github.com/stevenvelozo/pict-section-recordset)
+[GitHub](https://github.com/fable-retold/pict-section-recordset)
 [Get Started](#pict-section-recordset)
