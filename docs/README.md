@@ -69,8 +69,8 @@ Filters allow users to narrow down record sets. Filter types include text search
 
 ## Related Packages
 
-- [pict](https://github.com/fable-retold/pict) - Core Pict framework
-- [pict-section-form](https://github.com/fable-retold/pict-section-form) - Dynamic forms framework
-- [pict-application](https://github.com/fable-retold/pict-application) - Application base class
-- [meadow](https://github.com/fable-retold/meadow) - REST API framework
-- [fable](https://github.com/fable-retold/fable) - Service provider framework
+- [pict](https://fable-retold.github.io/pict/) - Core Pict framework
+- [pict-section-form](https://fable-retold.github.io/pict-section-form/) - Dynamic forms framework
+- [pict-application](https://fable-retold.github.io/pict-application/) - Application base class
+- [meadow](https://fable-retold.github.io/meadow/) - REST API framework
+- [fable](https://fable-retold.github.io/fable/) - Service provider framework
