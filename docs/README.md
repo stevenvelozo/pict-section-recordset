@@ -2,7 +2,7 @@
 
 > Dynamic record set management views with CRUD operations
 
-Pict-Section-RecordSet provides automatic CRUD (Create, Read, Update, Delete) views for managing record sets in Pict applications. Built on top of pict-section-form, it offers list views, detail views, filtering, pagination, and seamless integration with Meadow API endpoints.
+Pict-Section-RecordSet provides automatic CRUD (Create, Read, Update, Delete) views for managing record sets in Pict applications. Built on top of pict-section-form, it offers list views, detail views, filtering, pagination, and smooth integration with Meadow API endpoints.
 
 ## Features
 
