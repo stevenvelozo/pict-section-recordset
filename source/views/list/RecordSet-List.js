@@ -373,6 +373,14 @@ class viewRecordSetList extends libPictRecordSetRecordView
 			tmpRecordListData.PageLinkBookmarks.NextLink = tmpRecordListData.PageLinks[tmpRecordListData.PageLinkBookmarks.Next];
 		}
 
+		// When there is only a single page there is nothing to paginate: hide the page
+		// buttons and the previous/next links. The "Showing X to Y of Z" summary stays.
+		if (tmpRecordListData.PageCount <= 1)
+		{
+			tmpRecordListData.PageLinksLimited = [];
+			tmpRecordListData.PageLinkBookmarks.ShowPreviousLink = false;
+			tmpRecordListData.PageLinkBookmarks.ShowNextLink = false;
+		}
 		// Put code here to preprocess columns into other data parts.
 		if (tmpRecordListData.RecordSetConfiguration.hasOwnProperty('RecordSetListColumns'))
 		{
@@ -625,6 +633,14 @@ class viewRecordSetList extends libPictRecordSetRecordView
 			tmpRecordListData.PageLinkBookmarks.NextLink = tmpRecordListData.PageLinks[tmpRecordListData.PageLinkBookmarks.Next];
 		}
 
+		// When there is only a single page there is nothing to paginate: hide the page
+		// buttons and the previous/next links. The "Showing X to Y of Z" summary stays.
+		if (tmpRecordListData.PageCount <= 1)
+		{
+			tmpRecordListData.PageLinksLimited = [];
+			tmpRecordListData.PageLinkBookmarks.ShowPreviousLink = false;
+			tmpRecordListData.PageLinkBookmarks.ShowNextLink = false;
+		}
 		tmpRecordListData.TableCells = pManifest?.TableCells;
 
 		if (!tmpRecordListData.TableCells)
