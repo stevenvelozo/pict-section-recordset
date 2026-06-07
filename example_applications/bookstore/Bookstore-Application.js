@@ -1,4 +1,9 @@
 const libPictRecordSet = require('../../source/Pict-Section-RecordSet.js');
+// pict-section-picker (sibling module, by relative path for the example) + its pict-section-form
+// 'Picker' InputType adapter — demonstrates the entity filters rendering a picker instead of the
+// built-in table UI.
+const libPictSectionPicker = require('../../../pict-section-picker');
+const libPictPickerForm = require('../../../pict-section-picker/form');
 const libPictRouter = require('pict-router');
 const libPictTemplatePreprocessor = require('pict-template-preprocessor');
 
@@ -167,6 +172,19 @@ class BookstoreApplication extends libPictRecordSet.PictRecordSetApplication
 
 	onAfterInitializeAsync(fCallback)
 	{
+		// Register the picker + its pict-section-form 'Picker' InputType, then opt the entity-reference
+		// filters into it so they render a searchable picker instead of the legacy table UI.
+		if (!this.pict.providers['Pict-Section-Picker'])
+		{
+			this.pict.addProvider('Pict-Section-Picker', libPictSectionPicker.default_configuration, libPictSectionPicker);
+		}
+		libPictPickerForm.registerPickerInputType(this.pict);
+		[ 'InternalJoinSelectedValue', 'InternalJoinSelectedValueList', 'ExternalJoinSelectedValue', 'ExternalJoinSelectedValueList' ].forEach((pType) =>
+		{
+			const tmpView = this.pict.views['PRSP-FilterType-' + pType];
+			if (tmpView) { tmpView.options.EntityInputType = 'Picker'; }
+		});
+
 		// Render the login form first
 		this.pict.views['Bookstore-Login'].render();
 

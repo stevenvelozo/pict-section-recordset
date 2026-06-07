@@ -29,6 +29,10 @@ const _DEFAULT_CONFIGURATION_FilterPersistenceView = (
 .prsp-exp-select, .prsp-exp-name { font: inherit; font-size: 0.9rem; padding: 0.42rem 0.6rem; border-radius: 8px;
 	border: 1px solid var(--theme-color-border-default, #d7dce3); background: var(--theme-color-background-primary, #fff); color: var(--theme-color-text-primary, #1f2733); }
 .prsp-exp-select { flex: 0 0 auto; width: 230px; min-width: 0; max-width: 100%; }
+/* When a host layers select2 (or a similar widget) on the stored-filter <select>, its container
+   defaults to display:block at the row's full width, pushing Save/Delete onto a second line. Pin it to
+   a fixed-width inline flex item so the controls stay on one row. */
+.prsp-exp-row .select2-container { flex: 0 0 auto !important; display: inline-block !important; width: 230px !important; max-width: 100%; vertical-align: middle; }
 .prsp-exp-select:focus, .prsp-exp-name:focus { outline: none; border-color: var(--theme-color-brand-primary, #156dd1);
 	box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-color-brand-primary, #156dd1) 16%, transparent); }
 .prsp-exp-btn { flex: 0 0 auto; white-space: nowrap; }

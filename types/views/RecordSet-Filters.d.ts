@@ -154,6 +154,14 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
     /** Reflect the add-filter popover's open/closed state on its container element. */
     _paintAddFilterOpenState(): void;
     /**
+     * Position the (fixed) add-filter popover against its trigger button, flipping above when there's
+     * more room there. Fixed positioning means no ancestor overflow:hidden (the host's filter card, the
+     * slide-out drawer) can clip it — the price is we set its top/left from the trigger's rect here.
+     *
+     * @param {HTMLElement} pPopover - the #PRSP_AddFilter_Popover element (already display:block).
+     */
+    _positionAddFilterPopover(pPopover: HTMLElement): void;
+    /**
      * @param {Event} pEvent - The DOM event that triggered the search
      * @param {string} pRecordSet - The record set being filtered
      * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)

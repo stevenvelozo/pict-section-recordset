@@ -67,7 +67,9 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 .prsp-filters-actions { flex: 0 0 auto; display: flex; align-items: center; gap: 0.5rem; }
 
 /* Module-owned "Add filter" popover (replaces the old native <select> pickers). */
-.prsp-addfilter-pop { position: absolute; z-index: 30; top: calc(100% + 0.35rem); left: 0; min-width: 280px; max-width: 360px; display: none; }
+/* Fixed (viewport-anchored) + JS-positioned on open, so no ancestor overflow:hidden — the filter card,
+   the slide-out drawer — can clip it, whatever the host's layout. */
+.prsp-addfilter-pop { position: fixed; z-index: 30; min-width: 280px; max-width: 360px; display: none; }
 .prsp-addfilter-pop.open { display: block; }
 /* Transparent full-viewport backdrop: catches outside clicks to close (no document listener). */
 .prsp-addfilter-backdrop { position: fixed; inset: 0; z-index: 0; }
@@ -112,7 +114,7 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 		</form>
 		<div class="prsp-filters-drawer" id="PRSP_Filter_Drawer">
 			<div class="prsp-filters-drawer-inner">
-				<div id="PRSP_Filter_Instances" class="prsp-filters-clauses">
+				<div id="PRSP_Filter_Instances" class="prsp-filters-clauses" onkeydown="if (event.key === 'Enter' &amp;&amp; !event.target.closest('.pps')) { event.preventDefault(); _Pict.views['PRSP-Filters'].handleSearch(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}'); }">
 					{~FIV:Record~}
 				</div>
 				{~T:PRSP-SUBSET-Filters-Template-AddFilter-Fieldset~}
@@ -751,7 +753,46 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	_paintAddFilterOpenState()
 	{
 		const tmpPopover = document.getElementById('PRSP_AddFilter_Popover');
-		if (tmpPopover) { tmpPopover.classList.toggle('open', !!this._addFilterOpen); }
+		if (!tmpPopover) { return; }
+		tmpPopover.classList.toggle('open', !!this._addFilterOpen);
+		if (this._addFilterOpen) { this._positionAddFilterPopover(tmpPopover); }
+	}
+
+	/**
+	 * Position the (fixed) add-filter popover against its trigger button, flipping above when there's
+	 * more room there. Fixed positioning means no ancestor overflow:hidden (the host's filter card, the
+	 * slide-out drawer) can clip it — the price is we set its top/left from the trigger's rect here.
+	 *
+	 * @param {HTMLElement} pPopover - the #PRSP_AddFilter_Popover element (already display:block).
+	 */
+	_positionAddFilterPopover(pPopover)
+	{
+		const tmpTrigger = document.getElementById('PRSP_Filter_Button_Add');
+		if (!tmpTrigger) { return; }
+		const tmpPanel = /** @type {HTMLElement} */ (pPopover.querySelector('.prsp-addfilter-panel'));
+		const tmpRect = tmpTrigger.getBoundingClientRect();
+		const tmpGap = 6;
+		const tmpMargin = 8;
+		const tmpVH = window.innerHeight;
+		const tmpVW = window.innerWidth;
+		const tmpWidth = pPopover.offsetWidth || 300;
+		pPopover.style.left = `${Math.round(Math.max(tmpMargin, Math.min(tmpRect.left, tmpVW - tmpWidth - tmpMargin)))}px`;
+		pPopover.style.right = 'auto';
+		const tmpSpaceBelow = tmpVH - tmpRect.bottom - tmpGap - tmpMargin;
+		const tmpSpaceAbove = tmpRect.top - tmpGap - tmpMargin;
+		// Prefer the natural downward direction; only flip above when the room below is genuinely cramped.
+		if (tmpSpaceBelow >= 220 || tmpSpaceBelow >= tmpSpaceAbove)
+		{
+			pPopover.style.top = `${Math.round(tmpRect.bottom + tmpGap)}px`;
+			pPopover.style.bottom = 'auto';
+			if (tmpPanel) { tmpPanel.style.maxHeight = `${Math.max(160, Math.min(tmpSpaceBelow, 460))}px`; }
+		}
+		else
+		{
+			pPopover.style.top = 'auto';
+			pPopover.style.bottom = `${Math.round(tmpVH - tmpRect.top + tmpGap)}px`;
+			if (tmpPanel) { tmpPanel.style.maxHeight = `${Math.max(160, Math.min(tmpSpaceAbove, 460))}px`; }
+		}
 	}
 
 	/**
