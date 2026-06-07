@@ -158,6 +158,19 @@ class ViewRecordSetSUBSETFilterEntityReferenceBase extends ViewRecordSetSUBSETFi
 				|| pRecord.ExternalFilterByColumns || (pRecord.ExternalFilterByColumn ? [ pRecord.ExternalFilterByColumn ] : [ 'Name' ]);
 			pRecord.ClauseDescriptor.PictForm.ValueArrayAddress = pRecord.ClauseValuesAddress;
 			pRecord.ClauseDescriptor.PictForm.GetContextScopeFilter = () => this.getContextScopeFilter(this.getInformaryScopedValue(pRecord.ClauseAddress) || pRecord);
+			// JoinEntity compound display (host opt-in on the clause): show each searched row joined to a
+			// parent entity's field — e.g. a LineItem disambiguated by its Project. The picker fetch-then-
+			// merges the join (Meadow can't join in one read). Forwarded straight through; no-op when unset.
+			if (pRecord.JoinEntity || pRecord.ClauseDescriptor.PictForm.JoinEntity)
+			{
+				const tmpPF = pRecord.ClauseDescriptor.PictForm;
+				tmpPF.JoinEntity = tmpPF.JoinEntity || pRecord.JoinEntity;
+				tmpPF.JoinField = tmpPF.JoinField || pRecord.JoinField;
+				tmpPF.JoinEntityValueField = tmpPF.JoinEntityValueField || pRecord.JoinEntityValueField;
+				tmpPF.JoinEntityDisplayField = tmpPF.JoinEntityDisplayField || pRecord.JoinEntityDisplayField;
+				if (tmpPF.JoinEntityFirst === undefined && pRecord.JoinEntityFirst !== undefined) { tmpPF.JoinEntityFirst = pRecord.JoinEntityFirst; }
+				if (tmpPF.JoinSeparator === undefined && pRecord.JoinSeparator !== undefined) { tmpPF.JoinSeparator = pRecord.JoinSeparator; }
+			}
 			// Saved-filter seeding: mirror the live clause's Values array into the csv `.StringArrayValue`
 			// the input reads, so a reloaded/persisted filter shows its current selections on render.
 			const tmpLiveClause = this.getInformaryScopedValue(pRecord.ClauseAddress);
