@@ -24,7 +24,7 @@ const _DEFAULT_CONFIGURATION_FilterPersistenceView = (
 	CSS: /*css*/`
 .prsp-exp { display: flex; flex-direction: column; gap: 0.4rem; }
 .prsp-exp-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--theme-color-text-muted, #6b7686); }
-.prsp-exp-row { display: flex; align-items: center; gap: 0.5rem; }
+.prsp-exp-row { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
 .prsp-exp-row > span:empty { display: none; }
 .prsp-exp-select, .prsp-exp-name { font: inherit; font-size: 0.9rem; padding: 0.42rem 0.6rem; border-radius: 8px;
 	border: 1px solid var(--theme-color-border-default, #d7dce3); background: var(--theme-color-background-primary, #fff); color: var(--theme-color-text-primary, #1f2733); }

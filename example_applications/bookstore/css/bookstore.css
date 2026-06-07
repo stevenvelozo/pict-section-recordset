@@ -1,3 +1,29 @@
+/* Bookstore palette mapped to the pict-section-recordset theme tokens. The module's filter
+   chrome (search row, drawer, clauses, add-filter popover, experience view, buttons) reads
+   var(--theme-color-*) — defining them here themes the whole control to the bookstore's warm
+   palette with zero markup-fighting overrides. */
+:root {
+	--theme-color-brand-primary: #E76F51;
+	--theme-color-brand-primary-hover: #C45A3E;
+	--theme-color-brand-accent: #D4A373;
+	--theme-color-text-primary: #264653;
+	--theme-color-text-secondary: #3D5A66;
+	--theme-color-text-muted: #8A7E6B;
+	--theme-color-text-on-brand: #FFF8EE;
+	--theme-color-border-default: #D4C4A8;
+	--theme-color-border-light: #E8D9C0;
+	--theme-color-border-strong: #D4A373;
+	--theme-color-background-primary: #FFFCF7;
+	--theme-color-background-panel: #FFFFFF;
+	--theme-color-background-secondary: #FFF9F0;
+	--theme-color-background-tertiary: #FFF0E0;
+	--theme-color-background-hover: #FFF0E0;
+	--theme-color-status-error: #B33030;
+	--theme-color-status-success: #2A9D8F;
+	--theme-color-status-info: #2A6F97;
+	--theme-color-status-warning: #E9A23B;
+}
+
 body {
 	color: #264653;
 	margin: 0;
@@ -256,52 +282,8 @@ small screens.
 	box-shadow: 0 2px 8px rgba(38,70,83,0.08);
 }
 
-/* Form Elements inside PRSP */
-#PRSP_Container input[type="text"],
-#PRSP_Container input[type="number"],
-#PRSP_Container input[type="email"],
-#PRSP_Container input[type="date"],
-#PRSP_Container textarea,
-#PRSP_Container select {
-	border: 1px solid #D4C4A8;
-	background: #FFFCF7;
-	padding: 0.45rem 0.6rem;
-	border-radius: 4px;
-	font-size: 0.9rem;
-	color: #264653;
-	width: 100%;
-}
-#PRSP_Container input:focus,
-#PRSP_Container textarea:focus,
-#PRSP_Container select:focus {
-	outline: none;
-	border-color: #E76F51;
-	box-shadow: 0 0 0 2px rgba(231,111,81,0.15);
-}
-#PRSP_Container label {
-	color: #264653;
-	font-weight: 600;
-	font-size: 0.85rem;
-}
 #PRSP_Container h1, #PRSP_Container h2, #PRSP_Container h3, #PRSP_Container h4 {
 	color: #264653;
-}
-#PRSP_Container button,
-#PRSP_Container input[type="button"],
-#PRSP_Container input[type="submit"] {
-	background: #E76F51;
-	color: var(--theme-color-background-panel, #fff);
-	border: none;
-	padding: 0.5rem 1.25rem;
-	border-radius: 4px;
-	font-size: 0.85rem;
-	font-weight: 600;
-	cursor: pointer;
-}
-#PRSP_Container button:hover,
-#PRSP_Container input[type="button"]:hover,
-#PRSP_Container input[type="submit"]:hover {
-	background: #C45A3E;
 }
 #PRSP_Container table {
 	width: 100%;
@@ -345,176 +327,6 @@ small screens.
 	border-radius: 6px;
 	padding: 1rem 1.25rem;
 	margin-bottom: 1rem;
-}
-#PRSP_Filter_Form {
-	display: flex;
-	flex-direction: column;
-	gap: 0.75rem;
-}
-#PRSP_Filter_Form > fieldset {
-	border: none;
-	padding: 0;
-	margin: 0;
-}
-
-/* Search filter row */
-#PRSP_Filter_Form > fieldset:first-child {
-	display: flex;
-	align-items: center;
-	gap: 0.75rem;
-}
-#PRSP_Filter_Form > fieldset:first-child label {
-	flex-shrink: 0;
-	font-weight: 600;
-	font-size: 0.85rem;
-	color: #264653;
-}
-#PRSP_Filter_Form > fieldset:first-child input[type="text"] {
-	flex: 1;
-}
-
-/* Filter instances */
-#PRSP_Filter_Instances {
-	display: flex;
-	flex-direction: column;
-	gap: 0.5rem;
-}
-#PRSP_Filter_Instances > div {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	background: var(--theme-color-background-panel, #fff);
-	border: 1px solid #E8D9C0;
-	border-radius: 4px;
-	padding: 0.5rem 0.75rem;
-	flex-wrap: wrap;
-}
-
-/* Remove buttons in filter rows */
-#PRSP_Filter_Instances > div > button[type="button"] {
-	background: #B33030;
-	color: var(--theme-color-background-panel, #fff);
-	border: none;
-	width: 1.6rem;
-	height: 1.6rem;
-	border-radius: 50%;
-	font-size: 0.85rem;
-	font-weight: 700;
-	cursor: pointer;
-	flex-shrink: 0;
-	padding: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	line-height: 1;
-}
-#PRSP_Filter_Instances > div > button[type="button"]:hover {
-	background: #8B2020;
-}
-
-/* Filter labels */
-#PRSP_Filter_Instances span {
-	font-size: 0.85rem;
-	font-weight: 600;
-	color: #264653;
-	white-space: nowrap;
-}
-
-/* Date inputs in filters */
-#PRSP_Filter_Instances input[type="datetime-local"] {
-	border: 1px solid #D4C4A8;
-	background: #FFFCF7;
-	padding: 0.35rem 0.5rem;
-	border-radius: 4px;
-	font-size: 0.85rem;
-	color: #264653;
-}
-
-/* Text inputs in filters */
-#PRSP_Filter_Instances input[type="text"] {
-	border: 1px solid #D4C4A8;
-	background: #FFFCF7;
-	padding: 0.35rem 0.5rem;
-	border-radius: 4px;
-	font-size: 0.85rem;
-	color: #264653;
-	flex: 1;
-	min-width: 120px;
-}
-
-/* Action button fieldsets */
-#PRSP_Filter_Form > fieldset:nth-child(n+3) {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	padding-top: 0.35rem;
-}
-#PRSP_Filter_Form > fieldset:nth-child(3) {
-	border-top: 1px solid #E8D9C0;
-	margin-top: 0.25rem;
-	padding-top: 0.6rem;
-}
-#PRSP_Filter_Button_Clear {
-	background: #264653 !important;
-	color: #FAEDCD !important;
-}
-#PRSP_Filter_Button_Clear:hover {
-	background: #1A3340 !important;
-}
-#PRSP_Filter_Button_Reset {
-	background: #D4A373 !important;
-	color: var(--theme-color-background-panel, #fff) !important;
-}
-#PRSP_Filter_Button_Reset:hover {
-	background: #B88A5C !important;
-}
-#PRSP_Filter_Button_Apply {
-	background: #E76F51 !important;
-	color: var(--theme-color-background-panel, #fff) !important;
-}
-#PRSP_Filter_Button_Apply:hover {
-	background: #C45A3E !important;
-}
-#PRSP_Filter_Button_Add {
-	background: #264653 !important;
-	color: #FAEDCD !important;
-	width: 2rem;
-	height: 2rem;
-	border-radius: 50% !important;
-	font-size: 1rem;
-	font-weight: 700;
-	display: flex !important;
-	align-items: center;
-	justify-content: center;
-	padding: 0 !important;
-}
-#PRSP_Filter_Button_Add:hover {
-	background: #1A3340 !important;
-}
-#PRSP_Filter_Button_Manage {
-	background: #264653 !important;
-	color: #FAEDCD !important;
-}
-#PRSP_Filter_Button_Manage:hover {
-	background: #1A3340 !important;
-}
-
-/* Filter dropdowns/popovers */
-#PRSP-SUBSET-Filters-Template-Add-Filter-Container {
-	background: var(--theme-color-background-panel, #fff);
-	border: 1px solid #D4A373;
-	border-radius: 4px;
-	padding: 0.5rem;
-	margin-top: 0.25rem;
-	box-shadow: 0 2px 8px rgba(38,70,83,0.12);
-}
-#FilterPersistenceView-Container {
-	background: var(--theme-color-background-panel, #fff);
-	border: 1px solid #D4A373;
-	border-radius: 4px;
-	padding: 0.5rem;
-	margin-top: 0.25rem;
-	box-shadow: 0 2px 8px rgba(38,70,83,0.12);
 }
 
 /* Pagination */
@@ -685,6 +497,47 @@ a[class^="page-offset"]:hover {
 	font-size: 0.95rem;
 	margin: 0.5rem 0 0.35rem;
 	color: #D4A373;
+}
+
+/* Record read/edit form elements — scoped to the record view (.prsp-record-read) so it themes
+   via the tokens above without fighting the module's filter chrome. */
+.prsp-record-read input[type="text"],
+.prsp-record-read input[type="number"],
+.prsp-record-read input[type="email"],
+.prsp-record-read input[type="date"],
+.prsp-record-read textarea,
+.prsp-record-read select {
+	border: 1px solid var(--theme-color-border-default, #D4C4A8);
+	background: var(--theme-color-background-primary, #FFFCF7);
+	padding: 0.4rem 0.6rem;
+	border-radius: 6px;
+	font-size: 0.9rem;
+	color: var(--theme-color-text-primary, #264653);
+}
+.prsp-record-read input:focus,
+.prsp-record-read textarea:focus,
+.prsp-record-read select:focus {
+	outline: none;
+	border-color: var(--theme-color-brand-primary, #E76F51);
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--theme-color-brand-primary, #E76F51) 16%, transparent);
+}
+.prsp-record-read label {
+	color: var(--theme-color-text-primary, #264653);
+	font-weight: 600;
+	font-size: 0.85rem;
+}
+#PRSP-Read-EditButton {
+	background: var(--theme-color-brand-primary, #E76F51);
+	color: var(--theme-color-text-on-brand, #fff);
+	border: none;
+	padding: 0.45rem 1.1rem;
+	border-radius: 6px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	cursor: pointer;
+}
+#PRSP-Read-EditButton:hover {
+	background: var(--theme-color-brand-primary-hover, #C45A3E);
 }
 
 /* Utility */

@@ -67,14 +67,17 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 .prsp-filters-actions { flex: 0 0 auto; display: flex; align-items: center; gap: 0.5rem; }
 
 /* Module-owned "Add filter" popover (replaces the old native <select> pickers). */
-.prsp-addfilter-pop { position: absolute; z-index: 30; top: calc(100% + 0.35rem); left: 0; min-width: 250px; max-width: 340px; display: none; }
+.prsp-addfilter-pop { position: absolute; z-index: 30; top: calc(100% + 0.35rem); left: 0; min-width: 280px; max-width: 360px; display: none; }
 .prsp-addfilter-pop.open { display: block; }
-.prsp-addfilter-panel { background: var(--theme-color-background-panel, #fff); border: 1px solid var(--theme-color-border-default, #d7dce3);
+/* Transparent full-viewport backdrop: catches outside clicks to close (no document listener). */
+.prsp-addfilter-backdrop { position: fixed; inset: 0; z-index: 0; }
+.prsp-addfilter-panel { position: relative; z-index: 1; display: flex; flex-direction: column; max-height: min(70vh, 460px);
+	background: var(--theme-color-background-panel, #fff); border: 1px solid var(--theme-color-border-default, #d7dce3);
 	border-radius: 10px; box-shadow: 0 10px 28px rgba(17, 24, 39, 0.14); overflow: hidden; }
-.prsp-addfilter-search { display: flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--theme-color-border-light, #e8ebf0); }
+.prsp-addfilter-search { flex: 0 0 auto; display: flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--theme-color-border-light, #e8ebf0); }
 .prsp-addfilter-search-ic { display: inline-flex; color: var(--theme-color-text-muted, #6b7686); font-size: 0.9rem; }
 .prsp-addfilter-search input { flex: 1 1 auto; min-width: 0; font: inherit; font-size: 0.9rem; border: none; outline: none; background: transparent; color: var(--theme-color-text-primary, #1f2733); }
-.prsp-addfilter-list { max-height: 280px; overflow-y: auto; }
+.prsp-addfilter-list { flex: 1 1 auto; overflow-y: auto; }
 .prsp-addfilter-empty { padding: 0.7rem 0.8rem; color: var(--theme-color-text-muted, #6b7686); font-size: 0.86rem; }
 .prsp-addfilter-field { border-bottom: 1px solid var(--theme-color-border-light, #eef1f5); }
 .prsp-addfilter-field:last-child { border-bottom: none; }
@@ -183,6 +186,7 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Hash: 'PRSP-AddFilter-Popover',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-AddFilter-Popover] -->
+	<div class="prsp-addfilter-backdrop" onclick="_Pict.views['PRSP-Filters'].closeAddFilterPopover()"></div>
 	<div class="prsp-addfilter-panel">
 		<div class="prsp-addfilter-search">
 			<span class="prsp-addfilter-search-ic">{~I:Search~}</span>
