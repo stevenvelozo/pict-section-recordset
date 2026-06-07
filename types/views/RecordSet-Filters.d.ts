@@ -21,6 +21,12 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
     _drawerOpen: boolean;
     _searchString: {};
     _renderEpoch: number;
+    _addFilterOpen: boolean;
+    _addFilterRecordSet: string;
+    _addFilterViewContext: string;
+    _addFilterSearch: string;
+    _addFilterExpandedKey: any;
+    filterFieldBlacklist: any[];
     /**
      * Bump the render epoch. Call this whenever the active filter clauses are
      * about to change in a way that would invalidate in-flight filter renders.
@@ -125,7 +131,28 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
      * @param {string} pRecordSet - The record set being filtered
      * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
      */
-    selectFilterToAdd(pEvent: Event, pRecordSet: string, pViewContext: string): void;
+    toggleAddFilterPopover(pEvent: Event, pRecordSet: string, pViewContext: string): void;
+    /** Close the add-filter popover. */
+    closeAddFilterPopover(): void;
+    /**
+     * Filter the add-filter field list by a search term, re-rendering only the list so the
+     * search input keeps focus.
+     * @param {string} pValue - The search term.
+     */
+    searchAddFilter(pValue: string): void;
+    /**
+     * Expand or collapse a field's available clauses in the add-filter popover.
+     * @param {string} pFilterKey - The field whose clauses to toggle.
+     */
+    toggleAddFilterField(pFilterKey: string): void;
+    /**
+     * (Re)build the add-filter popover's field list into AppData from the record set's filter
+     * schema, honouring the current search term and the expanded field.
+     * @param {string} pRecordSet - The record set whose filter schema to read.
+     */
+    _buildAddFilterFields(pRecordSet: string): void;
+    /** Reflect the add-filter popover's open/closed state on its container element. */
+    _paintAddFilterOpenState(): void;
     /**
      * @param {Event} pEvent - The DOM event that triggered the search
      * @param {string} pRecordSet - The record set being filtered

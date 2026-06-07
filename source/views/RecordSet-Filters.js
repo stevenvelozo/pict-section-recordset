@@ -58,12 +58,36 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 .prsp-filters-drawer-inner { overflow: hidden; min-height: 0; }
 .prsp-filters.drawer-open .prsp-filters-drawer-inner { margin-top: 0.6rem; padding: 0.95rem 1.1rem;
 	border: 1px solid var(--theme-color-border-light, #e8ebf0); border-radius: 10px; background: var(--theme-color-background-panel, #fff); }
-.prsp-filters-add { margin: 0.4rem 0 0.2rem; }
+.prsp-filters-add { position: relative; margin: 0.4rem 0 0.2rem; }
+.prsp-addfilter-trigger { display: inline-flex; align-items: center; gap: 0.35rem; }
 /* Drawer footer: filter experience on the left, Clear/Reset/Apply on the right. */
 .prsp-filters-footer { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;
 	margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px solid var(--theme-color-border-light, #e8ebf0); }
 .prsp-filters-experiences { flex: 0 1 auto; min-width: 0; }
 .prsp-filters-actions { flex: 0 0 auto; display: flex; align-items: center; gap: 0.5rem; }
+
+/* Module-owned "Add filter" popover (replaces the old native <select> pickers). */
+.prsp-addfilter-pop { position: absolute; z-index: 30; top: calc(100% + 0.35rem); left: 0; min-width: 250px; max-width: 340px; display: none; }
+.prsp-addfilter-pop.open { display: block; }
+.prsp-addfilter-panel { background: var(--theme-color-background-panel, #fff); border: 1px solid var(--theme-color-border-default, #d7dce3);
+	border-radius: 10px; box-shadow: 0 10px 28px rgba(17, 24, 39, 0.14); overflow: hidden; }
+.prsp-addfilter-search { display: flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--theme-color-border-light, #e8ebf0); }
+.prsp-addfilter-search-ic { display: inline-flex; color: var(--theme-color-text-muted, #6b7686); font-size: 0.9rem; }
+.prsp-addfilter-search input { flex: 1 1 auto; min-width: 0; font: inherit; font-size: 0.9rem; border: none; outline: none; background: transparent; color: var(--theme-color-text-primary, #1f2733); }
+.prsp-addfilter-list { max-height: 280px; overflow-y: auto; }
+.prsp-addfilter-empty { padding: 0.7rem 0.8rem; color: var(--theme-color-text-muted, #6b7686); font-size: 0.86rem; }
+.prsp-addfilter-field { border-bottom: 1px solid var(--theme-color-border-light, #eef1f5); }
+.prsp-addfilter-field:last-child { border-bottom: none; }
+.prsp-addfilter-field-btn { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; width: 100%;
+	font: inherit; font-size: 0.9rem; text-align: left; cursor: pointer; padding: 0.5rem 0.75rem; border: none; background: transparent; color: var(--theme-color-text-primary, #1f2733); }
+.prsp-addfilter-field-btn:hover { background: var(--theme-color-background-tertiary, #eceef2); }
+.prsp-addfilter-chev { display: inline-flex; flex: 0 0 auto; color: var(--theme-color-text-muted, #6b7686); font-size: 0.85rem; transition: transform 0.15s ease; }
+.prsp-addfilter-field.is-expanded .prsp-addfilter-chev { transform: rotate(90deg); }
+.prsp-addfilter-clauses { display: flex; flex-direction: column; }
+.prsp-addfilter-clause { display: flex; align-items: center; gap: 0.4rem; width: 100%; text-align: left; cursor: pointer;
+	font: inherit; font-size: 0.85rem; padding: 0.4rem 0.8rem 0.4rem 1.6rem; border: none; background: transparent; color: var(--theme-color-text-secondary, #45505f); }
+.prsp-addfilter-clause:hover { background: color-mix(in srgb, var(--theme-color-brand-primary, #156dd1) 10%, transparent); color: var(--theme-color-brand-primary, #156dd1); }
+.prsp-addfilter-clause-ic { display: inline-flex; font-size: 0.8rem; }
 `,
 	CSSPriority: 500,
 
@@ -149,54 +173,62 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-AddFilter-Fieldset] -->
 	<div class="prsp-filters-add">
-		<button type="button" class="prsp-filters-btn-text" id="PRSP_Filter_Button_Add" title="Add a new filter clause" onclick="_Pict.views['PRSP-Filters'].selectFilterToAdd(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">+ Add filter</button>
-		<div id="PRSP-SUBSET-Filters-Template-AddFilter-Dropdown"></div>
+		<button type="button" class="prsp-filters-btn-text prsp-addfilter-trigger" id="PRSP_Filter_Button_Add" title="Add a new filter clause" onclick="_Pict.views['PRSP-Filters'].toggleAddFilterPopover(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">{~I:Plus~} Add filter</button>
+		<div class="prsp-addfilter-pop" id="PRSP_AddFilter_Popover"></div>
 	</div>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-AddFilter-Fieldset] -->
 `
 		},
 		{
-			Hash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown',
+			Hash: 'PRSP-AddFilter-Popover',
 			Template: /*html*/`
-	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-AddFilter-Dropdown] -->
-	<div>
-		<select id="PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select" data-i-view-context="{~D:Record.ViewContext~}" onchange="event.preventDefault(); _Pict.views['PRSP-Filters'].render('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown', undefined,
-		{
-			ViewContext: '{~D:Record.ViewContext~}',
-			RecordSet: event.target.querySelector('option:checked').getAttribute('data-i-recordset'),
-			FilterKey: event.target.querySelector('option:checked').getAttribute('data-i-filter-key'),
-			AvailableClauses: _Pict.providers[\`RSP-Provider-\${event.target.querySelector('option:checked').getAttribute('data-i-recordset')}\`].getFilterClauseSchemaForKey(event.target.querySelector('option:checked').getAttribute('data-i-filter-key')).AvailableClauses,
-		});">
-			{~TS:PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Entry:Scope.getFilterSchema()~}
-		</select>
-		<div id="PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown">
+	<!-- DefaultPackage pict view template: [PRSP-AddFilter-Popover] -->
+	<div class="prsp-addfilter-panel">
+		<div class="prsp-addfilter-search">
+			<span class="prsp-addfilter-search-ic">{~I:Search~}</span>
+			<input type="text" id="PRSP_AddFilter_Search" placeholder="Search filters…" autocomplete="off" value="{~D:AppData.PRSPAddFilter.Search~}" oninput="_Pict.views['PRSP-Filters'].searchAddFilter(this.value)" onkeydown="if (event.key === 'Escape') { event.preventDefault(); _Pict.views['PRSP-Filters'].closeAddFilterPopover(); }">
+		</div>
+		<div class="prsp-addfilter-list" id="PRSP_AddFilter_List">
+			{~T:PRSP-AddFilter-List~}
 		</div>
 	</div>
-	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-AddFilter-Dropdown] -->
+	<!-- DefaultPackage end view template: [PRSP-AddFilter-Popover] -->
 `
 		},
 		{
-			Hash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown',
+			Hash: 'PRSP-AddFilter-List',
 			Template: /*html*/`
-	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown] -->
-	<select id="PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown-Select">
-		{~TS:PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Entry:Record.AvailableClauses~}
-	</select>
-	<button type="button" id="PRSP_Filter_Button_ConfirmAdd" onclick="_Pict.views['PRSP-Filters'].addFilter(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}',
-		document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown').querySelector('option:checked').getAttribute('data-i-filter-key'),
-		document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown').querySelector('option:checked').getAttribute('data-i-clause-key'),
-	)">Add Filter</button>
-	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown] -->
+	<!-- DefaultPackage pict view template: [PRSP-AddFilter-List] -->
+	{~TS:PRSP-AddFilter-Field:AppData.PRSPAddFilter.Fields~}
+	{~NE:AppData.PRSPAddFilter.IsEmpty^<div class="prsp-addfilter-empty">No filters found.</div>~}
+	<!-- DefaultPackage end view template: [PRSP-AddFilter-List] -->
 `
 		},
 		{
-			Hash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Entry',
+			Hash: 'PRSP-AddFilter-Field',
 			Template: /*html*/`
-	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Entry] -->
-	<option value="{~D:Record.FilterKey~}|{~D:Record.ClauseKey~}" data-i-recordset="{~D:Record.RecordSet~}" data-i-filter-key="{~D:Record.FilterKey~}" data-i-clause-key="{~D:Record.ClauseKey~}">
-		{~D:Record.DisplayName~}
-	</option>
-	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Entry] -->
+	<!-- DefaultPackage pict view template: [PRSP-AddFilter-Field] -->
+	<div class="prsp-addfilter-field {~D:Record.ExpandedClass~}">
+		<button type="button" class="prsp-addfilter-field-btn" onclick="_Pict.views['PRSP-Filters'].toggleAddFilterField('{~D:Record.FilterKey~}')">
+			<span class="prsp-addfilter-field-name">{~D:Record.DisplayName~}</span>
+			<span class="prsp-addfilter-chev">{~I:ChevronRight~}</span>
+		</button>
+		<div class="prsp-addfilter-clauses">
+			{~TS:PRSP-AddFilter-Clause:Record.ClausesToShow~}
+		</div>
+	</div>
+	<!-- DefaultPackage end view template: [PRSP-AddFilter-Field] -->
+`
+		},
+		{
+			Hash: 'PRSP-AddFilter-Clause',
+			Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-AddFilter-Clause] -->
+	<button type="button" class="prsp-addfilter-clause" onclick="_Pict.views['PRSP-Filters'].addFilter(event, '{~D:AppData.PRSPAddFilter.RecordSet~}', '{~D:AppData.PRSPAddFilter.ViewContext~}', '{~D:Record.FilterKey~}', '{~D:Record.ClauseKey~}')">
+		<span class="prsp-addfilter-clause-ic">{~I:Plus~}</span>
+		<span>{~D:Record.DisplayName~}</span>
+	</button>
+	<!-- DefaultPackage end view template: [PRSP-AddFilter-Clause] -->
 `
 		},
 	],
@@ -210,15 +242,15 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			RenderMethod: 'replace'
 		},
 		{
-			RenderableHash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown',
-			TemplateHash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown',
-			ContentDestinationAddress: '#PRSP-SUBSET-Filters-Template-AddFilter-Dropdown',
+			RenderableHash: 'PRSP_AddFilter_Popover',
+			TemplateHash: 'PRSP-AddFilter-Popover',
+			ContentDestinationAddress: '#PRSP_AddFilter_Popover',
 			RenderMethod: 'replace',
 		},
 		{
-			RenderableHash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown',
-			TemplateHash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown',
-			ContentDestinationAddress: '#PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown',
+			RenderableHash: 'PRSP_AddFilter_List',
+			TemplateHash: 'PRSP-AddFilter-List',
+			ContentDestinationAddress: '#PRSP_AddFilter_List',
 			RenderMethod: 'replace',
 		},
 	],
@@ -315,6 +347,15 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		// stale callback doesn't clobber DOM that now belongs to a different
 		// filter experience.
 		this._renderEpoch = 0;
+		// Add-filter popover state (module-owned, replaces the old native <select> pickers).
+		this._addFilterOpen = false;
+		this._addFilterRecordSet = null;
+		this._addFilterViewContext = null;
+		this._addFilterSearch = '';
+		this._addFilterExpandedKey = null;
+		// FilterKeys to hide from the add-filter popover (e.g. internal/audit columns). Host apps
+		// set this; it is merged with a per-record-set config `FilterFieldBlacklist`.
+		this.filterFieldBlacklist = [];
 	}
 
 	/**
@@ -617,12 +658,96 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	 * @param {string} pRecordSet - The record set being filtered
 	 * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
 	 */
-	selectFilterToAdd(pEvent, pRecordSet, pViewContext)
+	toggleAddFilterPopover(pEvent, pRecordSet, pViewContext)
 	{
-		if (pEvent) pEvent.preventDefault();
-		//const tmpRecordsetProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
-		//this.pict.log.info(`Selecting filter to add for record set: ${pRecordSet} in view context: ${pViewContext}`, tmpRecordsetProvider.getFilterSchema())
-		this.renderWithScope(this.pict.providers[`RSP-Provider-${pRecordSet}`], 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown', undefined, { RecordSet: pRecordSet, ViewContext: pViewContext });
+		if (pEvent) { pEvent.preventDefault(); }
+		if (this._addFilterOpen)
+		{
+			return this.closeAddFilterPopover();
+		}
+		this._addFilterOpen = true;
+		this._addFilterRecordSet = pRecordSet;
+		this._addFilterViewContext = pViewContext;
+		this._addFilterSearch = '';
+		this._addFilterExpandedKey = null;
+		this._buildAddFilterFields(pRecordSet);
+		this.render('PRSP_AddFilter_Popover', undefined, { RecordSet: pRecordSet, ViewContext: pViewContext });
+		this._paintAddFilterOpenState();
+	}
+
+	/** Close the add-filter popover. */
+	closeAddFilterPopover()
+	{
+		this._addFilterOpen = false;
+		this._addFilterExpandedKey = null;
+		this._paintAddFilterOpenState();
+	}
+
+	/**
+	 * Filter the add-filter field list by a search term, re-rendering only the list so the
+	 * search input keeps focus.
+	 * @param {string} pValue - The search term.
+	 */
+	searchAddFilter(pValue)
+	{
+		this._addFilterSearch = pValue || '';
+		this._buildAddFilterFields(this._addFilterRecordSet);
+		this.render('PRSP_AddFilter_List', undefined, { RecordSet: this._addFilterRecordSet, ViewContext: this._addFilterViewContext });
+	}
+
+	/**
+	 * Expand or collapse a field's available clauses in the add-filter popover.
+	 * @param {string} pFilterKey - The field whose clauses to toggle.
+	 */
+	toggleAddFilterField(pFilterKey)
+	{
+		this._addFilterExpandedKey = (this._addFilterExpandedKey === pFilterKey) ? null : pFilterKey;
+		this._buildAddFilterFields(this._addFilterRecordSet);
+		this.render('PRSP_AddFilter_List', undefined, { RecordSet: this._addFilterRecordSet, ViewContext: this._addFilterViewContext });
+	}
+
+	/**
+	 * (Re)build the add-filter popover's field list into AppData from the record set's filter
+	 * schema, honouring the current search term and the expanded field.
+	 * @param {string} pRecordSet - The record set whose filter schema to read.
+	 */
+	_buildAddFilterFields(pRecordSet)
+	{
+		const tmpProvider = this.pict.providers[`RSP-Provider-${pRecordSet}`];
+		const tmpSchema = (tmpProvider && typeof tmpProvider.getFilterSchema === 'function') ? tmpProvider.getFilterSchema() : {};
+		const tmpRecordSetConfig = this.pict.PictSectionRecordSet?.recordSetProviderConfigurations?.[pRecordSet] || {};
+		const tmpBlacklist = [].concat(this.filterFieldBlacklist || [], Array.isArray(tmpRecordSetConfig.FilterFieldBlacklist) ? tmpRecordSetConfig.FilterFieldBlacklist : []);
+		const tmpSearch = (this._addFilterSearch || '').toLowerCase();
+		const tmpFields = Object.values(tmpSchema)
+			.filter((pField) => Array.isArray(pField.AvailableClauses) && pField.AvailableClauses.length > 0)
+			.filter((pField) => !tmpBlacklist.includes(pField.FilterKey))
+			.filter((pField) => !tmpSearch || String(pField.DisplayName || pField.FilterKey).toLowerCase().includes(tmpSearch))
+			.sort((pA, pB) => String(pA.DisplayName || pA.FilterKey).localeCompare(String(pB.DisplayName || pB.FilterKey)))
+			.map((pField) =>
+			{
+				const tmpExpanded = (pField.FilterKey === this._addFilterExpandedKey);
+				return {
+					FilterKey: pField.FilterKey,
+					DisplayName: pField.DisplayName || pField.FilterKey,
+					ExpandedClass: tmpExpanded ? 'is-expanded' : '',
+					ClausesToShow: tmpExpanded ? pField.AvailableClauses : [],
+				};
+			});
+		this.pict.AppData.PRSPAddFilter =
+		{
+			RecordSet: pRecordSet,
+			ViewContext: this._addFilterViewContext,
+			Search: this._addFilterSearch || '',
+			IsEmpty: tmpFields.length === 0,
+			Fields: tmpFields,
+		};
+	}
+
+	/** Reflect the add-filter popover's open/closed state on its container element. */
+	_paintAddFilterOpenState()
+	{
+		const tmpPopover = document.getElementById('PRSP_AddFilter_Popover');
+		if (tmpPopover) { tmpPopover.classList.toggle('open', !!this._addFilterOpen); }
 	}
 
 	/**
@@ -716,34 +841,15 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	onAfterRender(pRenderable)
 	{
 		const res = super.onAfterRender(pRenderable);
-		if (pRenderable?.RenderableHash === 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown')
+		// Add-filter popover sub-renders (the panel + its list) only repaint that widget — skip the
+		// heavy post-render pass below and just keep the open/closed class in sync.
+		if (pRenderable?.RenderableHash === 'PRSP_AddFilter_Popover' || pRenderable?.RenderableHash === 'PRSP_AddFilter_List')
 		{
-			return;
+			this._paintAddFilterOpenState();
+			return res;
 		}
-		const tmpRecord = { };
-		const tmpSelect = document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select');
-		if (tmpSelect)
-		{
-			const tmpActiveOption = document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select')?.querySelector('option:checked');
-			const tmpRecordSet = tmpActiveOption?.getAttribute('data-i-recordset');
-			const tmpFilterKey = tmpActiveOption?.getAttribute('data-i-filter-key');
-			const tmpViewContext = tmpSelect?.getAttribute('data-i-view-context');
-			if (tmpRecordSet && tmpFilterKey)
-			{
-				const tmpProvider = this.pict.providers[`RSP-Provider-${tmpRecordSet}`];
-				if (tmpProvider)
-				{
-					tmpRecord.RecordSet = tmpRecordSet;
-					tmpRecord.FilterKey = tmpFilterKey;
-					tmpRecord.ViewContext = tmpViewContext;
-					tmpRecord.AvailableClauses = tmpProvider.getFilterClauseSchemaForKey(tmpFilterKey).AvailableClauses;
-					if (Array.isArray(tmpRecord.AvailableClauses))
-					{
-						this.render('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown', undefined, tmpRecord, pRenderable);
-					}
-				}
-			}
-		}
+		// Any full re-render rebuilds the add-filter slot, so the popover is closed — reset its state.
+		this._addFilterOpen = false;
 		this.onMarshalToView();
 
 		// NOTE: This is where we ensure the filter experience is applied after a render.
