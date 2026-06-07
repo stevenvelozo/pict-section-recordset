@@ -128,10 +128,17 @@ class FilterDataProvider extends libPictProvider
 	 */
 	navigateToFilterExperienceRoute(tmpFilterExperience, pRecordSet, pViewContext)
 	{
-		// go to the new url with the filter experience encoded param
+		// The search term (the /FilteredTo/ segment) is part of the saved experience — restore
+		// it alongside the structured filter clauses.
+		const tmpSearchSegment = (tmpFilterExperience && tmpFilterExperience.SearchFilterURLParam) ? `/FilteredTo/${tmpFilterExperience.SearchFilterURLParam}` : '';
+		// go to the new url with the search segment + the filter experience encoded param
 		if (tmpFilterExperience?.FilterExperienceEncodedURLParam && tmpFilterExperience?.FilterExperienceEncodedURLParam?.length > 0)
 		{
-			this.fable.providers.RecordSetRouter.pictRouter.navigate(`/PSRS/${pRecordSet}/${pViewContext}/FilterExperience/${tmpFilterExperience.FilterExperienceEncodedURLParam}`);
+			this.fable.providers.RecordSetRouter.pictRouter.navigate(`/PSRS/${pRecordSet}/${pViewContext}${tmpSearchSegment}/FilterExperience/${tmpFilterExperience.FilterExperienceEncodedURLParam}`);
+		}
+		else if (tmpSearchSegment)
+		{
+			this.fable.providers.RecordSetRouter.pictRouter.navigate(`/PSRS/${pRecordSet}/${pViewContext}${tmpSearchSegment}`);
 		}
 		else
 		{
@@ -431,10 +438,12 @@ class FilterDataProvider extends libPictProvider
 	 * @param {string} pViewContext - The current view context
 	 * @return {boolean} - Returns true when the settings have been saved.
 	 */
-	saveFilterMeta(pRecordSet, pViewContext)
+	saveFilterMeta(pRecordSet, pViewContext, pSilent, pDisplayNameOverride)
 	{
 		const activeFilterExperienceClauses = this.pict.Bundle._ActiveFilterState[pRecordSet]?.FilterClauses || [];
-		const filterDisplayName = this.getCurrentFilterName({ FilterClauses: activeFilterExperienceClauses }, pRecordSet, pViewContext);
+		const filterDisplayName = (pDisplayNameOverride && String(pDisplayNameOverride).trim())
+			? String(pDisplayNameOverride).trim()
+			: this.getCurrentFilterName({ FilterClauses: activeFilterExperienceClauses }, pRecordSet, pViewContext);
 		const tmpFilterExperienceHash = filterDisplayName.replace(/[^a-zA-Z0-9_-]/g, '');
 
 		if (this.checkIfFilterExperienceExists(pRecordSet, pViewContext, tmpFilterExperienceHash))
@@ -444,13 +453,15 @@ class FilterDataProvider extends libPictProvider
 		}
 
 		// TODO: BUG: Gotta have a more complex merge happen here for multiple tabs
-		const newFilterExperience = { 
+		const newFilterExperience = {
 			RecordSet: pRecordSet,
 			ViewContext: pViewContext,
 			FilterClauses: activeFilterExperienceClauses,
 			FilterDisplayName: filterDisplayName,
 			FilterExperienceHash: tmpFilterExperienceHash,
 			FilterExperienceEncodedURLParam: window.location.hash.split('/FilterExperience/')?.[1] || '',
+			// The search term (the /FilteredTo/ segment) is part of the saved experience too.
+			SearchFilterURLParam: window.location.hash.split('/FilteredTo/')?.[1]?.split('/FilterExperience/')?.[0] || '',
 			LastModifiedDate: new Date().toISOString(),
 		}
 		// Save the specific filter metadata to localStorage

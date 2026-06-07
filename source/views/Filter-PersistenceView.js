@@ -21,7 +21,20 @@ const _DEFAULT_CONFIGURATION_FilterPersistenceView = (
 	AutoSolveWithApp: false,
 	AutoSolveOrdinal: 0,
 
-	CSS: false,
+	CSS: /*css*/`
+.prsp-exp { display: flex; flex-direction: column; gap: 0.4rem; }
+.prsp-exp-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--theme-color-text-muted, #6b7686); }
+.prsp-exp-row { display: flex; align-items: center; gap: 0.5rem; }
+.prsp-exp-row > span:empty { display: none; }
+.prsp-exp-select, .prsp-exp-name { font: inherit; font-size: 0.9rem; padding: 0.42rem 0.6rem; border-radius: 8px;
+	border: 1px solid var(--theme-color-border-default, #d7dce3); background: var(--theme-color-background-primary, #fff); color: var(--theme-color-text-primary, #1f2733); }
+.prsp-exp-select { flex: 0 0 auto; width: 230px; min-width: 0; max-width: 100%; }
+.prsp-exp-select:focus, .prsp-exp-name:focus { outline: none; border-color: var(--theme-color-brand-primary, #156dd1);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-color-brand-primary, #156dd1) 16%, transparent); }
+.prsp-exp-btn { flex: 0 0 auto; white-space: nowrap; }
+.prsp-exp-validation { font-size: 0.8rem; color: var(--theme-color-status-error, #cf5b5b); }
+.prsp-exp-validation:empty { display: none; }
+`,
 	CSSPriority: 500,
 
 	Templates:
@@ -30,41 +43,17 @@ const _DEFAULT_CONFIGURATION_FilterPersistenceView = (
 			Hash: 'FilterPersistenceView-Container',
 			Template: /*html*/`
 <!-- DefaultPackage pict view template: [FilterPersistenceView-Container] -->
-<div id="FilterPersistenceView-Content">
-	<!-- Content for Filter Persistence View goes here -->
-	<div id="FilterPersistenceView-Header">
-		<h3>Filter Experience Settings</h3>
+<div id="FilterPersistenceView-Content" class="prsp-exp">
+	<span class="prsp-exp-label">Filter experience</span>
+	<div class="prsp-exp-row">
+		<select id="FilterPersistenceView-StoredFiltersSelect" class="prsp-exp-select" name="StoredFilterName" title="Load a saved filter experience"
+			onchange="_Pict.views['FilterPersistenceView'].setFilterExperienceToSelection(event); _Pict.views['FilterPersistenceView'].loadFilterPersistenceSettings(event);">
+			<!-- Options populated dynamically -->
+		</select>
+		<button type="button" class="prsp-filters-btn-text prsp-exp-btn" id="FilterPersistenceView-SaveFilterButton" title="Save the current search + filters as a named experience" onclick="_Pict.views['FilterPersistenceView'].promptSaveFilterExperience(event)">Save</button>
+		<button type="button" class="prsp-filters-btn-text prsp-exp-btn" id="FilterPersistenceView-DeleteFilterButton" title="Delete the selected experience" onclick="_Pict.views['FilterPersistenceView'].deleteFilterPersistenceSettings(event)">Delete</button>
 	</div>
-	<div id="FilterPersistenceView-Body">
-		<div class="FilterPersistenceView-ActiveSettings">
-			<label for="CurrentFilterName">Current Filter Experience:</label>
-			<span id="FilterPersistenceView-CurrentFilterNameInput-ValidationMessage" style="color: red; font-size: 0.9em; margin-left: 10px;"></span>
-			<input type="text" id="FilterPersistenceView-CurrentFilterNameInput" name="CurrentFilterName" value="" onfocus="this.select()" />
-			<button type="button" id="FilterPersistenceView-SaveFilterButton" onclick="_Pict.views['FilterPersistenceView'].saveFilterPersistenceSettings(event)">
-				<span id="FilterPersistenceView-SaveFilterButtonText">Save</span>
-			</button>
-		</div>
-		<div class="FilterPersistenceView-StoredSettings">
-			<label for="StoredFilterName">Stored Filter Experiences:</label>
-			<select id="FilterPersistenceView-StoredFiltersSelect" onchange="_Pict.views['FilterPersistenceView'].setFilterExperienceToSelection(event)" name="StoredFilterName">
-				<!-- Options will be populated dynamically -->
-			</select>
-			<button type="button" id="FilterPersistenceView-LoadFilterButton" onclick="_Pict.views['FilterPersistenceView'].loadFilterPersistenceSettings(event)">Load</button>
-			<button type="button" id="FilterPersistenceView-SetAsDefaultButton" onclick="_Pict.views['FilterPersistenceView'].toggleFilterExperienceAsTheDefault(event, true)">Set As Default</button>
-			<button type="button" id="FilterPersistenceView-RemoveAsDefaultButton" onclick="_Pict.views['FilterPersistenceView'].toggleFilterExperienceAsTheDefault(event, false)">Remove As Default</button>
-			<button type="button" id="FilterPersistenceView-DeleteFilterButton" onclick="_Pict.views['FilterPersistenceView'].deleteFilterPersistenceSettings(event)">Delete</button>
-		</div>
-		<div class="FilterPersistenceView-OptionalSettings">
-			<label for="OptionalSettings">Optional Settings:</label>
-			<label for="OptionalSettings-RememberLastUsed">
-				<input type="checkbox" id="OptionalSettings-RememberLastUsed" name="RememberLastUsed" onchange="_Pict.views['FilterPersistenceView'].toggleRememberLastUsedFilterExperience(event)"	 />
-				Remember my last search filter experience
-			</label>
-		</div>
-	</div>
-	<div id="FilterPersistenceView-Footer">
-		<button type="button" id="FilterPersistenceView-CloseManageFiltersButton" onclick="_Pict.views['FilterPersistenceView'].closeFilterPersistenceUI()">Close</button>
-	</div>
+	<span id="FilterPersistenceView-CurrentFilterNameInput-ValidationMessage" class="prsp-exp-validation"></span>
 </div>
 <!-- DefaultPackage end view template:  [FilterPersistenceView-Container] -->
 		`
@@ -96,6 +85,24 @@ class viewFilterPersistenceView extends libPictView
 		this.currentViewContext = null;
 		this.filterExperienceSelection = null;
 		this.filterExperienceInitialized = false;
+	}
+
+	/**
+	 * Re-assert this view's own template before rendering so a host/server template override
+	 * doesn't replace the slimmed experiences control (mirrors RecordSet-Filters).
+	 *
+	 * @param {import('pict-view').Renderable} pRenderable
+	 */
+	onBeforeRender(pRenderable)
+	{
+		if (this.pict.TemplateProvider && Array.isArray(_DEFAULT_CONFIGURATION_FilterPersistenceView.Templates))
+		{
+			for (const tmpTemplate of _DEFAULT_CONFIGURATION_FilterPersistenceView.Templates)
+			{
+				this.pict.TemplateProvider.addTemplate(tmpTemplate.Hash, tmpTemplate.Template);
+			}
+		}
+		return super.onBeforeRender(pRenderable);
 	}
 	
 
@@ -408,6 +415,114 @@ class viewFilterPersistenceView extends libPictView
 	 * @param {function} [pCallback] - A callback function to be executed after saving the settings.
 	 * @returns {boolean} - Returns true when the settings have been saved.
 	 */
+	/** HTML-escape a value for safe display in the modal. */
+	_escapeHTML(pValue)
+	{
+		return String(pValue == null ? '' : pValue).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+	}
+
+	/** Describe a single active filter clause in plain English (e.g. "Date Created between A and B"). */
+	_describeFilterClause(pClause)
+	{
+		const tmpLabel = pClause.Label || pClause.FilterByColumn || 'Filter';
+		const tmpType = String(pClause.Type || '');
+		const tmpValues = Array.isArray(pClause.Values) ? pClause.Values.filter((v) => v !== null && v !== undefined && v !== '') : [];
+		const tmpValue = (pClause.Value !== null && pClause.Value !== undefined && pClause.Value !== '') ? pClause.Value : null;
+		if (/Range/i.test(tmpType))
+		{
+			const tmpLow = (tmpValues.length > 0) ? tmpValues[0] : (tmpValue != null ? tmpValue : '…');
+			const tmpHigh = (tmpValues.length > 1) ? tmpValues[1] : '…';
+			return `${tmpLabel} between ${tmpLow} and ${tmpHigh}`;
+		}
+		if (/Select/i.test(tmpType))
+		{
+			const tmpList = tmpValues.length ? tmpValues : (tmpValue != null ? [ tmpValue ] : []);
+			return tmpList.length ? `${tmpLabel} is ${tmpList.join(', ')}` : `${tmpLabel} is set`;
+		}
+		const tmpSingle = (tmpValue != null) ? tmpValue : (tmpValues.length ? tmpValues.join(', ') : null);
+		const tmpOp = pClause.ExactMatch ? 'is' : 'contains';
+		return (tmpSingle != null) ? `${tmpLabel} ${tmpOp} "${tmpSingle}"` : `${tmpLabel} is set`;
+	}
+
+	/**
+	 * @returns {{ summary: string, count: string }} A plain-English summary of the current
+	 * search + filter clauses, and the matched record count (from the rendered list total).
+	 */
+	_describeCurrentFilter()
+	{
+		const tmpParts = [];
+		const tmpFilterView = this.pict.views['PRSP-Filters'];
+		const tmpSearchTerm = (tmpFilterView && typeof tmpFilterView._searchTermFromURL === 'function') ? tmpFilterView._searchTermFromURL() : '';
+		if (tmpSearchTerm)
+		{
+			const tmpCfg = this.pict.PictSectionRecordSet && this.pict.PictSectionRecordSet.recordSetProviderConfigurations
+				? this.pict.PictSectionRecordSet.recordSetProviderConfigurations[this.currentRecordSet] : null;
+			const tmpFields = (tmpCfg && Array.isArray(tmpCfg.SearchFields) && tmpCfg.SearchFields.length) ? tmpCfg.SearchFields : [ 'Name' ];
+			tmpParts.push(`${tmpFields.join(' / ')} like "${tmpSearchTerm}"`);
+		}
+		const tmpClauses = (this.pict.Bundle._ActiveFilterState[this.currentRecordSet] || {}).FilterClauses || [];
+		for (const tmpClause of tmpClauses) { tmpParts.push(this._describeFilterClause(tmpClause)); }
+		const tmpSummary = tmpParts.length ? (tmpParts.join('. ') + '.') : 'No filters — matches all records.';
+		const tmpCountEl = document.getElementById('PRSP_Pagination_Description_Records_Total');
+		const tmpCount = (tmpCountEl && tmpCountEl.textContent) ? tmpCountEl.textContent.trim() : '';
+		return { summary: tmpSummary, count: tmpCount };
+	}
+
+	/**
+	 * Prompt for a name (via pict-section-modal when available) and save the current search +
+	 * filters as a named experience. The modal previews the filter in plain English and the
+	 * number of records it matches. Falls back to the generated name with no prompt if the
+	 * modal section is not registered in the host app.
+	 *
+	 * @param {Event} pEvent
+	 */
+	promptSaveFilterExperience(pEvent)
+	{
+		if (pEvent) { pEvent.preventDefault(); pEvent.stopPropagation(); }
+		if (!this.currentRecordSet || !this.currentViewContext) { return false; }
+		const tmpProvider = this.pict.providers.FilterDataProvider;
+		if (tmpProvider.filterExperienceModifiedFromURLHash)
+		{
+			this.pict.log.warn('The current filter experience was modified from the URL hash; apply or reset before saving.');
+			return false;
+		}
+		const tmpClauses = (this.pict.Bundle._ActiveFilterState[this.currentRecordSet] || {}).FilterClauses || [];
+		const tmpCurrent = this.filterExperienceSelection ? tmpProvider.getFilterExperienceByHash(this.currentRecordSet, this.currentViewContext, this.filterExperienceSelection) : null;
+		const tmpSuggested = (tmpCurrent && tmpCurrent.FilterDisplayName) || tmpProvider.generateContextualDefaultFilterName({ FilterClauses: tmpClauses }, this.currentRecordSet, this.currentViewContext);
+
+		const fSave = (pName) =>
+		{
+			tmpProvider.saveFilterMeta(this.currentRecordSet, this.currentViewContext, false, pName);
+			this.buildSelectOptionsForAvailableFilterExperiences();
+			this.pict.log.info(`Filter experience '${pName}' saved.`);
+		};
+
+		const tmpModal = this.pict.views['Pict-Section-Modal'];
+		if (!tmpModal || typeof tmpModal.show !== 'function')
+		{
+			fSave(tmpSuggested);
+			return true;
+		}
+		const tmpEscaped = this._escapeHTML(tmpSuggested);
+		const tmpDescription = this._describeCurrentFilter();
+		const tmpCountLine = tmpDescription.count
+			? `<p style="margin:0 0 0.8rem;color:var(--theme-color-text-secondary,#45505f);">Matches <strong>${this._escapeHTML(tmpDescription.count)}</strong> record${tmpDescription.count === '1' ? '' : 's'}.</p>`
+			: '';
+		tmpModal.show(
+			{
+				title: 'Save filter experience',
+				content: `<p style="margin:0 0 0.75rem;color:var(--theme-color-text-secondary,#45505f);font-size:0.9rem;line-height:1.45;">Give this filter a name to save it, then load it again any time to come back to these records, or whatever matches it down the road.</p><div style="margin-bottom:0.6rem;padding:0.6rem 0.8rem;border-radius:8px;background:var(--theme-color-background-tertiary,#eceef2);font-size:0.9rem;line-height:1.4;color:var(--theme-color-text-primary,#1f2733);">${this._escapeHTML(tmpDescription.summary)}</div>${tmpCountLine}<p style="margin-bottom:0.4rem;">Name this filter experience:</p><input type="text" id="prsp-exp-name-input" class="pict-input" style="width:100%;" value="${tmpEscaped}" autofocus>`,
+				buttons: [ { Hash: 'cancel', Label: 'Cancel' }, { Hash: 'ok', Label: 'Save', Style: 'primary' } ],
+			}).then((pChoice) =>
+			{
+				if (pChoice !== 'ok') { return; }
+				const tmpEl = document.getElementById('prsp-exp-name-input');
+				const tmpName = (tmpEl && tmpEl.value && tmpEl.value.trim()) ? tmpEl.value.trim() : tmpSuggested;
+				fSave(tmpName);
+			});
+		return true;
+	}
+
 	saveFilterPersistenceSettings(event, pCallback)
 	{
 		event.preventDefault();

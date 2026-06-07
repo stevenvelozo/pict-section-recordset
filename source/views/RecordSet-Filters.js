@@ -22,24 +22,80 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 	AutoSolveWithApp: false,
 	AutoSolveOrdinal: 0,
 
-	CSS: false,
+	CSS: /*css*/`
+.prsp-filters { width: 100%; }
+.prsp-filters *, .prsp-filters *::before, .prsp-filters *::after { box-sizing: border-box; }
+.prsp-filters-bar { display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+.prsp-filters-search { position: relative; flex: 1 1 auto; display: flex; align-items: center; min-width: 0; }
+.prsp-filters-search-ic { position: absolute; left: 0.75rem; display: inline-flex; align-items: center; color: var(--theme-color-text-muted, #6b7686); pointer-events: none; font-size: 0.95rem; }
+.prsp-filters-input { width: 100%; font: inherit; font-size: 0.95rem; padding: 0.5rem 0.85rem 0.5rem 2.2rem;
+	border: 1px solid var(--theme-color-border-default, #d7dce3); border-radius: 8px;
+	background: var(--theme-color-background-primary, #fff); color: var(--theme-color-text-primary, #1f2733); }
+.prsp-filters-input:focus { outline: none; border-color: var(--theme-color-brand-primary, #156dd1);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-color-brand-primary, #156dd1) 16%, transparent); }
+.prsp-filters-toggle { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 0.4rem; font: inherit; cursor: pointer;
+	padding: 0.45rem 0.7rem; border-radius: 8px; border: 1px solid var(--theme-color-border-default, #d7dce3);
+	background: var(--theme-color-background-primary, #fff); color: var(--theme-color-text-secondary, #45505f); }
+.prsp-filters-toggle:hover { border-color: var(--theme-color-brand-primary, #156dd1); }
+.prsp-filters.has-filters .prsp-filters-toggle { border-color: var(--theme-color-brand-primary, #156dd1); color: var(--theme-color-brand-primary, #156dd1); }
+.prsp-filters.drawer-open .prsp-filters-toggle { background: var(--theme-color-background-tertiary, #eceef2); }
+.prsp-filters-toggle-ic { display: inline-flex; align-items: center; }
+.prsp-filters-toggle-ic svg { width: 1.05em; height: 1.05em; display: block; }
+.prsp-filters-toggle-count { display: none; align-items: center; justify-content: center; min-width: 1.3em; height: 1.3em;
+	padding: 0 0.35em; border-radius: 999px; font-size: 0.74rem; font-weight: 700;
+	background: var(--theme-color-brand-primary, #156dd1); color: var(--theme-color-text-on-brand, #fff); }
+.prsp-filters.has-filters .prsp-filters-toggle-count { display: inline-flex; }
+.prsp-filters-apply { flex: 0 0 auto; font: inherit; font-weight: 650; cursor: pointer; padding: 0.5rem 1.15rem; border-radius: 8px;
+	border: 1px solid var(--theme-color-brand-primary, #156dd1); background: var(--theme-color-brand-primary, #156dd1); color: var(--theme-color-text-on-brand, #fff); }
+.prsp-filters-apply:hover { background: color-mix(in srgb, var(--theme-color-brand-primary, #156dd1) 88%, #000); }
+.prsp-filters-btn-text { font: inherit; cursor: pointer; padding: 0.4rem 0.85rem; border-radius: 8px;
+	border: 1px solid var(--theme-color-border-default, #d7dce3); background: transparent; color: var(--theme-color-text-secondary, #45505f); }
+.prsp-filters-btn-text:hover { background: var(--theme-color-background-tertiary, #eceef2); }
+
+/* Slide-out drawer (CSS grid trick: 0fr -> 1fr animates height). */
+.prsp-filters-drawer { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.18s ease; }
+.prsp-filters.drawer-open .prsp-filters-drawer { grid-template-rows: 1fr; }
+.prsp-filters-drawer-inner { overflow: hidden; min-height: 0; }
+.prsp-filters.drawer-open .prsp-filters-drawer-inner { margin-top: 0.6rem; padding: 0.95rem 1.1rem;
+	border: 1px solid var(--theme-color-border-light, #e8ebf0); border-radius: 10px; background: var(--theme-color-background-panel, #fff); }
+.prsp-filters-add { margin: 0.4rem 0 0.2rem; }
+/* Drawer footer: filter experience on the left, Clear/Reset/Apply on the right. */
+.prsp-filters-footer { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;
+	margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px solid var(--theme-color-border-light, #e8ebf0); }
+.prsp-filters-experiences { flex: 0 1 auto; min-width: 0; }
+.prsp-filters-actions { flex: 0 0 auto; display: flex; align-items: center; gap: 0.5rem; }
+`,
 	CSSPriority: 500,
 
 	Templates:
 	[
 		{
+			// One coherent control: a search row (search input + a filters icon button that
+			// shows the active-filter count and toggles the drawer + a Search button), and a
+			// slide-out drawer beneath it holding the filter clauses, "add filter", the saved
+			// Filter Experiences dropdown, and Clear / Reset / Apply. Search, Apply and Enter
+			// all submit the form -> handleSearch (apply search + current filters).
 			Hash: 'PRSP-SUBSET-Filters-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template] -->
-	<form id="PRSP_Filter_Form" onsubmit="_Pict.views['PRSP-Filters'].handleSearch(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}'); return false;">
-		{~T:PRSP-SUBSET-Filters-Template-Input-Fieldset~}
-		<div id="PRSP_Filter_Instances">
-			{~FIV:Record~}
+	<div class="prsp-filters" id="PRSP_FilterBar">
+		<form id="PRSP_Filter_Form" class="prsp-filters-bar" onsubmit="_Pict.views['PRSP-Filters'].handleSearch(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}'); return false;">
+			{~T:PRSP-SUBSET-Filters-Template-Input-Fieldset~}
+			{~T:PRSP-SUBSET-Filters-Template-Button-Fieldset~}
+		</form>
+		<div class="prsp-filters-drawer" id="PRSP_Filter_Drawer">
+			<div class="prsp-filters-drawer-inner">
+				<div id="PRSP_Filter_Instances" class="prsp-filters-clauses">
+					{~FIV:Record~}
+				</div>
+				{~T:PRSP-SUBSET-Filters-Template-AddFilter-Fieldset~}
+				<div class="prsp-filters-footer">
+					{~T:PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset~}
+					{~T:PRSP-SUBSET-Filters-Template-DrawerActions-Fieldset~}
+				</div>
+			</div>
 		</div>
-		{~T:PRSP-SUBSET-Filters-Template-Button-Fieldset~}
-		{~T:PRSP-SUBSET-Filters-Template-AddFilter-Fieldset~}
-		{~T:PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset~}
-	</form>
+	</div>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template] -->
 `
 		},
@@ -47,10 +103,10 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Hash: 'PRSP-SUBSET-Filters-Template-Input-Fieldset',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-Input-Fieldset] -->
-	<fieldset>
-		<label for="search_filter">Filter:</label>
-		<input id="search_filter" type="text" name="filter">
-	</fieldset>
+	<span class="prsp-filters-search">
+		<span class="prsp-filters-search-ic">{~I:Search~}</span>
+		<input id="search_filter" class="prsp-filters-input" type="text" name="filter" placeholder="Search…" autocomplete="off" aria-label="Search">
+	</span>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-Input-Fieldset] -->
 `
 		},
@@ -58,11 +114,11 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Hash: 'PRSP-SUBSET-Filters-Template-Button-Fieldset',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-Button-Fieldset] -->
-	<fieldset>
-		<button type="button" id="PRSP_Filter_Button_Clear" title="Clear all filters to a blank state" onclick="_Pict.views['PRSP-Filters'].handleClear(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Clear</button>
-		<button type="button" id="PRSP_Filter_Button_Reset" title="Reset all filters to the last saved/defaulted state" onclick="_Pict.views['PRSP-Filters'].handleReset(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Reset</button>
-		<button type="submit" id="PRSP_Filter_Button_Apply">Apply</button>
-	</fieldset>
+	<button type="button" class="prsp-filters-toggle" id="PRSP_Filter_Toggle" title="Filters" aria-label="Filters" onclick="_Pict.views['PRSP-Filters'].toggleFilterDrawer()">
+		<span class="prsp-filters-toggle-ic" id="PRSP_Filter_Icon"></span>
+		<span class="prsp-filters-toggle-count" id="PRSP_Filter_Count"></span>
+	</button>
+	<button type="submit" class="prsp-filters-apply prsp-filters-apply-search" id="PRSP_Filter_Button_Apply">Search</button>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-Button-Fieldset] -->
 `
 		},
@@ -70,21 +126,32 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Hash: 'PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset] -->
-	<fieldset>
-		<button type="button" id="PRSP_Filter_Button_Manage" title="Manage saved filter experiences" onclick="_Pict.views['PRSP-Filters'].handleManage(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Manage Filter Experience</button>
+	<div class="prsp-filters-experiences">
 		<div id="FilterPersistenceView-Container"></div>
-	</fieldset>
+	</div>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset] -->
+`
+		},
+		{
+			Hash: 'PRSP-SUBSET-Filters-Template-DrawerActions-Fieldset',
+			Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-DrawerActions-Fieldset] -->
+	<div class="prsp-filters-actions">
+		<button type="button" class="prsp-filters-btn-text" id="PRSP_Filter_Button_Clear" title="Clear all filters to a blank state" onclick="_Pict.views['PRSP-Filters'].handleClear(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Clear</button>
+		<button type="button" class="prsp-filters-btn-text" id="PRSP_Filter_Button_Reset" title="Reset all filters to the last saved/defaulted state" onclick="_Pict.views['PRSP-Filters'].handleReset(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Reset</button>
+		<button type="button" class="prsp-filters-apply" id="PRSP_Filter_Button_ApplyDrawer" onclick="_Pict.views['PRSP-Filters'].handleSearch(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Apply</button>
+	</div>
+	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-DrawerActions-Fieldset] -->
 `
 		},
 		{
 			Hash: 'PRSP-SUBSET-Filters-Template-AddFilter-Fieldset',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-AddFilter-Fieldset] -->
-	<fieldset>
-		<button type="button" id="PRSP_Filter_Button_Add" title="Add a new filter clause" onclick="_Pict.views['PRSP-Filters'].selectFilterToAdd(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">+</button>
+	<div class="prsp-filters-add">
+		<button type="button" class="prsp-filters-btn-text" id="PRSP_Filter_Button_Add" title="Add a new filter clause" onclick="_Pict.views['PRSP-Filters'].selectFilterToAdd(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">+ Add filter</button>
 		<div id="PRSP-SUBSET-Filters-Template-AddFilter-Dropdown"></div>
-	</fieldset>
+	</div>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-AddFilter-Fieldset] -->
 `
 		},
@@ -236,6 +303,10 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		this.newFilterSearchApplied = false;
 		this.addFilterCallback = null;
 		this.removeFilterCallback = null;
+		// Consolidated filter control state: drawer open/closed, and the last-applied search
+		// string per record set (so a search no longer clears the search box on re-render).
+		this._drawerOpen = false;
+		this._searchString = {};
 		// Render-epoch counter, bumped any time the filter list is re-rendered
 		// or a new filter experience is applied. Deferred filter post-render
 		// work (e.g. the setTimeout-scheduled transaction drain in
@@ -348,6 +419,67 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		return super.onMarshalToView();
 	}
 
+	/** Toggle the slide-out filter drawer beneath the search bar. */
+	toggleFilterDrawer()
+	{
+		this._drawerOpen = !this._drawerOpen;
+		const tmpBar = document.getElementById('PRSP_FilterBar');
+		if (tmpBar) { tmpBar.classList.toggle('drawer-open', this._drawerOpen); }
+		return this._drawerOpen;
+	}
+
+	/**
+	 * The current search term, read back from the active route URL (the source of truth) so
+	 * the search box stays populated across re-renders and reflects bookmarked/filtered URLs.
+	 * performSearch builds `.../FilteredTo/FBVOR~<field>~LK~<encoded %term%>~...` from the
+	 * SearchFields, so the term is the first LK value in the FilteredTo segment.
+	 *
+	 * @return {string}
+	 */
+	_searchTermFromURL()
+	{
+		const tmpCurrent = this.pict.providers.PictRouter && this.pict.providers.PictRouter.router && this.pict.providers.PictRouter.router.current
+			? this.pict.providers.PictRouter.router.current[0] : null;
+		const tmpUrl = (tmpCurrent && (tmpCurrent.url || tmpCurrent.hashString)) || '';
+		if (tmpUrl.indexOf('FilteredTo/') < 0) { return ''; }
+		const tmpFilteredPart = (tmpUrl.split('FilteredTo/')[1] || '').split('/FilterExperience')[0];
+		const tmpMatch = tmpFilteredPart.match(/LK~([^~]+)/);
+		if (!tmpMatch) { return ''; }
+		let tmpValue = tmpMatch[1];
+		try { tmpValue = decodeURIComponent(tmpValue); } catch (pError) { /* leave raw */ }
+		return tmpValue.replace(/^%+|%+$/g, '');
+	}
+
+	/** The number of active (structured) filter clauses for a record set. */
+	getActiveFilterCount(pRecordSet)
+	{
+		const tmpClauses = this.pict && this.pict.Bundle && this.pict.Bundle._ActiveFilterState && this.pict.Bundle._ActiveFilterState[pRecordSet]
+			? this.pict.Bundle._ActiveFilterState[pRecordSet].FilterClauses : null;
+		return Array.isArray(tmpClauses) ? tmpClauses.length : 0;
+	}
+
+	/**
+	 * Repaint the filter-bar chrome after a (re)render: the filters icon (outline vs filled
+	 * + count badge), the active-filter highlight, the persisted drawer-open state, and the
+	 * search input value (so applying a search no longer clears the search box).
+	 *
+	 * @param {string} pRecordSet
+	 */
+	_paintFilterControls(pRecordSet)
+	{
+		const tmpBar = document.getElementById('PRSP_FilterBar');
+		if (!tmpBar) { return; }
+		const tmpCount = this.getActiveFilterCount(pRecordSet);
+		tmpBar.classList.toggle('has-filters', tmpCount > 0);
+		tmpBar.classList.toggle('drawer-open', !!this._drawerOpen);
+		const tmpIcon = document.getElementById('PRSP_Filter_Icon');
+		if (tmpIcon) { tmpIcon.innerHTML = (tmpCount > 0) ? ViewRecordSetSUBSETFilters.FilterIconFilled : ViewRecordSetSUBSETFilters.FilterIconOutline; }
+		const tmpCountEl = document.getElementById('PRSP_Filter_Count');
+		if (tmpCountEl) { tmpCountEl.textContent = (tmpCount > 0) ? String(tmpCount) : ''; }
+		const tmpInput = document.getElementById('search_filter');
+		if (tmpInput) { tmpInput.value = this._searchTermFromURL(); }
+	}
+
 	/**
 	 * @param {Event} pEvent - The DOM event that triggered the search
 	 * @param {string} pRecordSet - The record set being filtered
@@ -355,12 +487,12 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	 */
 	handleSearch(pEvent, pRecordSet, pViewContext)
 	{
-		pEvent.preventDefault(); // don't submit the form
-		pEvent.stopPropagation();
+		if (pEvent) { pEvent.preventDefault(); pEvent.stopPropagation(); } // don't submit the form
 		this.newFilterSearchApplied = true;
-		//FIXME: store this filter string in the bundle so we can re-apply it on re-render
 		const tmpSearchString = this.pict.ContentAssignment.readContent(`input[name="filter"]`);
-		this.performSearch(pRecordSet, pViewContext, tmpSearchString ? String(tmpSearchString) : '');
+		// Remember the applied search so the re-render below doesn't blank the search box.
+		this._searchString[pRecordSet] = tmpSearchString ? String(tmpSearchString) : '';
+		this.performSearch(pRecordSet, pViewContext, this._searchString[pRecordSet]);
 	}
 
 	/**
@@ -433,6 +565,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		if (pEvent) pEvent.preventDefault();
 		this.bumpRenderEpoch();
 		this.pict.ContentAssignment.assignContent('input[name="filter"]', '');
+		this._searchString[pRecordSet] = '';
 		this.pict.Bundle._ActiveFilterState[pRecordSet].FilterClauses = [];
 		this.pict.providers.FilterDataProvider.removeDefaultFilterExperience(pRecordSet, pViewContext);
 		this.performSearch(pRecordSet, pViewContext, '');
@@ -539,6 +672,44 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	}
 
 	/**
+	 * Lifecycle hook that triggers before the view is rendered. The consolidated filter
+	 * control's markup is owned by this module now, so re-assert its templates here — this
+	 * neutralizes any host/server template override that previously replaced the filter UI,
+	 * letting apps brand the control via CSS (theme tokens) rather than by swapping markup.
+	 *
+	 * @param {import('pict-view').Renderable} pRenderable - The renderable about to be rendered.
+	 */
+	onBeforeRender(pRenderable)
+	{
+		// Re-assert ONLY the consolidated-control chrome (the wrapper, search row, filter toggle +
+		// Search button, the Filter Experiences container, and Clear/Reset/Apply) so the module owns
+		// that markup. Deliberately NOT the add-filter dropdown or per-clause templates: host apps
+		// (e.g. Headlight) layer their own styled add-filter popover and clause UI on top, and
+		// re-asserting those clobbers them — re-exposing bare native <select> dropdowns and a dead
+		// remove button. Those host overrides register at init and must survive each re-render.
+		const tmpChromeTemplateHashes =
+		[
+			'PRSP-SUBSET-Filters-Template',
+			'PRSP-SUBSET-Filters-Template-Input-Fieldset',
+			'PRSP-SUBSET-Filters-Template-Button-Fieldset',
+			'PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset',
+			'PRSP-SUBSET-Filters-Template-DrawerActions-Fieldset'
+		];
+		if (this.pict.TemplateProvider && Array.isArray(_DEFAULT_CONFIGURATION_SUBSET_Filter.Templates))
+		{
+			for (const tmpTemplateHash of tmpChromeTemplateHashes)
+			{
+				const tmpTemplate = _DEFAULT_CONFIGURATION_SUBSET_Filter.Templates.find((pTemplate) => pTemplate.Hash === tmpTemplateHash);
+				if (tmpTemplate)
+				{
+					this.pict.TemplateProvider.addTemplate(tmpTemplate.Hash, tmpTemplate.Template);
+				}
+			}
+		}
+		return super.onBeforeRender(pRenderable);
+	}
+
+	/**
 	 * Lifecycle hook that triggers after the view is rendered.
 	 * @param {import('pict-view').Renderable} pRenderable - The renderable that was rendered.
 	 */
@@ -582,6 +753,32 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		if (tmpRecordSet && tmpViewContext)
 		{
 			this.pict.providers.FilterDataProvider.applyExpectedFilterExperience(tmpRecordSet, tmpViewContext);
+		}
+
+		// Consolidated filter control: whenever the search row is in the DOM, refresh the
+		// search box, the filters icon/count + drawer state, and surface the saved Filter
+		// Experiences dropdown in the drawer. (Guarded on the DOM element rather than the
+		// renderable hash because the list embeds this view via {~FV:~}.)
+		if (document.getElementById('PRSP_Filter_Icon'))
+		{
+			let tmpFilterRecordSet = tmpRecordSet;
+			let tmpFilterViewContext = tmpViewContext || 'List';
+			if (!tmpFilterRecordSet && this.pict.Bundle && this.pict.Bundle._ActiveFilterState)
+			{
+				tmpFilterRecordSet = Object.keys(this.pict.Bundle._ActiveFilterState)[0];
+			}
+			if (tmpFilterRecordSet)
+			{
+				this._paintFilterControls(tmpFilterRecordSet);
+				// (Re)render the experiences dropdown only when its container is empty — i.e. on
+				// a fresh filter render — not on every sub-render (add-filter dropdown, etc.).
+				const tmpExpContainer = document.getElementById('FilterPersistenceView-Container');
+				if (this.pict.views.FilterPersistenceView && tmpExpContainer && !tmpExpContainer.querySelector('#FilterPersistenceView-Content'))
+				{
+					this.pict.views.FilterPersistenceView.initializeFilterPersistenceViewUI(tmpFilterRecordSet, tmpFilterViewContext);
+				}
+			}
+			if (this.pict.CSSMap && typeof this.pict.CSSMap.injectCSS === 'function') { this.pict.CSSMap.injectCSS(); }
 		}
 
 		return res;
@@ -729,6 +926,11 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		return arraybuffer;
 	};
 }
+
+// Funnel icons for the filters toggle — outline when no filters are set, filled when set.
+// currentColor so they follow the (themeable) toggle text color.
+ViewRecordSetSUBSETFilters.FilterIconOutline = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5.5h17l-6.6 7.8v4.7l-3.8 2v-6.7z"/></svg>';
+ViewRecordSetSUBSETFilters.FilterIconFilled = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.5 5.5h17l-6.6 7.8v4.7l-3.8 2v-6.7z"/></svg>';
 
 module.exports = ViewRecordSetSUBSETFilters;
 

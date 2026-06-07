@@ -1,5 +1,11 @@
 const libPictRecordSetRecordView = require('../RecordSet-RecordBaseView.js');
 
+// Identity + audit field names stamped on (virtually) every Meadow entity. These are
+// surfaced through the record audit header (the first-class activity line + the Details
+// modal), not inline in the record body. The entity's own ID/GUID field names are added
+// at suppression time via the provider's getIDField()/getGUIDField().
+const _AUDIT_FIELD_NAMES = ['CreatingIDUser', 'UpdatingIDUser', 'DeletingIDUser', 'Deleted', 'CreateDate', 'UpdateDate', 'DeleteDate'];
+
 /** @type {Record<string, any>} */
 const _DEFAULT_CONFIGURATION__Read = (
 	{
@@ -22,7 +28,32 @@ const _DEFAULT_CONFIGURATION__Read = (
 		AutoSolveWithApp: false,
 		AutoSolveOrdinal: 0,
 
-		CSS: false,
+		CSS: /*css*/`
+			.prsp-audit-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin: 0 0 1rem; }
+			.prsp-audit-line { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--theme-color-text-muted, #6b7686); font-size: 0.85rem; }
+			.prsp-audit-line .pict-icon { font-size: 0.8rem; }
+			.prsp-audit-line strong { color: var(--theme-color-text-secondary, #45505f); font-weight: 600; }
+			.prsp-audit-button { display: inline-flex; align-items: center; gap: 0.4rem; border: 1px solid var(--theme-color-border-default, #d7dce3); background: var(--theme-color-background-primary, #fff); color: var(--theme-color-text-muted, #6b7686); border-radius: 8px; padding: 0.35rem 0.65rem; font: inherit; font-size: 0.82rem; cursor: pointer; transition: all 0.15s ease; }
+			.prsp-audit-button:hover { border-color: var(--theme-color-brand-primary, #156dd1); color: var(--theme-color-brand-primary, #156dd1); }
+			.prsp-record-related:empty { display: none; }
+			.prsp-audit-anchor { position: relative; }
+			.prsp-audit-popover { position: absolute; top: calc(100% + 8px); right: 0; min-width: 320px; max-width: 90vw; background: var(--theme-color-background-panel, #fff); border: 1px solid var(--theme-color-border-default, #d7dce3); border-radius: 10px; box-shadow: 0 14px 36px rgba(15, 23, 42, 0.18); padding: 1rem 1.1rem; z-index: 40; display: none; }
+			.prsp-audit-popover.is-open { display: block; }
+			.prsp-audit-dl { display: grid; grid-template-columns: auto 1fr; gap: 0.6rem 1rem; align-items: baseline; margin: 0; }
+			.prsp-audit-dl dt { color: var(--theme-color-text-muted, #6b7686); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
+			.prsp-audit-dl dd { margin: 0; color: var(--theme-color-text-primary, #1f2733); font-size: 0.9rem; }
+			.prsp-audit-dl dd small { color: var(--theme-color-text-muted, #6b7686); }
+			.prsp-audit-dl dd.is-deleted { color: var(--theme-color-status-error, #b62828); }
+			.prsp-audit-guid { display: inline-flex; align-items: center; gap: 0.4rem; }
+			.prsp-audit-guid code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8rem; color: var(--theme-color-text-secondary, #45505f); background: var(--theme-color-background-secondary, #f5f6f8); padding: 0.1rem 0.4rem; border-radius: 5px; }
+			.prsp-audit-copy { border: 0; background: transparent; color: var(--theme-color-text-muted, #6b7686); cursor: pointer; padding: 0.1rem 0.3rem; border-radius: 4px; font-size: 0.85rem; }
+			.prsp-audit-copy:hover { color: var(--theme-color-brand-primary, #156dd1); }
+			/* Tufte: in view mode the record VALUES are the foreground. Read-only fields render as
+			   text (not boxed inputs), so the data outweighs its labels and section chrome. */
+			.prsp-record-read input.input[readonly], .prsp-record-read input.input[disabled], .prsp-record-read textarea[readonly], .prsp-record-read textarea[disabled], .prsp-record-read select[disabled] { background: transparent !important; border-color: transparent !important; box-shadow: none !important; padding-left: 0 !important; padding-right: 0 !important; height: auto !important; min-height: 0 !important; opacity: 1 !important; cursor: default !important; color: var(--theme-color-text-primary, #1f2733) !important; -webkit-text-fill-color: var(--theme-color-text-primary, #1f2733) !important; font-weight: 600 !important; font-size: 1.1rem !important; }
+			.prsp-record-read .label { font-size: 0.68rem !important; font-weight: 600 !important; text-transform: uppercase !important; letter-spacing: 0.05em !important; color: var(--theme-color-text-muted, #6b7686) !important; margin-bottom: 0.05rem !important; }
+			.prsp-record-read .section-header { background: var(--theme-color-background-selected, #e3edfb) !important; color: var(--theme-color-brand-primary, #156dd1) !important; font-size: 0.74rem !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 0.06em !important; padding: 0.4rem 0.8rem !important; border-radius: 6px !important; border-bottom: 0 !important; margin: 1.1rem 0 0.7rem !important; }
+		`,
 		CSSPriority: 500,
 
 		Templates:
@@ -227,6 +258,47 @@ const _DEFAULT_CONFIGURATION__Read = (
 					// TODO: Double payload pattern...
 					Template: `#/PSRS/{~D:Record.Payload.Payload.RecordSet~}/View/{~DVBK:Record.Payload.Data:Record.Payload.Payload.GUIDAddress~}`
 				},
+				// --- Record audit header (themeable; apps brand via --theme-color-* tokens) ---
+				{
+					Hash: 'PRSP-Read-RecordAuditHeader-Template',
+					Template: /*html*/`
+						<div class="prsp-audit-header">
+							<div class="prsp-audit-activity">{~TS:PRSP-Read-RecordAudit-Line-Template:AppData.PRSP_RecordAudit.ActivitySlot~}</div>
+							<div class="prsp-audit-anchor">
+								<button type="button" class="prsp-audit-button" title="Identity and audit detail" onclick="_Pict.views['RSP-RecordSet-Read'].toggleRecordAudit()">{~I:Info~}<span>Details</span></button>
+								<div class="prsp-audit-popover" id="PRSP-Read-AuditPopover">
+									<dl class="prsp-audit-dl">
+										<dt>{~D:AppData.PRSP_RecordAudit.IDFieldName~}</dt><dd><span class="prsp-audit-guid"><code>{~D:AppData.PRSP_RecordAudit.IDValue~}</code><button type="button" class="prsp-audit-copy" title="Copy" onclick="_Pict.views['RSP-RecordSet-Read'].copyValue('{~D:AppData.PRSP_RecordAudit.IDValue~}')">{~I:Copy~}</button></span></dd>
+										<dt>{~D:AppData.PRSP_RecordAudit.GUIDFieldName~}</dt><dd><span class="prsp-audit-guid"><code>{~D:AppData.PRSP_RecordAudit.GUIDValue~}</code><button type="button" class="prsp-audit-copy" title="Copy" onclick="_Pict.views['RSP-RecordSet-Read'].copyValue('{~D:AppData.PRSP_RecordAudit.GUIDValue~}')">{~I:Copy~}</button></span></dd>
+										{~TS:PRSP-Read-RecordAudit-Created-Template:AppData.PRSP_RecordAudit.CreatedSlot~}
+										{~TS:PRSP-Read-RecordAudit-Updated-Template:AppData.PRSP_RecordAudit.UpdatedSlot~}
+										{~TS:PRSP-Read-RecordAudit-Deleted-Template:AppData.PRSP_RecordAudit.DeletedSlot~}
+									</dl>
+								</div>
+							</div>
+						</div>
+					`
+				},
+				{
+					Hash: 'PRSP-Read-RecordAudit-Line-Template',
+					Template: /*html*/`<span class="prsp-audit-line">{~I:Refresh~} {~D:Record.Label~} by <strong>{~E:User^Record.UserID^PRSP-Read-RecordAudit-UserName-Template~}</strong> &middot; {~DateFormat:Record.Date^MMM D, YYYY - h:mm A~}</span>`
+				},
+				{
+					Hash: 'PRSP-Read-RecordAudit-UserName-Template',
+					Template: /*html*/`{~D:Record.NameFirst~} {~D:Record.NameLast~}`
+				},
+				{
+					Hash: 'PRSP-Read-RecordAudit-Created-Template',
+					Template: /*html*/`<dt>Created</dt><dd>{~DateFormat:Record.Date^MMM D, YYYY - h:mm A~} <small>by {~E:User^Record.UserID^PRSP-Read-RecordAudit-UserName-Template~}</small></dd>`
+				},
+				{
+					Hash: 'PRSP-Read-RecordAudit-Updated-Template',
+					Template: /*html*/`<dt>Last updated</dt><dd>{~DateFormat:Record.Date^MMM D, YYYY - h:mm A~} <small>by {~E:User^Record.UserID^PRSP-Read-RecordAudit-UserName-Template~}</small></dd>`
+				},
+				{
+					Hash: 'PRSP-Read-RecordAudit-Deleted-Template',
+					Template: /*html*/`<dt>Deleted</dt><dd class="is-deleted">{~DateFormat:Record.Date^MMM D, YYYY - h:mm A~} <small>by {~E:User^Record.UserID^PRSP-Read-RecordAudit-UserName-Template~}</small></dd>`
+				},
 			],
 
 		Renderables:
@@ -319,6 +391,8 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 			this.initializeDragListener();
 		}
 		
+		this.pict.CSSMap.injectCSS();
+		this._bindAuditDismiss();
 		return super.onAfterRender(pRenderable);
 	}
 
@@ -385,6 +459,222 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 	{
 		await this.onBeforeEdit();
 		this.fable.providers.RecordSetRouter.pictRouter.navigate(`/PSRS/${ this.RecordSet }/Edit/${ this.GUID }`);
+	}
+
+	/**
+	 * Build the record audit header state — the first-class activity line plus the data the
+	 * Details modal renders. Identity (ID/GUID) and the create/update/delete stamps are read
+	 * straight off the fetched record; the acting-user names resolve lazily via {~E:User^…~}
+	 * in the templates (cachetrax-cached), so nothing is pre-resolved here. Stored at
+	 * AppData.PRSP_RecordAudit for the templates to consume.
+	 *
+	 * @param {Record<string, any>} pRecord - The fetched record.
+	 */
+	_prepareRecordAuditState(pRecord)
+	{
+		if (!pRecord || typeof pRecord !== 'object')
+		{
+			this.pict.AppData.PRSP_RecordAudit = false;
+			return;
+		}
+		const tmpProvider = this.pict.providers[this.providerHash];
+		const tmpIDField = tmpProvider ? tmpProvider.getIDField() : 'ID';
+		const tmpGUIDField = tmpProvider ? tmpProvider.getGUIDField() : 'GUID';
+
+		const tmpHasCreate = this._validAuditDate(pRecord.CreateDate);
+		const tmpHasUpdate = this._validAuditDate(pRecord.UpdateDate) && (pRecord.UpdateDate !== pRecord.CreateDate);
+		const tmpDeleted = !!pRecord.Deleted && this._validAuditDate(pRecord.DeleteDate);
+
+		let tmpActivitySlot = [];
+		if (tmpHasUpdate)
+		{
+			tmpActivitySlot = [{ Label: 'Updated', Date: pRecord.UpdateDate, UserID: pRecord.UpdatingIDUser }];
+		}
+		else if (tmpHasCreate)
+		{
+			tmpActivitySlot = [{ Label: 'Created', Date: pRecord.CreateDate, UserID: pRecord.CreatingIDUser }];
+		}
+
+		const tmpIDValue = (pRecord[tmpIDField] != null) ? pRecord[tmpIDField] : '';
+		this.pict.AppData.PRSP_RecordAudit =
+		{
+			RecordSet: this.RecordSet,
+			DisplayName: this._computeDisplayName(pRecord),
+			IDFieldName: tmpIDField,
+			GUIDFieldName: tmpGUIDField,
+			IDValue: tmpIDValue,
+			GUIDValue: (pRecord[tmpGUIDField] != null) ? pRecord[tmpGUIDField] : '',
+			ActivitySlot: tmpActivitySlot,
+			CreatedSlot: tmpHasCreate ? [{ Date: pRecord.CreateDate, UserID: pRecord.CreatingIDUser }] : [],
+			UpdatedSlot: tmpHasUpdate ? [{ Date: pRecord.UpdateDate, UserID: pRecord.UpdatingIDUser }] : [],
+			DeletedSlot: tmpDeleted ? [{ Date: pRecord.DeleteDate, UserID: pRecord.DeletingIDUser }] : []
+		};
+	}
+
+	/**
+	 * Compute a human-friendly display name for a record using an opinionated heuristic: first +
+	 * last name, then a single descriptive field (FullName, Name, Title, …), else ''. Callers fall
+	 * back to the GUID. Lets the page title read "Krishna Pavia Tester" instead of a raw GUID.
+	 * @param {Record<string, any>} pRecord
+	 * @return {string}
+	 */
+	_computeDisplayName(pRecord)
+	{
+		if (!pRecord || typeof pRecord !== 'object')
+		{
+			return '';
+		}
+		const tmpFirst = pRecord.NameFirst || pRecord.FirstName;
+		const tmpLast = pRecord.NameLast || pRecord.LastName;
+		if (tmpFirst || tmpLast)
+		{
+			return [tmpFirst, tmpLast].filter(Boolean).join(' ').trim();
+		}
+		const tmpCandidateFields = ['FullName', 'Name', 'Title', 'DisplayName', 'Label', 'Subject', 'Description', 'Code', 'Hash'];
+		for (const tmpField of tmpCandidateFields)
+		{
+			if (pRecord[tmpField] != null && String(pRecord[tmpField]).trim() !== '')
+			{
+				return String(pRecord[tmpField]).trim();
+			}
+		}
+		return '';
+	}
+
+	/**
+	 * Whether an audit date value is present and meaningful (guards null/empty and the Meadow
+	 * "0000-00-00" zero-date sentinel).
+	 * @param {any} pValue
+	 * @return {boolean}
+	 */
+	_validAuditDate(pValue)
+	{
+		if (!pValue)
+		{
+			return false;
+		}
+		return String(pValue).indexOf('0000-00-00') !== 0;
+	}
+
+	/**
+	 * Toggle the anchored identity + audit popover open or closed. The content is rendered inline
+	 * with the record (so the {~E:User^…~} names resolve during the read render); this just flips
+	 * its visibility — no overlay.
+	 */
+	toggleRecordAudit()
+	{
+		const tmpPopover = document.getElementById('PRSP-Read-AuditPopover');
+		if (tmpPopover)
+		{
+			tmpPopover.classList.toggle('is-open');
+		}
+	}
+
+	/**
+	 * Bind the one-time document handlers that dismiss the audit popover on an outside click or
+	 * Escape. Browser-level events with no inline-handler equivalent — bound once and guarded so
+	 * re-renders don't stack listeners.
+	 */
+	_bindAuditDismiss()
+	{
+		if (this._auditDismissBound || typeof document === 'undefined')
+		{
+			return;
+		}
+		this._auditDismissBound = true;
+		document.addEventListener('click', (pEvent) =>
+		{
+			const tmpPopover = document.getElementById('PRSP-Read-AuditPopover');
+			if (!tmpPopover || !tmpPopover.classList.contains('is-open'))
+			{
+				return;
+			}
+			if (tmpPopover.contains(pEvent.target) || (pEvent.target.closest && pEvent.target.closest('.prsp-audit-button')))
+			{
+				return;
+			}
+			tmpPopover.classList.remove('is-open');
+		});
+		document.addEventListener('keydown', (pEvent) =>
+		{
+			if (pEvent.key === 'Escape')
+			{
+				const tmpPopover = document.getElementById('PRSP-Read-AuditPopover');
+				if (tmpPopover)
+				{
+					tmpPopover.classList.remove('is-open');
+				}
+			}
+		});
+	}
+
+	/**
+	 * Copy a record value (ID or GUID) to the clipboard from the audit popover, with a toast.
+	 * @param {string} pValue
+	 */
+	copyValue(pValue)
+	{
+		const tmpModal = this.pict.views['Pict-Section-Modal'];
+		const fToast = (pMessage, pType) =>
+		{
+			if (tmpModal && typeof tmpModal.toast === 'function')
+			{
+				tmpModal.toast(pMessage, { type: pType || 'success' });
+			}
+		};
+		if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText)
+		{
+			navigator.clipboard.writeText(pValue).then(() => fToast('GUID copied to clipboard')).catch(() => fToast('Could not copy GUID', 'error'));
+		}
+		else
+		{
+			fToast('Could not copy GUID', 'error');
+		}
+	}
+
+	/**
+	 * Remove identity + audit descriptors from a (cloned) manifest so they don't render inline
+	 * in the record body — they live behind the audit header's Details modal instead. Also
+	 * prunes any section left with no descriptors (e.g. an emptied "Audit Trail" section). The
+	 * entity's own ID/GUID field names are suppressed alongside the shared audit fields.
+	 * @param {Record<string, any>} pManifest - The cloned manifest to mutate.
+	 */
+	_suppressAuditDescriptors(pManifest)
+	{
+		if (!pManifest || !pManifest.Descriptors)
+		{
+			return;
+		}
+		const tmpProvider = this.pict.providers[this.providerHash];
+		const tmpSuppress = _AUDIT_FIELD_NAMES.slice();
+		if (tmpProvider)
+		{
+			tmpSuppress.push(tmpProvider.getIDField());
+			tmpSuppress.push(tmpProvider.getGUIDField());
+		}
+		for (const tmpKey of Object.keys(pManifest.Descriptors))
+		{
+			const tmpFieldName = tmpKey.split('.').pop();
+			if (tmpSuppress.indexOf(tmpFieldName) >= 0)
+			{
+				delete pManifest.Descriptors[tmpKey];
+			}
+		}
+		// Drop sections that no longer have any descriptors (so an emptied titled section like
+		// "Audit Trail" doesn't render as a bare heading).
+		if (Array.isArray(pManifest.Sections))
+		{
+			const tmpUsedSections = {};
+			for (const tmpKey of Object.keys(pManifest.Descriptors))
+			{
+				const tmpSectionHash = pManifest.Descriptors[tmpKey] && pManifest.Descriptors[tmpKey].PictForm && pManifest.Descriptors[tmpKey].PictForm.Section;
+				if (tmpSectionHash)
+				{
+					tmpUsedSections[tmpSectionHash] = true;
+				}
+			}
+			pManifest.Sections = pManifest.Sections.filter((pSection) => tmpUsedSections[pSection.Hash]);
+		}
 	}
 
 	onBeforeRenderRead(pRecordReadData)
@@ -467,12 +757,19 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 		tmpRecordReadData.RecordSchema = await this.pict.providers[pProviderHash].getRecordSchema();
 		this.pict.AppData[`${ tmpRecordReadData.RecordSet }Details`] = tmpRecordReadData.Record;
 
+		// Build the audit header state (first-class activity line + the Details modal) for this record.
+		this._prepareRecordAuditState(tmpRecordReadData.Record);
+
 		if (pRecordConfiguration.RecordSetReadManifestOnly)
 		{
 			this.pict.TemplateProvider.addTemplate(`PRSP-Read-RecordRead-Template`, /*html*/`
 				<!-- Manifest dynamic pict template: [PRSP-Read-RecordRead-Template] -->
+				<div class="prsp-record-read">
+				{~T:PRSP-Read-RecordAuditHeader-Template~}
 				<div>${ this._generateManifestTemplate(pRecordConfiguration, 'RecordRead', null, true) }</div>
 				{~T:PRSP-Read-RecordButtonBar-Template~}
+				<div class="prsp-record-related" id="PRSP-Read-Related"></div>
+				</div>
 				<!-- Manifest dynamic pict end template: [PRSP-Read-RecordRead-Template] -->
 			`);
 		}
@@ -482,8 +779,12 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 			this.defaultManifest = await this._buildDefaultManifest(tmpRecordReadData.RecordSet);
 			this.pict.TemplateProvider.addTemplate(`PRSP-Read-RecordRead-Template`, /*html*/`
 				<!-- Manifest dynamic pict template: [PRSP-Read-RecordRead-Template] -->
+				<div class="prsp-record-read">
+				{~T:PRSP-Read-RecordAuditHeader-Template~}
 				<div>${ this._generateManifestTemplate(pRecordConfiguration, 'RecordRead', null, true, this.action, this.defaultManifest) }</div>
 				{~T:PRSP-Read-RecordButtonBar-Template~}
+				<div class="prsp-record-related" id="PRSP-Read-Related"></div>
+				</div>
 				<!-- Manifest dynamic pict end template: [PRSP-Read-RecordRead-Template] -->
 			`);
 		}
@@ -616,7 +917,7 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 		const schema = await this.pict.providers[providerHash].getRecordSchema();
 		for (const p of Object.keys(schema.properties))
 		{
-			const exclusionSet = [this.pict.providers[this.providerHash].getIDField(), this.pict.providers[this.providerHash].getGUIDField(), 'CreatingIDUser', 'UpdatingIDUser', 'DeletingIDUser', 'Deleted', 'CreateDate', 'UpdateDate', 'DeleteDate', 'Deleted'];
+			const exclusionSet = [this.pict.providers[this.providerHash].getIDField(), this.pict.providers[this.providerHash].getGUIDField()].concat(_AUDIT_FIELD_NAMES);
 			if (exclusionSet.includes(p))
 			{
 				continue;
@@ -694,6 +995,11 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 				}
 				tmpManifest.Descriptors[x].PictForm.InputType = 'ReadOnly';
 			}
+		}
+		// Suppress identity + audit fields from the body; they surface via the audit header's Details modal.
+		if (config.RecordSetReadSuppressAuditFields !== false)
+		{
+			this._suppressAuditDescriptors(tmpManifest);
 		}
 		if (setBaseManifest)
 		{

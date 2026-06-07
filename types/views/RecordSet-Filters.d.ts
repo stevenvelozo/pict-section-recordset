@@ -18,6 +18,8 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
     newFilterSearchApplied: boolean;
     addFilterCallback: Function;
     removeFilterCallback: Function;
+    _drawerOpen: boolean;
+    _searchString: {};
     _renderEpoch: number;
     /**
      * Bump the render epoch. Call this whenever the active filter clauses are
@@ -64,6 +66,27 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
      * @returns {any} The result of the super.onMarshalToView() method.
      */
     onMarshalToView(): any;
+    /** Toggle the slide-out filter drawer beneath the search bar. */
+    toggleFilterDrawer(): boolean;
+    /**
+     * The current search term, read back from the active route URL (the source of truth) so
+     * the search box stays populated across re-renders and reflects bookmarked/filtered URLs.
+     * performSearch builds `.../FilteredTo/FBVOR~<field>~LK~<encoded %term%>~...` from the
+     * SearchFields, so the term is the first LK value in the FilteredTo segment.
+     *
+     * @return {string}
+     */
+    _searchTermFromURL(): string;
+    /** The number of active (structured) filter clauses for a record set. */
+    getActiveFilterCount(pRecordSet: any): number;
+    /**
+     * Repaint the filter-bar chrome after a (re)render: the filters icon (outline vs filled
+     * + count badge), the active-filter highlight, the persisted drawer-open state, and the
+     * search input value (so applying a search no longer clears the search box).
+     *
+     * @param {string} pRecordSet
+     */
+    _paintFilterControls(pRecordSet: string): void;
     /**
      * @param {Event} pEvent - The DOM event that triggered the search
      * @param {string} pRecordSet - The record set being filtered
@@ -159,9 +182,11 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
     decode(base64: string): ArrayBuffer;
 }
 declare namespace ViewRecordSetSUBSETFilters {
-    export { _DEFAULT_CONFIGURATION_SUBSET_Filter as default_configuration };
+    export { FilterIconOutline, FilterIconFilled, _DEFAULT_CONFIGURATION_SUBSET_Filter as default_configuration };
 }
 import libPictView = require("pict-view");
+declare var FilterIconOutline: string;
+declare var FilterIconFilled: string;
 /** @type {Record<string, any>} */
 declare const _DEFAULT_CONFIGURATION_SUBSET_Filter: Record<string, any>;
 //# sourceMappingURL=RecordSet-Filters.d.ts.map

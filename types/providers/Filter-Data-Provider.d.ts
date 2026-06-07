@@ -146,7 +146,7 @@ declare class FilterDataProvider extends libPictProvider {
      * @param {string} pViewContext - The current view context
      * @return {boolean} - Returns true when the settings have been saved.
      */
-    saveFilterMeta(pRecordSet: string, pViewContext: string): boolean;
+    saveFilterMeta(pRecordSet: string, pViewContext: string, pSilent: any, pDisplayNameOverride: any): boolean;
     /** ===== LAST USED Filter Experience ============= */
     /**
      * Save the application metadata as the last used filter experience (continually updated).
