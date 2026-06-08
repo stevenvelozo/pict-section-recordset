@@ -514,6 +514,11 @@ module.exports.default_configuration.pict_configuration = (
 
 				"RecordSetIgnoreFilterFields": [ "Deleted", "DeletingIDUser", "DeleteDate", "UpdateDate" ],
 
+				// Quick Filters — a curated, one-click bar above the full "Add filter" list. (Without this
+				// the bar is clever-derived from the schema.) Showcases all three control types: text
+				// (Title/Genre), date range (CreateDate), and entity picker (CreatingIDUser → User).
+				"QuickFilters": [ "Title", "Genre", { "Field": "CreateDate", "Label": "Added" }, { "Field": "CreatingIDUser", "Label": "Added by" } ],
+
 				"RecordSetListColumns": [
 					{
 						"Key": "Title",

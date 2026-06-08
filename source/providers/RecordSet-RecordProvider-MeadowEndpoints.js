@@ -517,6 +517,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 					case 'datetime':
 					case 'createdate':
 					case 'updatedate':
+					case 'deletedate':
 						tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Exact`, Label: `${tmpFieldHumanName} Exact Match`, DisplayName: `Exact Match`, Type: 'DateMatch', FilterByColumn: pSchemaField, ExactMatch: true , Ordinal: tmpFieldFilterClauses.length + 1 });
 						tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Fuzzy`, Label: `${tmpFieldHumanName} Partial Match`, DisplayName: `Partial Match`, Type: 'DateMatch', FilterByColumn: pSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterClauses.length + 1 });
 						tmpRangeClause = { FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Range`, Label: `${tmpFieldHumanName} In Range`, DisplayName: `In Range`, Type: 'DateRange', FilterByColumn: pSchemaField , Ordinal: tmpFieldFilterClauses.length + 1 };
@@ -745,7 +746,12 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 			}
 			++tmpOrdinal;
 			const tmpColumn = tmpProperties[tmpSchemaField];
-			const tmpMeadowSchemaField = tmpSchema.MeadowSchema?.Schema?.find?.((f) => f.Column === tmpSchemaField);
+			// The Meadow schema endpoint nests its canonical column array (the one carrying each column's
+			// semantic Type — CreateDate/UpdateDate/CreateIDUser/… — which is what distinguishes a date
+			// column from a plain string; the JSON-schema `type` flattens both to "string"). Read the
+			// nested path, falling back to the legacy flat path for older endpoints.
+			const tmpMeadowSchemaArray = tmpSchema.MeadowSchema?.MeadowSchema?.Schema || tmpSchema.MeadowSchema?.Schema;
+			const tmpMeadowSchemaField = Array.isArray(tmpMeadowSchemaArray) ? tmpMeadowSchemaArray.find((f) => f.Column === tmpSchemaField) : undefined;
 			let tmpFieldFilterSchema = this._FilterSchema[tmpSchemaField];
 			if (!tmpFieldFilterSchema)
 			{

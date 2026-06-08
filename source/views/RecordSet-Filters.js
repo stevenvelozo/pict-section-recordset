@@ -66,6 +66,25 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 .prsp-filters-experiences { flex: 0 1 auto; min-width: 0; }
 .prsp-filters-actions { flex: 0 0 auto; display: flex; align-items: center; gap: 0.5rem; }
 
+/* Quick Filters — a curated, one-interaction bar at the top of the drawer (above the clause list).
+   Painted post-render into #PRSP_QuickFilters; hidden via :empty when the record set has none. */
+.prsp-quickfilters { display: flex; align-items: center; flex-wrap: wrap; gap: 0.55rem 0.9rem;
+	margin-bottom: 0.7rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--theme-color-border-light, #e8ebf0); }
+.prsp-quickfilters:empty { display: none; }
+.prsp-quickfilters-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+	color: var(--theme-color-text-muted, #6b7686); }
+.prsp-quickfilter { display: inline-flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
+.prsp-quickfilter-name { font-size: 0.72rem; font-weight: 600; color: var(--theme-color-text-secondary, #45505f); }
+.prsp-quickfilter-input { font: inherit; font-size: 0.9rem; width: 13rem; max-width: 100%; padding: 0.4rem 0.7rem; border-radius: 8px;
+	border: 1px solid var(--theme-color-border-default, #d7dce3); background: var(--theme-color-background-primary, #fff); color: var(--theme-color-text-primary, #1f2733); }
+.prsp-quickfilter-input:focus { outline: none; border-color: var(--theme-color-brand-primary, #156dd1);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-color-brand-primary, #156dd1) 16%, transparent); }
+.prsp-quickfilter-daterange { display: inline-flex; align-items: center; gap: 0.35rem; }
+.prsp-quickfilter-date { width: 9.5rem; }
+.prsp-quickfilter-dash { color: var(--theme-color-text-muted, #6b7686); }
+/* Entity quick control: the pict-section-picker mounts into this host (its own .pps chrome themes it). */
+.prsp-quickfilter-entityhost { display: inline-block; width: 14rem; max-width: 100%; vertical-align: middle; }
+
 /* Module-owned "Add filter" popover (replaces the old native <select> pickers). */
 /* Fixed (viewport-anchored) + JS-positioned on open, so no ancestor overflow:hidden — the filter card,
    the slide-out drawer — can clip it, whatever the host's layout. */
@@ -114,6 +133,9 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 		</form>
 		<div class="prsp-filters-drawer" id="PRSP_Filter_Drawer">
 			<div class="prsp-filters-drawer-inner">
+				<!-- Quick Filters: a curated, one-interaction bar painted post-render into this host
+				     (empty when the record set has no quick filters → CSS :empty hides it). -->
+				<div class="prsp-quickfilters" id="PRSP_QuickFilters"></div>
 				<div id="PRSP_Filter_Instances" class="prsp-filters-clauses" onkeydown="if (event.key === 'Enter' &amp;&amp; !event.target.closest('.pps')) { event.preventDefault(); _Pict.views['PRSP-Filters'].handleSearch(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}'); }">
 					{~FIV:Record~}
 				</div>
@@ -235,6 +257,59 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 		<span>{~D:Record.DisplayName~}</span>
 	</button>
 	<!-- DefaultPackage end view template: [PRSP-AddFilter-Clause] -->
+`
+		},
+		{
+			// Quick Filters bar contents (painted into #PRSP_QuickFilters post-render). A small label +
+			// one compact control per definition; each control drives a real, tagged clause.
+			Hash: 'PRSP-QuickFilters-Bar',
+			Template: /*html*/`
+		<span class="prsp-quickfilters-label">Quick filters</span>
+		{~TS:PRSP-QuickFilter-Item:Record.Filters~}
+`
+		},
+		{
+			// One quick filter: a name + exactly one control, chosen by the single-element-array slot
+			// (text / date range / entity picker) populated for this item's control type.
+			Hash: 'PRSP-QuickFilter-Item',
+			Template: /*html*/`
+		<div class="prsp-quickfilter">
+			<span class="prsp-quickfilter-name">{~D:Record.Label~}</span>
+			{~TS:PRSP-QuickFilter-Text:Record.TextSlot~}
+			{~TS:PRSP-QuickFilter-Date:Record.DateSlot~}
+			{~TS:PRSP-QuickFilter-Entity:Record.EntitySlot~}
+		</div>
+`
+		},
+		{
+			// Text control (fuzzy match) — commits on blur / Enter (never per-keystroke, so the
+			// re-render that an apply triggers can't steal focus mid-type).
+			Hash: 'PRSP-QuickFilter-Text',
+			Template: /*html*/`
+		<input class="prsp-quickfilter-input" type="text" value="{~D:Record.Value~}" placeholder="{~D:Record.Placeholder~}" autocomplete="off"
+			onkeydown="if (event.key === 'Enter') { event.preventDefault(); this.blur(); }"
+			onchange="_Pict.views['PRSP-Filters'].applyQuickFilterText('{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}', '{~D:Record.Field~}', '{~D:Record.ClauseKey~}', this.value)">
+`
+		},
+		{
+			// Date-range control — a from/to pair driving one DateRange clause (Values.Start / .End).
+			Hash: 'PRSP-QuickFilter-Date',
+			Template: /*html*/`
+		<span class="prsp-quickfilter-daterange">
+			<input type="date" class="prsp-quickfilter-input prsp-quickfilter-date" value="{~D:Record.StartValue~}" aria-label="{~D:Record.Label~} from"
+				onchange="_Pict.views['PRSP-Filters'].applyQuickFilterDate('{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}', '{~D:Record.Field~}', '{~D:Record.ClauseKey~}', 'start', this.value)">
+			<span class="prsp-quickfilter-dash">–</span>
+			<input type="date" class="prsp-quickfilter-input prsp-quickfilter-date" value="{~D:Record.EndValue~}" aria-label="{~D:Record.Label~} to"
+				onchange="_Pict.views['PRSP-Filters'].applyQuickFilterDate('{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}', '{~D:Record.Field~}', '{~D:Record.ClauseKey~}', 'end', this.value)">
+		</span>
+`
+		},
+		{
+			// Entity control — a pict-section-picker mounts into this host (post-render, in
+			// _mountQuickFilterEntity), so the quick filter reuses the real entity picker.
+			Hash: 'PRSP-QuickFilter-Entity',
+			Template: /*html*/`
+		<span class="prsp-quickfilter-entityhost" id="{~D:Record.HostID~}"></span>
 `
 		},
 	],
@@ -525,6 +600,137 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		if (tmpCountEl) { tmpCountEl.textContent = (tmpCount > 0) ? String(tmpCount) : ''; }
 		const tmpInput = document.getElementById('search_filter');
 		if (tmpInput) { tmpInput.value = this._searchTermFromURL(); }
+	}
+
+	/**
+	 * Paint the Quick Filters bar into #PRSP_QuickFilters from the record set's quick-filter definitions
+	 * (host config or clever defaults), each control seeded with its clause's current value. Phase 1
+	 * renders the text controls; date/entity controls follow. Empty → the bar's :empty CSS hides it.
+	 *
+	 * @param {string} pRecordSet @param {string} pViewContext
+	 */
+	_renderQuickFilters(pRecordSet, pViewContext)
+	{
+		if (!document.getElementById('PRSP_QuickFilters')) { return; }
+		const tmpProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
+		if (!tmpProvider || typeof tmpProvider.getQuickFilterDefinitions !== 'function')
+		{
+			this.pict.ContentAssignment.assignContent('#PRSP_QuickFilters', '');
+			return;
+		}
+		// Build one item per definition, populating exactly one control slot (text / date / entity).
+		const tmpEntityMounts = [];
+		const tmpItems = tmpProvider.getQuickFilterDefinitions().map((pDefinition) =>
+		{
+			const tmpBase = { Field: pDefinition.Field, ClauseKey: pDefinition.ClauseKey, Label: pDefinition.Label, RecordSet: pRecordSet, ViewContext: pViewContext };
+			const tmpItem = { Label: pDefinition.Label, TextSlot: [], DateSlot: [], EntitySlot: [] };
+			if (pDefinition.Control === 'text')
+			{
+				tmpItem.TextSlot = [ Object.assign({}, tmpBase, { Value: tmpProvider.getQuickFilterClauseValue(pDefinition.Field), Placeholder: `Search ${pDefinition.Label}…` }) ];
+			}
+			else if (pDefinition.Control === 'daterange')
+			{
+				const tmpRange = tmpProvider.getQuickFilterDateRangeValue(pDefinition.Field);
+				tmpItem.DateSlot = [ Object.assign({}, tmpBase, { StartValue: tmpRange.Start, EndValue: tmpRange.End }) ];
+			}
+			else if (pDefinition.Control === 'entity')
+			{
+				const tmpHostID = `PRSP_QuickEntity_${pRecordSet}_${pDefinition.Field}`;
+				tmpItem.EntitySlot = [ Object.assign({}, tmpBase, { HostID: tmpHostID }) ];
+				tmpEntityMounts.push(Object.assign({}, tmpBase, { HostID: tmpHostID }));
+			}
+			return tmpItem;
+		});
+		const tmpHTML = (tmpItems.length > 0) ? this.pict.parseTemplateByHash('PRSP-QuickFilters-Bar', { Filters: tmpItems }) : '';
+		this.pict.ContentAssignment.assignContent('#PRSP_QuickFilters', tmpHTML);
+		// Entity controls: mount (or re-mount) a picker into each host after the wholesale re-render.
+		tmpEntityMounts.forEach((pMount) => this._mountQuickFilterEntity(pRecordSet, pViewContext, pMount));
+	}
+
+	/**
+	 * Mount (idempotently) a pict-section-picker into a quick-filter entity host, configured from the
+	 * field's entity clause descriptor (RemoteTable / search columns / value column), single-select.
+	 * On change it upserts the clause + applies. Re-runs after each render (the bar repaints wholesale),
+	 * mirroring the form adapter's re-mount pattern. No-op if the picker module isn't registered.
+	 *
+	 * @param {string} pRecordSet @param {string} pViewContext @param {Record<string, any>} pMount
+	 */
+	_mountQuickFilterEntity(pRecordSet, pViewContext, pMount)
+	{
+		if (!document.getElementById(pMount.HostID)) { return; }
+		const tmpPickerProvider = this.pict.providers['Pict-Section-Picker'];
+		const tmpProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
+		if (!tmpPickerProvider || typeof tmpPickerProvider.createEntityPicker !== 'function' || !tmpProvider) { return; }
+		const tmpDescriptor = tmpProvider.getFilterClauseSchemaForKey(pMount.Field)?.AvailableClauses?.find?.((pClause) => pClause.ClauseKey === pMount.ClauseKey);
+		if (!tmpDescriptor || !tmpDescriptor.RemoteTable) { return; }
+		const tmpSearchFields = Array.isArray(tmpDescriptor.ExternalFilterByColumns) && tmpDescriptor.ExternalFilterByColumns.length > 0 ? tmpDescriptor.ExternalFilterByColumns : [ 'Name' ];
+		const tmpView = tmpPickerProvider.createEntityPicker(`Quick-Picker-${pRecordSet}-${pMount.Field}`,
+		{
+			DestinationAddress: `#${pMount.HostID}`,
+			// Quick filters stay single-select for a fast pick (the full drawer entity filter can be multi).
+			Mode: 'single',
+			Entity: tmpDescriptor.RemoteTable,
+			ValueField: tmpDescriptor.JoinExternalConnectionColumn || `ID${tmpDescriptor.RemoteTable}`,
+			SearchFields: tmpSearchFields,
+			TextField: tmpSearchFields[0],
+			Placeholder: `Select ${pMount.Label}…`,
+			OnChange: (pValue) => this.applyQuickFilterEntity(pRecordSet, pViewContext, pMount.Field, pMount.ClauseKey, pValue),
+		});
+		if (!tmpView) { return; }
+		tmpView.render();
+		const tmpCurrent = (typeof tmpProvider.getQuickFilterEntityValue === 'function') ? tmpProvider.getQuickFilterEntityValue(pMount.Field) : [];
+		tmpView.setValue((Array.isArray(tmpCurrent) && tmpCurrent.length > 0) ? tmpCurrent[0] : '');
+	}
+
+	/**
+	 * Apply a text quick filter: upsert (or clear) its tagged clause, then run the standard search +
+	 * serialize path. Commits on blur / Enter (not per-keystroke) so the re-render never steals focus.
+	 *
+	 * @param {string} pRecordSet @param {string} pViewContext @param {string} pField @param {string} pClauseKey @param {string} pValue
+	 */
+	applyQuickFilterText(pRecordSet, pViewContext, pField, pClauseKey, pValue)
+	{
+		this.bumpRenderEpoch();
+		const tmpProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
+		if (tmpProvider && typeof tmpProvider.upsertQuickFilterClauseValue === 'function')
+		{
+			tmpProvider.upsertQuickFilterClauseValue(pField, pClauseKey, (pValue === undefined || pValue === null) ? '' : String(pValue).trim());
+		}
+		this.handleSearch(null, pRecordSet, pViewContext);
+	}
+
+	/**
+	 * Apply a date-range quick filter: set one bound (`start`/`end`) of the field's DateRange clause
+	 * (removed when both bounds clear), then run the search.
+	 *
+	 * @param {string} pRecordSet @param {string} pViewContext @param {string} pField @param {string} pClauseKey @param {'start'|'end'} pWhich @param {string} pValue
+	 */
+	applyQuickFilterDate(pRecordSet, pViewContext, pField, pClauseKey, pWhich, pValue)
+	{
+		this.bumpRenderEpoch();
+		const tmpProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
+		if (tmpProvider && typeof tmpProvider.upsertQuickFilterDateRange === 'function')
+		{
+			tmpProvider.upsertQuickFilterDateRange(pField, pClauseKey, pWhich, (pValue === undefined || pValue === null) ? '' : pValue);
+		}
+		this.handleSearch(null, pRecordSet, pViewContext);
+	}
+
+	/**
+	 * Apply an entity quick filter: set the field's entity clause to the picked value (removed when
+	 * cleared), then run the search. Called from the quick-bar picker's OnChange.
+	 *
+	 * @param {string} pRecordSet @param {string} pViewContext @param {string} pField @param {string} pClauseKey @param {any} pValue
+	 */
+	applyQuickFilterEntity(pRecordSet, pViewContext, pField, pClauseKey, pValue)
+	{
+		this.bumpRenderEpoch();
+		const tmpProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
+		if (tmpProvider && typeof tmpProvider.upsertQuickFilterEntity === 'function')
+		{
+			tmpProvider.upsertQuickFilterEntity(pField, pClauseKey, pValue);
+		}
+		this.handleSearch(null, pRecordSet, pViewContext);
 	}
 
 	/**
@@ -921,6 +1127,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 			if (tmpFilterRecordSet)
 			{
 				this._paintFilterControls(tmpFilterRecordSet);
+					this._renderQuickFilters(tmpFilterRecordSet, tmpFilterViewContext);
 				// (Re)render the experiences dropdown only when its container is empty — i.e. on
 				// a fresh filter render — not on every sub-render (add-filter dropdown, etc.).
 				const tmpExpContainer = document.getElementById('FilterPersistenceView-Container');
