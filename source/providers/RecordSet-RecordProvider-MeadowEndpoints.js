@@ -478,6 +478,43 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 	}
 
 	/**
+	 * The "list entry" display template for an entity — how one of its records should read as a single line
+	 * in a picker option / selected chip. Returns a pict template string (rendered against the raw record by
+	 * the picker's TextTemplate), or null to fall back to a single display field.
+	 *
+	 * This is deliberately a small, overridable seam: today it hard-knows `User` (whose name lives across
+	 * NameFull / NameFirst+NameLast and needs an Email/LoginID disambiguator), but the intent is that this
+	 * eventually reads a per-entity template off the Stricture schema instead of branching here.
+	 *
+	 * @param {string} pEntityName - The entity (e.g. 'User').
+	 * @return {string|null}
+	 */
+	getEntityListEntryTemplate(pEntityName)
+	{
+		// Register the User branching fall-backs once. addTemplate is idempotent (keyed by hash), so the
+		// guard is just to avoid the churn of re-registering on every descriptor build.
+		if (!this._entityListEntryTemplatesRegistered)
+		{
+			this._entityListEntryTemplatesRegistered = true;
+			// Name fallback: when NameFull is empty, compose it from the parts.
+			this.pict.TemplateProvider.addTemplate('RSP-EntityListEntry-User-NameParts', '{~D:Record.NameFirst~} {~D:Record.NameLast~}');
+			// Disambiguator fallback: when Email is empty, use the LoginID.
+			this.pict.TemplateProvider.addTemplate('RSP-EntityListEntry-User-Login', '{~D:Record.LoginID~}');
+		}
+
+		switch (pEntityName)
+		{
+			case 'User':
+				// "<name> (<email>)" — name is NameFull, else NameFirst+NameLast; the parenthetical is Email,
+				// else LoginID. Stable across the three name-field variations and unique enough to tell apart
+				// many same-named users.
+				return '{~DWTF:Record.NameFull:RSP-EntityListEntry-User-NameParts~} ({~DWTF:Record.Email:RSP-EntityListEntry-User-Login~})';
+			default:
+				return null;
+		}
+	}
+
+	/**
 	 * @param {string} pSchemaField - The schema field name.
 	 * @param {Record<string, any>} pColumn - The full column definition from the schema.
 	 * @param {Record<string, any>} [pMeadowSchemaField] - The meadow schema field definition.
@@ -508,8 +545,11 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 					{
 						"Label": `${ fieldName }`,
 						"Type": "InternalJoinSelectedValueList",
-						"ExternalFilterByColumns": remoteTableName === 'User' ? [ 'NameFirst', 'NameLast' ] : [ 'Name' ],
+						"ExternalFilterByColumns": remoteTableName === 'User' ? [ 'NameFirst', 'NameLast', 'Email', 'LoginID' ] : [ 'Name' ],
 						"ExternalRecordDisplayTemplate": remoteTableName === 'User' ? '{~D:Record.Data.NameFirst~} {~D:Record.Data.NameLast~}' : '{~D:Record.Name~}',
+						// The picker's option/selected display: a per-entity "list entry" template (the seam that
+						// will eventually live on the Stricture schema). Disambiguates beyond a single column.
+						"EntityListEntryTemplate": this.getEntityListEntryTemplate(remoteTableName),
 						"CoreConnectionColumn": pSchemaField,
 						"RemoteTable": `${ remoteTableName }`,
 						"JoinExternalConnectionColumn": `ID${ remoteTableName }`,

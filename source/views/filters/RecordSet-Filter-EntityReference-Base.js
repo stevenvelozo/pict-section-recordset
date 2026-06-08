@@ -156,6 +156,9 @@ class ViewRecordSetSUBSETFilterEntityReferenceBase extends ViewRecordSetSUBSETFi
 			pRecord.ClauseDescriptor.PictForm.Multiple = this.isMultiSelect();
 			pRecord.ClauseDescriptor.PictForm.SearchFields = pRecord.ClauseDescriptor.PictForm.SearchFields
 				|| pRecord.ExternalFilterByColumns || (pRecord.ExternalFilterByColumn ? [ pRecord.ExternalFilterByColumn ] : [ 'Name' ]);
+			// Composed, disambiguated option/chip label (the entity's "list entry" template); falls back to a
+			// single display field when unset.
+			pRecord.ClauseDescriptor.PictForm.TextTemplate = pRecord.ClauseDescriptor.PictForm.TextTemplate || pRecord.EntityListEntryTemplate;
 			pRecord.ClauseDescriptor.PictForm.ValueArrayAddress = pRecord.ClauseValuesAddress;
 			pRecord.ClauseDescriptor.PictForm.GetContextScopeFilter = () => this.getContextScopeFilter(this.getInformaryScopedValue(pRecord.ClauseAddress) || pRecord);
 			// JoinEntity compound display (host opt-in on the clause): show each searched row joined to a

@@ -683,6 +683,9 @@ class ViewRecordSetSUBSETFilters extends libPictView
 			ValueField: tmpDescriptor.JoinExternalConnectionColumn || `ID${tmpDescriptor.RemoteTable}`,
 			SearchFields: tmpSearchFields,
 			TextField: tmpSearchFields[0],
+			// Composed, disambiguated option/chip label (e.g. "Brian Smith (brian@…)") — falls back to
+			// TextField when the entity has no list-entry template.
+			TextTemplate: tmpDescriptor.EntityListEntryTemplate || undefined,
 			Placeholder: `Select ${pMount.Label}…`,
 			OnChange: (pValue) => this.applyQuickFilterEntity(pRecordSet, pViewContext, pMount.Field, pMount.ClauseKey, pValue),
 		});
