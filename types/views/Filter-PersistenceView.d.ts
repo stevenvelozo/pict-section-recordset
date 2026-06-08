@@ -75,7 +75,28 @@ declare class viewFilterPersistenceView extends libPictView {
      * @param {function} [pCallback] - A callback function to be executed after saving the settings.
      * @returns {boolean} - Returns true when the settings have been saved.
      */
-    saveFilterPersistenceSettings(event: Event, pCallback?: Function): boolean;
+    /** HTML-escape a value for safe display in the modal. */
+    _escapeHTML(pValue: any): string;
+    /** Describe a single active filter clause in plain English (e.g. "Date Created between A and B"). */
+    _describeFilterClause(pClause: any): string;
+    /**
+     * @returns {{ summary: string, count: string }} A plain-English summary of the current
+     * search + filter clauses, and the matched record count (from the rendered list total).
+     */
+    _describeCurrentFilter(): {
+        summary: string;
+        count: string;
+    };
+    /**
+     * Prompt for a name (via pict-section-modal when available) and save the current search +
+     * filters as a named experience. The modal previews the filter in plain English and the
+     * number of records it matches. Falls back to the generated name with no prompt if the
+     * modal section is not registered in the host app.
+     *
+     * @param {Event} pEvent
+     */
+    promptSaveFilterExperience(pEvent: Event): boolean;
+    saveFilterPersistenceSettings(event: any, pCallback: any): boolean;
     /**
      * Sets the filter experience as the default for the current record set and view context.
      * @param {Event} event - The event object.
@@ -112,7 +133,7 @@ declare namespace _DEFAULT_CONFIGURATION_FilterPersistenceView {
     let AutoRenderOrdinal: number;
     let AutoSolveWithApp: boolean;
     let AutoSolveOrdinal: number;
-    let CSS: boolean;
+    let CSS: string;
     let CSSPriority: number;
     let Templates: {
         Hash: string;

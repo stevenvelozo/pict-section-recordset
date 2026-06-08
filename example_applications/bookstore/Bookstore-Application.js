@@ -1,4 +1,9 @@
 const libPictRecordSet = require('../../source/Pict-Section-RecordSet.js');
+// pict-section-picker (sibling module, by relative path for the example) + its pict-section-form
+// 'Picker' InputType adapter — demonstrates the entity filters rendering a picker instead of the
+// built-in table UI.
+const libPictSectionPicker = require('../../../pict-section-picker');
+const libPictPickerForm = require('../../../pict-section-picker/form');
 const libPictRouter = require('pict-router');
 const libPictTemplatePreprocessor = require('pict-template-preprocessor');
 
@@ -167,6 +172,19 @@ class BookstoreApplication extends libPictRecordSet.PictRecordSetApplication
 
 	onAfterInitializeAsync(fCallback)
 	{
+		// Register the picker + its pict-section-form 'Picker' InputType, then opt the entity-reference
+		// filters into it so they render a searchable picker instead of the legacy table UI.
+		if (!this.pict.providers['Pict-Section-Picker'])
+		{
+			this.pict.addProvider('Pict-Section-Picker', libPictSectionPicker.default_configuration, libPictSectionPicker);
+		}
+		libPictPickerForm.registerPickerInputType(this.pict);
+		[ 'InternalJoinSelectedValue', 'InternalJoinSelectedValueList', 'ExternalJoinSelectedValue', 'ExternalJoinSelectedValueList' ].forEach((pType) =>
+		{
+			const tmpView = this.pict.views['PRSP-FilterType-' + pType];
+			if (tmpView) { tmpView.options.EntityInputType = 'Picker'; }
+		});
+
 		// Render the login form first
 		this.pict.views['Bookstore-Login'].render();
 
@@ -496,6 +514,14 @@ module.exports.default_configuration.pict_configuration = (
 
 				"RecordSetIgnoreFilterFields": [ "Deleted", "DeletingIDUser", "DeleteDate", "UpdateDate" ],
 
+				// Quick Filters — a curated, one-click bar above the full "Add filter" list. (Without this
+				// the bar is clever-derived from the schema.) Showcases all three control types: text
+				// (Title/Genre), date range (CreateDate), and entity picker (CreatingIDUser → User).
+				"QuickFilters": [ "Title", "Genre", { "Field": "CreateDate", "Label": "Added" }, { "Field": "CreatingIDUser", "Label": "Added by" } ],
+
+				// Row interaction: clicking a row opens its default (View) link; actions move into a ⋯ hover menu.
+				"RowClickOpensRecord": true,
+
 				"RecordSetListColumns": [
 					{
 						"Key": "Title",
@@ -557,6 +583,7 @@ module.exports.default_configuration.pict_configuration = (
 
 				"RecordSetType": "MeadowEndpoint",
 				"RecordSetMeadowEntity": "Author",
+				"RowClickOpensRecord": true,
 
 				"RecordSetURLPrefix": "/1.0/",
 
@@ -571,6 +598,7 @@ module.exports.default_configuration.pict_configuration = (
 
 				"RecordSetType": "MeadowEndpoint",
 				"RecordSetMeadowEntity": "BookStore",
+				"RowClickOpensRecord": true,
 
 				"RecordSetURLPrefix": "/1.0/",
 

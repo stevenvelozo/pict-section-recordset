@@ -34,6 +34,57 @@ declare class viewRecordSetRead extends libPictRecordSetRecordView {
     cancel(): Promise<void>;
     save(): Promise<void>;
     edit(): Promise<void>;
+    /**
+     * Build the record audit header state — the first-class activity line plus the data the
+     * Details modal renders. Identity (ID/GUID) and the create/update/delete stamps are read
+     * straight off the fetched record; the acting-user names resolve lazily via {~E:User^…~}
+     * in the templates (cachetrax-cached), so nothing is pre-resolved here. Stored at
+     * AppData.PRSP_RecordAudit for the templates to consume.
+     *
+     * @param {Record<string, any>} pRecord - The fetched record.
+     */
+    _prepareRecordAuditState(pRecord: Record<string, any>): void;
+    /**
+     * Compute a human-friendly display name for a record using an opinionated heuristic: first +
+     * last name, then a single descriptive field (FullName, Name, Title, …), else ''. Callers fall
+     * back to the GUID. Lets the page title read "Krishna Pavia Tester" instead of a raw GUID.
+     * @param {Record<string, any>} pRecord
+     * @return {string}
+     */
+    _computeDisplayName(pRecord: Record<string, any>): string;
+    /**
+     * Whether an audit date value is present and meaningful (guards null/empty and the Meadow
+     * "0000-00-00" zero-date sentinel).
+     * @param {any} pValue
+     * @return {boolean}
+     */
+    _validAuditDate(pValue: any): boolean;
+    /**
+     * Toggle the anchored identity + audit popover open or closed. The content is rendered inline
+     * with the record (so the {~E:User^…~} names resolve during the read render); this just flips
+     * its visibility — no overlay.
+     */
+    toggleRecordAudit(): void;
+    /**
+     * Bind the one-time document handlers that dismiss the audit popover on an outside click or
+     * Escape. Browser-level events with no inline-handler equivalent — bound once and guarded so
+     * re-renders don't stack listeners.
+     */
+    _bindAuditDismiss(): void;
+    _auditDismissBound: boolean;
+    /**
+     * Copy a record value (ID or GUID) to the clipboard from the audit popover, with a toast.
+     * @param {string} pValue
+     */
+    copyValue(pValue: string): void;
+    /**
+     * Remove identity + audit descriptors from a (cloned) manifest so they don't render inline
+     * in the record body — they live behind the audit header's Details modal instead. Also
+     * prunes any section left with no descriptors (e.g. an emptied "Audit Trail" section). The
+     * entity's own ID/GUID field names are suppressed alongside the shared audit fields.
+     * @param {Record<string, any>} pManifest - The cloned manifest to mutate.
+     */
+    _suppressAuditDescriptors(pManifest: Record<string, any>): void;
     onBeforeRenderRead(pRecordReadData: any): any;
     formatDisplayData(pRecordListData: any): any;
     onBeforeEdit(): Promise<void>;

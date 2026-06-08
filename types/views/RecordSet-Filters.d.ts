@@ -18,7 +18,15 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
     newFilterSearchApplied: boolean;
     addFilterCallback: Function;
     removeFilterCallback: Function;
+    _drawerOpen: boolean;
+    _searchString: {};
     _renderEpoch: number;
+    _addFilterOpen: boolean;
+    _addFilterRecordSet: string;
+    _addFilterViewContext: string;
+    _addFilterSearch: string;
+    _addFilterExpandedKey: any;
+    filterFieldBlacklist: any[];
     /**
      * Bump the render epoch. Call this whenever the active filter clauses are
      * about to change in a way that would invalidate in-flight filter renders.
@@ -64,6 +72,27 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
      * @returns {any} The result of the super.onMarshalToView() method.
      */
     onMarshalToView(): any;
+    /** Toggle the slide-out filter drawer beneath the search bar. */
+    toggleFilterDrawer(): boolean;
+    /**
+     * The current search term, read back from the active route URL (the source of truth) so
+     * the search box stays populated across re-renders and reflects bookmarked/filtered URLs.
+     * performSearch builds `.../FilteredTo/FBVOR~<field>~LK~<encoded %term%>~...` from the
+     * SearchFields, so the term is the first LK value in the FilteredTo segment.
+     *
+     * @return {string}
+     */
+    _searchTermFromURL(): string;
+    /** The number of active (structured) filter clauses for a record set. */
+    getActiveFilterCount(pRecordSet: any): number;
+    /**
+     * Repaint the filter-bar chrome after a (re)render: the filters icon (outline vs filled
+     * + count badge), the active-filter highlight, the persisted drawer-open state, and the
+     * search input value (so applying a search no longer clears the search box).
+     *
+     * @param {string} pRecordSet
+     */
+    _paintFilterControls(pRecordSet: string): void;
     /**
      * @param {Event} pEvent - The DOM event that triggered the search
      * @param {string} pRecordSet - The record set being filtered
@@ -102,7 +131,36 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
      * @param {string} pRecordSet - The record set being filtered
      * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
      */
-    selectFilterToAdd(pEvent: Event, pRecordSet: string, pViewContext: string): void;
+    toggleAddFilterPopover(pEvent: Event, pRecordSet: string, pViewContext: string): void;
+    /** Close the add-filter popover. */
+    closeAddFilterPopover(): void;
+    /**
+     * Filter the add-filter field list by a search term, re-rendering only the list so the
+     * search input keeps focus.
+     * @param {string} pValue - The search term.
+     */
+    searchAddFilter(pValue: string): void;
+    /**
+     * Expand or collapse a field's available clauses in the add-filter popover.
+     * @param {string} pFilterKey - The field whose clauses to toggle.
+     */
+    toggleAddFilterField(pFilterKey: string): void;
+    /**
+     * (Re)build the add-filter popover's field list into AppData from the record set's filter
+     * schema, honouring the current search term and the expanded field.
+     * @param {string} pRecordSet - The record set whose filter schema to read.
+     */
+    _buildAddFilterFields(pRecordSet: string): void;
+    /** Reflect the add-filter popover's open/closed state on its container element. */
+    _paintAddFilterOpenState(): void;
+    /**
+     * Position the (fixed) add-filter popover against its trigger button, flipping above when there's
+     * more room there. Fixed positioning means no ancestor overflow:hidden (the host's filter card, the
+     * slide-out drawer) can clip it — the price is we set its top/left from the trigger's rect here.
+     *
+     * @param {HTMLElement} pPopover - the #PRSP_AddFilter_Popover element (already display:block).
+     */
+    _positionAddFilterPopover(pPopover: HTMLElement): void;
     /**
      * @param {Event} pEvent - The DOM event that triggered the search
      * @param {string} pRecordSet - The record set being filtered
@@ -159,9 +217,11 @@ declare class ViewRecordSetSUBSETFilters extends libPictView {
     decode(base64: string): ArrayBuffer;
 }
 declare namespace ViewRecordSetSUBSETFilters {
-    export { _DEFAULT_CONFIGURATION_SUBSET_Filter as default_configuration };
+    export { FilterIconOutline, FilterIconFilled, _DEFAULT_CONFIGURATION_SUBSET_Filter as default_configuration };
 }
 import libPictView = require("pict-view");
+declare var FilterIconOutline: string;
+declare var FilterIconFilled: string;
 /** @type {Record<string, any>} */
 declare const _DEFAULT_CONFIGURATION_SUBSET_Filter: Record<string, any>;
 //# sourceMappingURL=RecordSet-Filters.d.ts.map

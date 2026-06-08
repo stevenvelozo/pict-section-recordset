@@ -262,7 +262,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 						}
 					}
 				}
-				this.pict.EntityProvider.cacheConnectedEntityRecords(recordsReturn, IDFields, ['User', 'User'], false, () => 
+				this.pict.EntityProvider.cacheConnectedEntityRecords(recordsReturn, IDFields, ['User', 'User'], false, () =>
 				{
 					resolve({ Records: recordsReturn, Facets: { } });
 				});
@@ -304,6 +304,17 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		return new Promise((resolve, reject) =>
 		{
 			const [ tmpClauses, tmpExperience ] = this._prepareFilterState(tmpEntity, pOptions, 'Count');
+			// The record count is identical for every page of the same filter, yet the list re-counts on each
+			// pagination click. A COUNT is expensive on some database engines, so cache it keyed by the compiled
+			// filter signature: same filter -> serve the cached count (no request); changed filter -> re-count.
+			// Mutations through this provider clear the cache (see createRecord / updateRecord / deleteRecord).
+			const tmpCountCacheKey = `${ tmpEntity }::${ JSON.stringify(tmpClauses) }`;
+			if (this._RecordSetCountCache && this._RecordSetCountCache.Key === tmpCountCacheKey)
+			{
+				// Publish the cached count to the result address so downstream consumers behave identically to a fetch.
+				this.fable.manifest.setValueByHash(this.pict, tmpExperience.ResultDestinationAddress, this._RecordSetCountCache.Count);
+				return resolve({ Count: this._RecordSetCountCache.Count });
+			}
 			if (this.options.FilterEndpointOverride)
 			{
 				// Call the filtering endpoint with the clauses and experience.
@@ -316,7 +327,9 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 					{
 						return reject(error);
 					}
-					this.fable.manifest.setValueByHash(this.pict, tmpExperience.ResultDestinationAddress, result?.Count || 0);
+					const tmpCount = result?.Count || 0;
+					this.fable.manifest.setValueByHash(this.pict, tmpExperience.ResultDestinationAddress, tmpCount);
+					this._RecordSetCountCache = { Key: tmpCountCacheKey, Count: tmpCount };
 					resolve(result);
 				});
 				return;
@@ -327,7 +340,9 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 				{
 					return reject(pError);
 				}
-				resolve({ Count: this.pict.resolveStateFromAddress(tmpExperience.ResultDestinationAddress) });
+				const tmpCount = this.pict.resolveStateFromAddress(tmpExperience.ResultDestinationAddress);
+				this._RecordSetCountCache = { Key: tmpCountCacheKey, Count: tmpCount };
+				resolve({ Count: tmpCount });
 			});
 		});
 	}
@@ -354,6 +369,8 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 				{
 					return reject(error);
 				}
+				// A new record changes the total; drop the cached count so the next render re-counts.
+				this._RecordSetCountCache = null;
 				resolve(result);
 			});
 		});
@@ -381,6 +398,8 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 				{
 					return reject(error);
 				}
+				// An edit can move a record in or out of the active filter; drop the cached count to be safe.
+				this._RecordSetCountCache = null;
 				resolve(result);
 			});
 		});
@@ -408,6 +427,8 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 				{
 					return reject(error);
 				}
+				// A delete changes the total; drop the cached count so the next render re-counts.
+				this._RecordSetCountCache = null;
 				resolve(result);
 			});
 		});
@@ -517,6 +538,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 					case 'datetime':
 					case 'createdate':
 					case 'updatedate':
+					case 'deletedate':
 						tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Exact`, Label: `${tmpFieldHumanName} Exact Match`, DisplayName: `Exact Match`, Type: 'DateMatch', FilterByColumn: pSchemaField, ExactMatch: true , Ordinal: tmpFieldFilterClauses.length + 1 });
 						tmpFieldFilterClauses.push({ FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Match_Fuzzy`, Label: `${tmpFieldHumanName} Partial Match`, DisplayName: `Partial Match`, Type: 'DateMatch', FilterByColumn: pSchemaField, ExactMatch: false , Ordinal: tmpFieldFilterClauses.length + 1 });
 						tmpRangeClause = { FilterKey: pSchemaField, ClauseKey: `${pSchemaField}_Range`, Label: `${tmpFieldHumanName} In Range`, DisplayName: `In Range`, Type: 'DateRange', FilterByColumn: pSchemaField , Ordinal: tmpFieldFilterClauses.length + 1 };
@@ -745,7 +767,12 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 			}
 			++tmpOrdinal;
 			const tmpColumn = tmpProperties[tmpSchemaField];
-			const tmpMeadowSchemaField = tmpSchema.MeadowSchema?.Schema?.find?.((f) => f.Column === tmpSchemaField);
+			// The Meadow schema endpoint nests its canonical column array (the one carrying each column's
+			// semantic Type — CreateDate/UpdateDate/CreateIDUser/… — which is what distinguishes a date
+			// column from a plain string; the JSON-schema `type` flattens both to "string"). Read the
+			// nested path, falling back to the legacy flat path for older endpoints.
+			const tmpMeadowSchemaArray = tmpSchema.MeadowSchema?.MeadowSchema?.Schema || tmpSchema.MeadowSchema?.Schema;
+			const tmpMeadowSchemaField = Array.isArray(tmpMeadowSchemaArray) ? tmpMeadowSchemaArray.find((f) => f.Column === tmpSchemaField) : undefined;
 			let tmpFieldFilterSchema = this._FilterSchema[tmpSchemaField];
 			if (!tmpFieldFilterSchema)
 			{

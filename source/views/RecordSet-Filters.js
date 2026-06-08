@@ -22,24 +22,139 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 	AutoSolveWithApp: false,
 	AutoSolveOrdinal: 0,
 
-	CSS: false,
+	CSS: /*css*/`
+.prsp-filters { width: 100%; }
+.prsp-filters *, .prsp-filters *::before, .prsp-filters *::after { box-sizing: border-box; }
+.prsp-filters-bar { display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+.prsp-filters-search { position: relative; flex: 1 1 auto; display: flex; align-items: center; min-width: 0; }
+.prsp-filters-search-ic { position: absolute; left: 0.75rem; display: inline-flex; align-items: center; color: var(--theme-color-text-muted, #6b7686); pointer-events: none; font-size: 0.95rem; }
+.prsp-filters-input { width: 100%; font: inherit; font-size: 0.95rem; padding: 0.5rem 0.85rem 0.5rem 2.2rem;
+	border: 1px solid var(--theme-color-border-default, #d7dce3); border-radius: 8px;
+	background: var(--theme-color-background-primary, #fff); color: var(--theme-color-text-primary, #1f2733); }
+.prsp-filters-input:focus { outline: none; border-color: var(--theme-color-brand-primary, #156dd1);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-color-brand-primary, #156dd1) 16%, transparent); }
+.prsp-filters-toggle { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 0.4rem; font: inherit; cursor: pointer;
+	padding: 0.45rem 0.7rem; border-radius: 8px; border: 1px solid var(--theme-color-border-default, #d7dce3);
+	background: var(--theme-color-background-primary, #fff); color: var(--theme-color-text-secondary, #45505f); }
+.prsp-filters-toggle:hover { border-color: var(--theme-color-brand-primary, #156dd1); }
+.prsp-filters.has-filters .prsp-filters-toggle { border-color: var(--theme-color-brand-primary, #156dd1); color: var(--theme-color-brand-primary, #156dd1); }
+.prsp-filters.drawer-open .prsp-filters-toggle { background: var(--theme-color-background-tertiary, #eceef2); }
+.prsp-filters-toggle-ic { display: inline-flex; align-items: center; }
+.prsp-filters-toggle-ic svg { width: 1.05em; height: 1.05em; display: block; }
+.prsp-filters-toggle-count { display: none; align-items: center; justify-content: center; min-width: 1.3em; height: 1.3em;
+	padding: 0 0.35em; border-radius: 999px; font-size: 0.74rem; font-weight: 700;
+	background: var(--theme-color-brand-primary, #156dd1); color: var(--theme-color-text-on-brand, #fff); }
+.prsp-filters.has-filters .prsp-filters-toggle-count { display: inline-flex; }
+.prsp-filters-apply { flex: 0 0 auto; font: inherit; font-weight: 650; cursor: pointer; padding: 0.5rem 1.15rem; border-radius: 8px;
+	border: 1px solid var(--theme-color-brand-primary, #156dd1); background: var(--theme-color-brand-primary, #156dd1); color: var(--theme-color-text-on-brand, #fff); }
+.prsp-filters-apply:hover { background: color-mix(in srgb, var(--theme-color-brand-primary, #156dd1) 88%, #000); }
+.prsp-filters-btn-text { font: inherit; cursor: pointer; padding: 0.4rem 0.85rem; border-radius: 8px;
+	border: 1px solid var(--theme-color-border-default, #d7dce3); background: transparent; color: var(--theme-color-text-secondary, #45505f); }
+.prsp-filters-btn-text:hover { background: var(--theme-color-background-tertiary, #eceef2); }
+
+/* Slide-out drawer (CSS grid trick: 0fr -> 1fr animates height). The inner is a *pure* clip box; all the
+   visible card chrome lives on .prsp-filters-drawer-card inside it. That way, on collapse the chrome shrinks
+   *with* the animating height instead of vanishing instantly — the old rule gated padding/border/background
+   on .drawer-open, so closing the drawer stripped the card in one frame while the height still animated for
+   0.18s, making the quick-filters bar look like it popped out of the panel before disappearing. */
+.prsp-filters-drawer { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.18s ease; }
+.prsp-filters.drawer-open .prsp-filters-drawer { grid-template-rows: 1fr; }
+.prsp-filters-drawer-inner { overflow: hidden; min-height: 0; }
+.prsp-filters-drawer-card { margin-top: 0.6rem; padding: 0.95rem 1.1rem;
+	border: 1px solid var(--theme-color-border-light, #e8ebf0); border-radius: 10px; background: var(--theme-color-background-panel, #fff); }
+.prsp-filters-add { position: relative; margin: 0.4rem 0 0.2rem; }
+.prsp-addfilter-trigger { display: inline-flex; align-items: center; gap: 0.35rem; }
+/* Drawer footer: filter experience on the left, Clear/Reset/Apply on the right. */
+.prsp-filters-footer { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;
+	margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px solid var(--theme-color-border-light, #e8ebf0); }
+.prsp-filters-experiences { flex: 0 1 auto; min-width: 0; }
+.prsp-filters-actions { flex: 0 0 auto; display: flex; align-items: center; gap: 0.5rem; }
+
+/* Quick Filters — a curated, one-interaction bar at the top of the drawer (above the clause list).
+   Painted post-render into #PRSP_QuickFilters; hidden via :empty when the record set has none. */
+.prsp-quickfilters { display: flex; align-items: center; flex-wrap: wrap; gap: 0.55rem 0.9rem;
+	margin-bottom: 0.7rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--theme-color-border-light, #e8ebf0); }
+.prsp-quickfilters:empty { display: none; }
+.prsp-quickfilters-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+	color: var(--theme-color-text-muted, #6b7686); }
+.prsp-quickfilter { display: inline-flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
+.prsp-quickfilter-name { font-size: 0.72rem; font-weight: 600; color: var(--theme-color-text-secondary, #45505f); }
+.prsp-quickfilter-input { font: inherit; font-size: 0.9rem; width: 13rem; max-width: 100%; padding: 0.4rem 0.7rem; border-radius: 8px;
+	border: 1px solid var(--theme-color-border-default, #d7dce3); background: var(--theme-color-background-primary, #fff); color: var(--theme-color-text-primary, #1f2733); }
+.prsp-quickfilter-input:focus { outline: none; border-color: var(--theme-color-brand-primary, #156dd1);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-color-brand-primary, #156dd1) 16%, transparent); }
+.prsp-quickfilter-daterange { display: inline-flex; align-items: center; gap: 0.35rem; }
+.prsp-quickfilter-date { width: 9.5rem; }
+.prsp-quickfilter-dash { color: var(--theme-color-text-muted, #6b7686); }
+/* Entity quick control: the pict-section-picker mounts into this host (its own .pps chrome themes it). */
+.prsp-quickfilter-entityhost { display: inline-block; width: 14rem; max-width: 100%; vertical-align: middle; }
+
+/* Module-owned "Add filter" popover (replaces the old native <select> pickers). */
+/* Fixed (viewport-anchored) + JS-positioned on open, so no ancestor overflow:hidden — the filter card,
+   the slide-out drawer — can clip it, whatever the host's layout. */
+.prsp-addfilter-pop { position: fixed; z-index: 30; min-width: 280px; max-width: 360px; display: none; }
+.prsp-addfilter-pop.open { display: block; }
+/* Transparent full-viewport backdrop: catches outside clicks to close (no document listener). */
+.prsp-addfilter-backdrop { position: fixed; inset: 0; z-index: 0; }
+.prsp-addfilter-panel { position: relative; z-index: 1; display: flex; flex-direction: column; max-height: min(70vh, 460px);
+	background: var(--theme-color-background-panel, #fff); border: 1px solid var(--theme-color-border-default, #d7dce3);
+	border-radius: 10px; box-shadow: 0 10px 28px rgba(17, 24, 39, 0.14); overflow: hidden; }
+.prsp-addfilter-search { flex: 0 0 auto; display: flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--theme-color-border-light, #e8ebf0); }
+.prsp-addfilter-search-ic { display: inline-flex; color: var(--theme-color-text-muted, #6b7686); font-size: 0.9rem; }
+.prsp-addfilter-search input { flex: 1 1 auto; min-width: 0; font: inherit; font-size: 0.9rem; border: none; outline: none; background: transparent; color: var(--theme-color-text-primary, #1f2733); }
+.prsp-addfilter-list { flex: 1 1 auto; overflow-y: auto; }
+.prsp-addfilter-empty { padding: 0.7rem 0.8rem; color: var(--theme-color-text-muted, #6b7686); font-size: 0.86rem; }
+.prsp-addfilter-field { border-bottom: 1px solid var(--theme-color-border-light, #eef1f5); }
+.prsp-addfilter-field:last-child { border-bottom: none; }
+.prsp-addfilter-field-btn { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; width: 100%;
+	font: inherit; font-size: 0.9rem; text-align: left; cursor: pointer; padding: 0.5rem 0.75rem; border: none; background: transparent; color: var(--theme-color-text-primary, #1f2733); }
+.prsp-addfilter-field-btn:hover { background: var(--theme-color-background-tertiary, #eceef2); }
+.prsp-addfilter-chev { display: inline-flex; flex: 0 0 auto; color: var(--theme-color-text-muted, #6b7686); font-size: 0.85rem; transition: transform 0.15s ease; }
+.prsp-addfilter-field.is-expanded .prsp-addfilter-chev { transform: rotate(90deg); }
+.prsp-addfilter-clauses { display: flex; flex-direction: column; }
+.prsp-addfilter-clause { display: flex; align-items: center; gap: 0.4rem; width: 100%; text-align: left; cursor: pointer;
+	font: inherit; font-size: 0.85rem; padding: 0.4rem 0.8rem 0.4rem 1.6rem; border: none; background: transparent; color: var(--theme-color-text-secondary, #45505f); }
+.prsp-addfilter-clause:hover { background: color-mix(in srgb, var(--theme-color-brand-primary, #156dd1) 10%, transparent); color: var(--theme-color-brand-primary, #156dd1); }
+.prsp-addfilter-clause-ic { display: inline-flex; font-size: 0.8rem; }
+`,
 	CSSPriority: 500,
 
 	Templates:
 	[
 		{
+			// One coherent control: a search row (search input + a filters icon button that
+			// shows the active-filter count and toggles the drawer + a Search button), and a
+			// slide-out drawer beneath it holding the filter clauses, "add filter", the saved
+			// Filter Experiences dropdown, and Clear / Reset / Apply. Search, Apply and Enter
+			// all submit the form -> handleSearch (apply search + current filters).
 			Hash: 'PRSP-SUBSET-Filters-Template',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template] -->
-	<form id="PRSP_Filter_Form" onsubmit="_Pict.views['PRSP-Filters'].handleSearch(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}'); return false;">
-		{~T:PRSP-SUBSET-Filters-Template-Input-Fieldset~}
-		<div id="PRSP_Filter_Instances">
-			{~FIV:Record~}
+	<div class="prsp-filters" id="PRSP_FilterBar">
+		<form id="PRSP_Filter_Form" class="prsp-filters-bar" onsubmit="_Pict.views['PRSP-Filters'].handleSearch(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}'); return false;">
+			{~T:PRSP-SUBSET-Filters-Template-Input-Fieldset~}
+			{~T:PRSP-SUBSET-Filters-Template-Button-Fieldset~}
+		</form>
+		<div class="prsp-filters-drawer" id="PRSP_Filter_Drawer">
+			<div class="prsp-filters-drawer-inner">
+				<!-- The card carries all the panel chrome and lives *inside* the clip box, so it collapses
+				     together with the animating height (see .prsp-filters-drawer-card in CSS). -->
+				<div class="prsp-filters-drawer-card">
+					<!-- Quick Filters: a curated, one-interaction bar painted post-render into this host
+					     (empty when the record set has no quick filters → CSS :empty hides it). -->
+					<div class="prsp-quickfilters" id="PRSP_QuickFilters"></div>
+					<div id="PRSP_Filter_Instances" class="prsp-filters-clauses" onkeydown="if (event.key === 'Enter' &amp;&amp; !event.target.closest('.pps')) { event.preventDefault(); _Pict.views['PRSP-Filters'].handleSearch(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}'); }">
+						{~FIV:Record~}
+					</div>
+					{~T:PRSP-SUBSET-Filters-Template-AddFilter-Fieldset~}
+					<div class="prsp-filters-footer">
+						{~T:PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset~}
+						{~T:PRSP-SUBSET-Filters-Template-DrawerActions-Fieldset~}
+					</div>
+				</div>
+			</div>
 		</div>
-		{~T:PRSP-SUBSET-Filters-Template-Button-Fieldset~}
-		{~T:PRSP-SUBSET-Filters-Template-AddFilter-Fieldset~}
-		{~T:PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset~}
-	</form>
+	</div>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template] -->
 `
 		},
@@ -47,10 +162,10 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Hash: 'PRSP-SUBSET-Filters-Template-Input-Fieldset',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-Input-Fieldset] -->
-	<fieldset>
-		<label for="search_filter">Filter:</label>
-		<input id="search_filter" type="text" name="filter">
-	</fieldset>
+	<span class="prsp-filters-search">
+		<span class="prsp-filters-search-ic">{~I:Search~}</span>
+		<input id="search_filter" class="prsp-filters-input" type="text" name="filter" placeholder="Search…" autocomplete="off" aria-label="Search">
+	</span>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-Input-Fieldset] -->
 `
 		},
@@ -58,11 +173,11 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Hash: 'PRSP-SUBSET-Filters-Template-Button-Fieldset',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-Button-Fieldset] -->
-	<fieldset>
-		<button type="button" id="PRSP_Filter_Button_Clear" title="Clear all filters to a blank state" onclick="_Pict.views['PRSP-Filters'].handleClear(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Clear</button>
-		<button type="button" id="PRSP_Filter_Button_Reset" title="Reset all filters to the last saved/defaulted state" onclick="_Pict.views['PRSP-Filters'].handleReset(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Reset</button>
-		<button type="submit" id="PRSP_Filter_Button_Apply">Apply</button>
-	</fieldset>
+	<button type="button" class="prsp-filters-toggle" id="PRSP_Filter_Toggle" title="Filters" aria-label="Filters" onclick="_Pict.views['PRSP-Filters'].toggleFilterDrawer()">
+		<span class="prsp-filters-toggle-ic" id="PRSP_Filter_Icon"></span>
+		<span class="prsp-filters-toggle-count" id="PRSP_Filter_Count"></span>
+	</button>
+	<button type="submit" class="prsp-filters-apply prsp-filters-apply-search" id="PRSP_Filter_Button_Apply">Search</button>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-Button-Fieldset] -->
 `
 		},
@@ -70,66 +185,139 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			Hash: 'PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset] -->
-	<fieldset>
-		<button type="button" id="PRSP_Filter_Button_Manage" title="Manage saved filter experiences" onclick="_Pict.views['PRSP-Filters'].handleManage(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Manage Filter Experience</button>
+	<div class="prsp-filters-experiences">
 		<div id="FilterPersistenceView-Container"></div>
-	</fieldset>
+	</div>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset] -->
+`
+		},
+		{
+			Hash: 'PRSP-SUBSET-Filters-Template-DrawerActions-Fieldset',
+			Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-DrawerActions-Fieldset] -->
+	<div class="prsp-filters-actions">
+		<button type="button" class="prsp-filters-btn-text" id="PRSP_Filter_Button_Clear" title="Clear all filters to a blank state" onclick="_Pict.views['PRSP-Filters'].handleClear(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Clear</button>
+		<button type="button" class="prsp-filters-btn-text" id="PRSP_Filter_Button_Reset" title="Reset all filters to the last saved/defaulted state" onclick="_Pict.views['PRSP-Filters'].handleReset(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Reset</button>
+		<button type="button" class="prsp-filters-apply" id="PRSP_Filter_Button_ApplyDrawer" onclick="_Pict.views['PRSP-Filters'].handleSearch(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">Apply</button>
+	</div>
+	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-DrawerActions-Fieldset] -->
 `
 		},
 		{
 			Hash: 'PRSP-SUBSET-Filters-Template-AddFilter-Fieldset',
 			Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-AddFilter-Fieldset] -->
-	<fieldset>
-		<button type="button" id="PRSP_Filter_Button_Add" title="Add a new filter clause" onclick="_Pict.views['PRSP-Filters'].selectFilterToAdd(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">+</button>
-		<div id="PRSP-SUBSET-Filters-Template-AddFilter-Dropdown"></div>
-	</fieldset>
+	<div class="prsp-filters-add">
+		<button type="button" class="prsp-filters-btn-text prsp-addfilter-trigger" id="PRSP_Filter_Button_Add" title="Add a new filter clause" onclick="_Pict.views['PRSP-Filters'].toggleAddFilterPopover(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}')">{~I:Plus~} Add filter</button>
+		<div class="prsp-addfilter-pop" id="PRSP_AddFilter_Popover"></div>
+	</div>
 	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-AddFilter-Fieldset] -->
 `
 		},
 		{
-			Hash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown',
+			Hash: 'PRSP-AddFilter-Popover',
 			Template: /*html*/`
-	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-AddFilter-Dropdown] -->
-	<div>
-		<select id="PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select" data-i-view-context="{~D:Record.ViewContext~}" onchange="event.preventDefault(); _Pict.views['PRSP-Filters'].render('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown', undefined,
-		{
-			ViewContext: '{~D:Record.ViewContext~}',
-			RecordSet: event.target.querySelector('option:checked').getAttribute('data-i-recordset'),
-			FilterKey: event.target.querySelector('option:checked').getAttribute('data-i-filter-key'),
-			AvailableClauses: _Pict.providers[\`RSP-Provider-\${event.target.querySelector('option:checked').getAttribute('data-i-recordset')}\`].getFilterClauseSchemaForKey(event.target.querySelector('option:checked').getAttribute('data-i-filter-key')).AvailableClauses,
-		});">
-			{~TS:PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Entry:Scope.getFilterSchema()~}
-		</select>
-		<div id="PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown">
+	<!-- DefaultPackage pict view template: [PRSP-AddFilter-Popover] -->
+	<div class="prsp-addfilter-backdrop" onclick="_Pict.views['PRSP-Filters'].closeAddFilterPopover()"></div>
+	<div class="prsp-addfilter-panel">
+		<div class="prsp-addfilter-search">
+			<span class="prsp-addfilter-search-ic">{~I:Search~}</span>
+			<input type="text" id="PRSP_AddFilter_Search" placeholder="Search filters…" autocomplete="off" value="{~D:AppData.PRSPAddFilter.Search~}" oninput="_Pict.views['PRSP-Filters'].searchAddFilter(this.value)" onkeydown="if (event.key === 'Escape') { event.preventDefault(); _Pict.views['PRSP-Filters'].closeAddFilterPopover(); }">
+		</div>
+		<div class="prsp-addfilter-list" id="PRSP_AddFilter_List">
+			{~T:PRSP-AddFilter-List~}
 		</div>
 	</div>
-	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-AddFilter-Dropdown] -->
+	<!-- DefaultPackage end view template: [PRSP-AddFilter-Popover] -->
 `
 		},
 		{
-			Hash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown',
+			Hash: 'PRSP-AddFilter-List',
 			Template: /*html*/`
-	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown] -->
-	<select id="PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown-Select">
-		{~TS:PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Entry:Record.AvailableClauses~}
-	</select>
-	<button type="button" id="PRSP_Filter_Button_ConfirmAdd" onclick="_Pict.views['PRSP-Filters'].addFilter(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}',
-		document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown').querySelector('option:checked').getAttribute('data-i-filter-key'),
-		document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown').querySelector('option:checked').getAttribute('data-i-clause-key'),
-	)">Add Filter</button>
-	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown] -->
+	<!-- DefaultPackage pict view template: [PRSP-AddFilter-List] -->
+	{~TS:PRSP-AddFilter-Field:AppData.PRSPAddFilter.Fields~}
+	{~NE:AppData.PRSPAddFilter.IsEmpty^<div class="prsp-addfilter-empty">No filters found.</div>~}
+	<!-- DefaultPackage end view template: [PRSP-AddFilter-List] -->
 `
 		},
 		{
-			Hash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Entry',
+			Hash: 'PRSP-AddFilter-Field',
 			Template: /*html*/`
-	<!-- DefaultPackage pict view template: [PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Entry] -->
-	<option value="{~D:Record.FilterKey~}|{~D:Record.ClauseKey~}" data-i-recordset="{~D:Record.RecordSet~}" data-i-filter-key="{~D:Record.FilterKey~}" data-i-clause-key="{~D:Record.ClauseKey~}">
-		{~D:Record.DisplayName~}
-	</option>
-	<!-- DefaultPackage end view template:	[PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Entry] -->
+	<!-- DefaultPackage pict view template: [PRSP-AddFilter-Field] -->
+	<div class="prsp-addfilter-field {~D:Record.ExpandedClass~}">
+		<button type="button" class="prsp-addfilter-field-btn" onclick="_Pict.views['PRSP-Filters'].toggleAddFilterField('{~D:Record.FilterKey~}')">
+			<span class="prsp-addfilter-field-name">{~D:Record.DisplayName~}</span>
+			<span class="prsp-addfilter-chev">{~I:ChevronRight~}</span>
+		</button>
+		<div class="prsp-addfilter-clauses">
+			{~TS:PRSP-AddFilter-Clause:Record.ClausesToShow~}
+		</div>
+	</div>
+	<!-- DefaultPackage end view template: [PRSP-AddFilter-Field] -->
+`
+		},
+		{
+			Hash: 'PRSP-AddFilter-Clause',
+			Template: /*html*/`
+	<!-- DefaultPackage pict view template: [PRSP-AddFilter-Clause] -->
+	<button type="button" class="prsp-addfilter-clause" onclick="_Pict.views['PRSP-Filters'].addFilter(event, '{~D:AppData.PRSPAddFilter.RecordSet~}', '{~D:AppData.PRSPAddFilter.ViewContext~}', '{~D:Record.FilterKey~}', '{~D:Record.ClauseKey~}')">
+		<span class="prsp-addfilter-clause-ic">{~I:Plus~}</span>
+		<span>{~D:Record.DisplayName~}</span>
+	</button>
+	<!-- DefaultPackage end view template: [PRSP-AddFilter-Clause] -->
+`
+		},
+		{
+			// Quick Filters bar contents (painted into #PRSP_QuickFilters post-render). A small label +
+			// one compact control per definition; each control drives a real, tagged clause.
+			Hash: 'PRSP-QuickFilters-Bar',
+			Template: /*html*/`
+		<span class="prsp-quickfilters-label">Quick filters</span>
+		{~TS:PRSP-QuickFilter-Item:Record.Filters~}
+`
+		},
+		{
+			// One quick filter: a name + exactly one control, chosen by the single-element-array slot
+			// (text / date range / entity picker) populated for this item's control type.
+			Hash: 'PRSP-QuickFilter-Item',
+			Template: /*html*/`
+		<div class="prsp-quickfilter">
+			<span class="prsp-quickfilter-name">{~D:Record.Label~}</span>
+			{~TS:PRSP-QuickFilter-Text:Record.TextSlot~}
+			{~TS:PRSP-QuickFilter-Date:Record.DateSlot~}
+			{~TS:PRSP-QuickFilter-Entity:Record.EntitySlot~}
+		</div>
+`
+		},
+		{
+			// Text control (fuzzy match) — commits on blur / Enter (never per-keystroke, so the
+			// re-render that an apply triggers can't steal focus mid-type).
+			Hash: 'PRSP-QuickFilter-Text',
+			Template: /*html*/`
+		<input class="prsp-quickfilter-input" type="text" value="{~D:Record.Value~}" placeholder="{~D:Record.Placeholder~}" autocomplete="off"
+			onkeydown="if (event.key === 'Enter') { event.preventDefault(); this.blur(); }"
+			onchange="_Pict.views['PRSP-Filters'].applyQuickFilterText('{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}', '{~D:Record.Field~}', '{~D:Record.ClauseKey~}', this.value)">
+`
+		},
+		{
+			// Date-range control — a from/to pair driving one DateRange clause (Values.Start / .End).
+			Hash: 'PRSP-QuickFilter-Date',
+			Template: /*html*/`
+		<span class="prsp-quickfilter-daterange">
+			<input type="date" class="prsp-quickfilter-input prsp-quickfilter-date" value="{~D:Record.StartValue~}" aria-label="{~D:Record.Label~} from"
+				onchange="_Pict.views['PRSP-Filters'].applyQuickFilterDate('{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}', '{~D:Record.Field~}', '{~D:Record.ClauseKey~}', 'start', this.value)">
+			<span class="prsp-quickfilter-dash">–</span>
+			<input type="date" class="prsp-quickfilter-input prsp-quickfilter-date" value="{~D:Record.EndValue~}" aria-label="{~D:Record.Label~} to"
+				onchange="_Pict.views['PRSP-Filters'].applyQuickFilterDate('{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}', '{~D:Record.Field~}', '{~D:Record.ClauseKey~}', 'end', this.value)">
+		</span>
+`
+		},
+		{
+			// Entity control — a pict-section-picker mounts into this host (post-render, in
+			// _mountQuickFilterEntity), so the quick filter reuses the real entity picker.
+			Hash: 'PRSP-QuickFilter-Entity',
+			Template: /*html*/`
+		<span class="prsp-quickfilter-entityhost" id="{~D:Record.HostID~}"></span>
 `
 		},
 	],
@@ -143,15 +331,15 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			RenderMethod: 'replace'
 		},
 		{
-			RenderableHash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown',
-			TemplateHash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown',
-			ContentDestinationAddress: '#PRSP-SUBSET-Filters-Template-AddFilter-Dropdown',
+			RenderableHash: 'PRSP_AddFilter_Popover',
+			TemplateHash: 'PRSP-AddFilter-Popover',
+			ContentDestinationAddress: '#PRSP_AddFilter_Popover',
 			RenderMethod: 'replace',
 		},
 		{
-			RenderableHash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown',
-			TemplateHash: 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown',
-			ContentDestinationAddress: '#PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown',
+			RenderableHash: 'PRSP_AddFilter_List',
+			TemplateHash: 'PRSP-AddFilter-List',
+			ContentDestinationAddress: '#PRSP_AddFilter_List',
 			RenderMethod: 'replace',
 		},
 	],
@@ -236,6 +424,10 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		this.newFilterSearchApplied = false;
 		this.addFilterCallback = null;
 		this.removeFilterCallback = null;
+		// Consolidated filter control state: drawer open/closed, and the last-applied search
+		// string per record set (so a search no longer clears the search box on re-render).
+		this._drawerOpen = false;
+		this._searchString = {};
 		// Render-epoch counter, bumped any time the filter list is re-rendered
 		// or a new filter experience is applied. Deferred filter post-render
 		// work (e.g. the setTimeout-scheduled transaction drain in
@@ -244,6 +436,15 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		// stale callback doesn't clobber DOM that now belongs to a different
 		// filter experience.
 		this._renderEpoch = 0;
+		// Add-filter popover state (module-owned, replaces the old native <select> pickers).
+		this._addFilterOpen = false;
+		this._addFilterRecordSet = null;
+		this._addFilterViewContext = null;
+		this._addFilterSearch = '';
+		this._addFilterExpandedKey = null;
+		// FilterKeys to hide from the add-filter popover (e.g. internal/audit columns). Host apps
+		// set this; it is merged with a per-record-set config `FilterFieldBlacklist`.
+		this.filterFieldBlacklist = [];
 	}
 
 	/**
@@ -348,6 +549,200 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		return super.onMarshalToView();
 	}
 
+	/** Toggle the slide-out filter drawer beneath the search bar. */
+	toggleFilterDrawer()
+	{
+		this._drawerOpen = !this._drawerOpen;
+		const tmpBar = document.getElementById('PRSP_FilterBar');
+		if (tmpBar) { tmpBar.classList.toggle('drawer-open', this._drawerOpen); }
+		return this._drawerOpen;
+	}
+
+	/**
+	 * The current search term, read back from the active route URL (the source of truth) so
+	 * the search box stays populated across re-renders and reflects bookmarked/filtered URLs.
+	 * performSearch builds `.../FilteredTo/FBVOR~<field>~LK~<encoded %term%>~...` from the
+	 * SearchFields, so the term is the first LK value in the FilteredTo segment.
+	 *
+	 * @return {string}
+	 */
+	_searchTermFromURL()
+	{
+		const tmpCurrent = this.pict.providers.PictRouter && this.pict.providers.PictRouter.router && this.pict.providers.PictRouter.router.current
+			? this.pict.providers.PictRouter.router.current[0] : null;
+		const tmpUrl = (tmpCurrent && (tmpCurrent.url || tmpCurrent.hashString)) || '';
+		if (tmpUrl.indexOf('FilteredTo/') < 0) { return ''; }
+		const tmpFilteredPart = (tmpUrl.split('FilteredTo/')[1] || '').split('/FilterExperience')[0];
+		const tmpMatch = tmpFilteredPart.match(/LK~([^~]+)/);
+		if (!tmpMatch) { return ''; }
+		let tmpValue = tmpMatch[1];
+		try { tmpValue = decodeURIComponent(tmpValue); } catch (pError) { /* leave raw */ }
+		return tmpValue.replace(/^%+|%+$/g, '');
+	}
+
+	/** The number of active (structured) filter clauses for a record set. */
+	getActiveFilterCount(pRecordSet)
+	{
+		const tmpClauses = this.pict && this.pict.Bundle && this.pict.Bundle._ActiveFilterState && this.pict.Bundle._ActiveFilterState[pRecordSet]
+			? this.pict.Bundle._ActiveFilterState[pRecordSet].FilterClauses : null;
+		return Array.isArray(tmpClauses) ? tmpClauses.length : 0;
+	}
+
+	/**
+	 * Repaint the filter-bar chrome after a (re)render: the filters icon (outline vs filled
+	 * + count badge), the active-filter highlight, the persisted drawer-open state, and the
+	 * search input value (so applying a search no longer clears the search box).
+	 *
+	 * @param {string} pRecordSet
+	 */
+	_paintFilterControls(pRecordSet)
+	{
+		const tmpBar = document.getElementById('PRSP_FilterBar');
+		if (!tmpBar) { return; }
+		const tmpCount = this.getActiveFilterCount(pRecordSet);
+		tmpBar.classList.toggle('has-filters', tmpCount > 0);
+		tmpBar.classList.toggle('drawer-open', !!this._drawerOpen);
+		const tmpIcon = document.getElementById('PRSP_Filter_Icon');
+		if (tmpIcon) { tmpIcon.innerHTML = (tmpCount > 0) ? ViewRecordSetSUBSETFilters.FilterIconFilled : ViewRecordSetSUBSETFilters.FilterIconOutline; }
+		const tmpCountEl = document.getElementById('PRSP_Filter_Count');
+		if (tmpCountEl) { tmpCountEl.textContent = (tmpCount > 0) ? String(tmpCount) : ''; }
+		const tmpInput = document.getElementById('search_filter');
+		if (tmpInput) { tmpInput.value = this._searchTermFromURL(); }
+	}
+
+	/**
+	 * Paint the Quick Filters bar into #PRSP_QuickFilters from the record set's quick-filter definitions
+	 * (host config or clever defaults), each control seeded with its clause's current value. Phase 1
+	 * renders the text controls; date/entity controls follow. Empty → the bar's :empty CSS hides it.
+	 *
+	 * @param {string} pRecordSet @param {string} pViewContext
+	 */
+	_renderQuickFilters(pRecordSet, pViewContext)
+	{
+		if (!document.getElementById('PRSP_QuickFilters')) { return; }
+		const tmpProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
+		if (!tmpProvider || typeof tmpProvider.getQuickFilterDefinitions !== 'function')
+		{
+			this.pict.ContentAssignment.assignContent('#PRSP_QuickFilters', '');
+			return;
+		}
+		// Build one item per definition, populating exactly one control slot (text / date / entity).
+		// `quickFiltersAutoDefault` (host-settable, default on) gates the clever schema defaults: a host
+		// can set it false to make quick filters opt-in (only record sets with an explicit config show).
+		const tmpEntityMounts = [];
+		const tmpItems = tmpProvider.getQuickFilterDefinitions(this.quickFiltersAutoDefault).map((pDefinition) =>
+		{
+			const tmpBase = { Field: pDefinition.Field, ClauseKey: pDefinition.ClauseKey, Label: pDefinition.Label, RecordSet: pRecordSet, ViewContext: pViewContext };
+			const tmpItem = { Label: pDefinition.Label, TextSlot: [], DateSlot: [], EntitySlot: [] };
+			if (pDefinition.Control === 'text')
+			{
+				tmpItem.TextSlot = [ Object.assign({}, tmpBase, { Value: tmpProvider.getQuickFilterClauseValue(pDefinition.Field), Placeholder: `Search ${pDefinition.Label}…` }) ];
+			}
+			else if (pDefinition.Control === 'daterange')
+			{
+				const tmpRange = tmpProvider.getQuickFilterDateRangeValue(pDefinition.Field);
+				tmpItem.DateSlot = [ Object.assign({}, tmpBase, { StartValue: tmpRange.Start, EndValue: tmpRange.End }) ];
+			}
+			else if (pDefinition.Control === 'entity')
+			{
+				const tmpHostID = `PRSP_QuickEntity_${pRecordSet}_${pDefinition.Field}`;
+				tmpItem.EntitySlot = [ Object.assign({}, tmpBase, { HostID: tmpHostID }) ];
+				tmpEntityMounts.push(Object.assign({}, tmpBase, { HostID: tmpHostID }));
+			}
+			return tmpItem;
+		});
+		const tmpHTML = (tmpItems.length > 0) ? this.pict.parseTemplateByHash('PRSP-QuickFilters-Bar', { Filters: tmpItems }) : '';
+		this.pict.ContentAssignment.assignContent('#PRSP_QuickFilters', tmpHTML);
+		// Entity controls: mount (or re-mount) a picker into each host after the wholesale re-render.
+		tmpEntityMounts.forEach((pMount) => this._mountQuickFilterEntity(pRecordSet, pViewContext, pMount));
+	}
+
+	/**
+	 * Mount (idempotently) a pict-section-picker into a quick-filter entity host, configured from the
+	 * field's entity clause descriptor (RemoteTable / search columns / value column), single-select.
+	 * On change it upserts the clause + applies. Re-runs after each render (the bar repaints wholesale),
+	 * mirroring the form adapter's re-mount pattern. No-op if the picker module isn't registered.
+	 *
+	 * @param {string} pRecordSet @param {string} pViewContext @param {Record<string, any>} pMount
+	 */
+	_mountQuickFilterEntity(pRecordSet, pViewContext, pMount)
+	{
+		if (!document.getElementById(pMount.HostID)) { return; }
+		const tmpPickerProvider = this.pict.providers['Pict-Section-Picker'];
+		const tmpProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
+		if (!tmpPickerProvider || typeof tmpPickerProvider.createEntityPicker !== 'function' || !tmpProvider) { return; }
+		const tmpDescriptor = tmpProvider.getFilterClauseSchemaForKey(pMount.Field)?.AvailableClauses?.find?.((pClause) => pClause.ClauseKey === pMount.ClauseKey);
+		if (!tmpDescriptor || !tmpDescriptor.RemoteTable) { return; }
+		const tmpSearchFields = Array.isArray(tmpDescriptor.ExternalFilterByColumns) && tmpDescriptor.ExternalFilterByColumns.length > 0 ? tmpDescriptor.ExternalFilterByColumns : [ 'Name' ];
+		const tmpView = tmpPickerProvider.createEntityPicker(`Quick-Picker-${pRecordSet}-${pMount.Field}`,
+		{
+			DestinationAddress: `#${pMount.HostID}`,
+			// Quick filters stay single-select for a fast pick (the full drawer entity filter can be multi).
+			Mode: 'single',
+			Entity: tmpDescriptor.RemoteTable,
+			ValueField: tmpDescriptor.JoinExternalConnectionColumn || `ID${tmpDescriptor.RemoteTable}`,
+			SearchFields: tmpSearchFields,
+			TextField: tmpSearchFields[0],
+			Placeholder: `Select ${pMount.Label}…`,
+			OnChange: (pValue) => this.applyQuickFilterEntity(pRecordSet, pViewContext, pMount.Field, pMount.ClauseKey, pValue),
+		});
+		if (!tmpView) { return; }
+		tmpView.render();
+		const tmpCurrent = (typeof tmpProvider.getQuickFilterEntityValue === 'function') ? tmpProvider.getQuickFilterEntityValue(pMount.Field) : [];
+		tmpView.setValue((Array.isArray(tmpCurrent) && tmpCurrent.length > 0) ? tmpCurrent[0] : '');
+	}
+
+	/**
+	 * Apply a text quick filter: upsert (or clear) its tagged clause, then run the standard search +
+	 * serialize path. Commits on blur / Enter (not per-keystroke) so the re-render never steals focus.
+	 *
+	 * @param {string} pRecordSet @param {string} pViewContext @param {string} pField @param {string} pClauseKey @param {string} pValue
+	 */
+	applyQuickFilterText(pRecordSet, pViewContext, pField, pClauseKey, pValue)
+	{
+		this.bumpRenderEpoch();
+		const tmpProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
+		if (tmpProvider && typeof tmpProvider.upsertQuickFilterClauseValue === 'function')
+		{
+			tmpProvider.upsertQuickFilterClauseValue(pField, pClauseKey, (pValue === undefined || pValue === null) ? '' : String(pValue).trim());
+		}
+		this.handleSearch(null, pRecordSet, pViewContext);
+	}
+
+	/**
+	 * Apply a date-range quick filter: set one bound (`start`/`end`) of the field's DateRange clause
+	 * (removed when both bounds clear), then run the search.
+	 *
+	 * @param {string} pRecordSet @param {string} pViewContext @param {string} pField @param {string} pClauseKey @param {'start'|'end'} pWhich @param {string} pValue
+	 */
+	applyQuickFilterDate(pRecordSet, pViewContext, pField, pClauseKey, pWhich, pValue)
+	{
+		this.bumpRenderEpoch();
+		const tmpProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
+		if (tmpProvider && typeof tmpProvider.upsertQuickFilterDateRange === 'function')
+		{
+			tmpProvider.upsertQuickFilterDateRange(pField, pClauseKey, pWhich, (pValue === undefined || pValue === null) ? '' : pValue);
+		}
+		this.handleSearch(null, pRecordSet, pViewContext);
+	}
+
+	/**
+	 * Apply an entity quick filter: set the field's entity clause to the picked value (removed when
+	 * cleared), then run the search. Called from the quick-bar picker's OnChange.
+	 *
+	 * @param {string} pRecordSet @param {string} pViewContext @param {string} pField @param {string} pClauseKey @param {any} pValue
+	 */
+	applyQuickFilterEntity(pRecordSet, pViewContext, pField, pClauseKey, pValue)
+	{
+		this.bumpRenderEpoch();
+		const tmpProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
+		if (tmpProvider && typeof tmpProvider.upsertQuickFilterEntity === 'function')
+		{
+			tmpProvider.upsertQuickFilterEntity(pField, pClauseKey, pValue);
+		}
+		this.handleSearch(null, pRecordSet, pViewContext);
+	}
+
 	/**
 	 * @param {Event} pEvent - The DOM event that triggered the search
 	 * @param {string} pRecordSet - The record set being filtered
@@ -355,12 +750,12 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	 */
 	handleSearch(pEvent, pRecordSet, pViewContext)
 	{
-		pEvent.preventDefault(); // don't submit the form
-		pEvent.stopPropagation();
+		if (pEvent) { pEvent.preventDefault(); pEvent.stopPropagation(); } // don't submit the form
 		this.newFilterSearchApplied = true;
-		//FIXME: store this filter string in the bundle so we can re-apply it on re-render
 		const tmpSearchString = this.pict.ContentAssignment.readContent(`input[name="filter"]`);
-		this.performSearch(pRecordSet, pViewContext, tmpSearchString ? String(tmpSearchString) : '');
+		// Remember the applied search so the re-render below doesn't blank the search box.
+		this._searchString[pRecordSet] = tmpSearchString ? String(tmpSearchString) : '';
+		this.performSearch(pRecordSet, pViewContext, this._searchString[pRecordSet]);
 	}
 
 	/**
@@ -433,6 +828,7 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		if (pEvent) pEvent.preventDefault();
 		this.bumpRenderEpoch();
 		this.pict.ContentAssignment.assignContent('input[name="filter"]', '');
+		this._searchString[pRecordSet] = '';
 		this.pict.Bundle._ActiveFilterState[pRecordSet].FilterClauses = [];
 		this.pict.providers.FilterDataProvider.removeDefaultFilterExperience(pRecordSet, pViewContext);
 		this.performSearch(pRecordSet, pViewContext, '');
@@ -484,12 +880,135 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	 * @param {string} pRecordSet - The record set being filtered
 	 * @param {string} pViewContext - The view context for the filter (ex. List, Dashboard)
 	 */
-	selectFilterToAdd(pEvent, pRecordSet, pViewContext)
+	toggleAddFilterPopover(pEvent, pRecordSet, pViewContext)
 	{
-		if (pEvent) pEvent.preventDefault();
-		//const tmpRecordsetProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
-		//this.pict.log.info(`Selecting filter to add for record set: ${pRecordSet} in view context: ${pViewContext}`, tmpRecordsetProvider.getFilterSchema())
-		this.renderWithScope(this.pict.providers[`RSP-Provider-${pRecordSet}`], 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown', undefined, { RecordSet: pRecordSet, ViewContext: pViewContext });
+		if (pEvent) { pEvent.preventDefault(); }
+		if (this._addFilterOpen)
+		{
+			return this.closeAddFilterPopover();
+		}
+		this._addFilterOpen = true;
+		this._addFilterRecordSet = pRecordSet;
+		this._addFilterViewContext = pViewContext;
+		this._addFilterSearch = '';
+		this._addFilterExpandedKey = null;
+		this._buildAddFilterFields(pRecordSet);
+		this.render('PRSP_AddFilter_Popover', undefined, { RecordSet: pRecordSet, ViewContext: pViewContext });
+		this._paintAddFilterOpenState();
+	}
+
+	/** Close the add-filter popover. */
+	closeAddFilterPopover()
+	{
+		this._addFilterOpen = false;
+		this._addFilterExpandedKey = null;
+		this._paintAddFilterOpenState();
+	}
+
+	/**
+	 * Filter the add-filter field list by a search term, re-rendering only the list so the
+	 * search input keeps focus.
+	 * @param {string} pValue - The search term.
+	 */
+	searchAddFilter(pValue)
+	{
+		this._addFilterSearch = pValue || '';
+		this._buildAddFilterFields(this._addFilterRecordSet);
+		this.render('PRSP_AddFilter_List', undefined, { RecordSet: this._addFilterRecordSet, ViewContext: this._addFilterViewContext });
+	}
+
+	/**
+	 * Expand or collapse a field's available clauses in the add-filter popover.
+	 * @param {string} pFilterKey - The field whose clauses to toggle.
+	 */
+	toggleAddFilterField(pFilterKey)
+	{
+		this._addFilterExpandedKey = (this._addFilterExpandedKey === pFilterKey) ? null : pFilterKey;
+		this._buildAddFilterFields(this._addFilterRecordSet);
+		this.render('PRSP_AddFilter_List', undefined, { RecordSet: this._addFilterRecordSet, ViewContext: this._addFilterViewContext });
+	}
+
+	/**
+	 * (Re)build the add-filter popover's field list into AppData from the record set's filter
+	 * schema, honouring the current search term and the expanded field.
+	 * @param {string} pRecordSet - The record set whose filter schema to read.
+	 */
+	_buildAddFilterFields(pRecordSet)
+	{
+		const tmpProvider = this.pict.providers[`RSP-Provider-${pRecordSet}`];
+		const tmpSchema = (tmpProvider && typeof tmpProvider.getFilterSchema === 'function') ? tmpProvider.getFilterSchema() : {};
+		const tmpRecordSetConfig = this.pict.PictSectionRecordSet?.recordSetProviderConfigurations?.[pRecordSet] || {};
+		const tmpBlacklist = [].concat(this.filterFieldBlacklist || [], Array.isArray(tmpRecordSetConfig.FilterFieldBlacklist) ? tmpRecordSetConfig.FilterFieldBlacklist : []);
+		const tmpSearch = (this._addFilterSearch || '').toLowerCase();
+		const tmpFields = Object.values(tmpSchema)
+			.filter((pField) => Array.isArray(pField.AvailableClauses) && pField.AvailableClauses.length > 0)
+			.filter((pField) => !tmpBlacklist.includes(pField.FilterKey))
+			.filter((pField) => !tmpSearch || String(pField.DisplayName || pField.FilterKey).toLowerCase().includes(tmpSearch))
+			.sort((pA, pB) => String(pA.DisplayName || pA.FilterKey).localeCompare(String(pB.DisplayName || pB.FilterKey)))
+			.map((pField) =>
+			{
+				const tmpExpanded = (pField.FilterKey === this._addFilterExpandedKey);
+				return {
+					FilterKey: pField.FilterKey,
+					DisplayName: pField.DisplayName || pField.FilterKey,
+					ExpandedClass: tmpExpanded ? 'is-expanded' : '',
+					ClausesToShow: tmpExpanded ? pField.AvailableClauses : [],
+				};
+			});
+		this.pict.AppData.PRSPAddFilter =
+		{
+			RecordSet: pRecordSet,
+			ViewContext: this._addFilterViewContext,
+			Search: this._addFilterSearch || '',
+			IsEmpty: tmpFields.length === 0,
+			Fields: tmpFields,
+		};
+	}
+
+	/** Reflect the add-filter popover's open/closed state on its container element. */
+	_paintAddFilterOpenState()
+	{
+		const tmpPopover = document.getElementById('PRSP_AddFilter_Popover');
+		if (!tmpPopover) { return; }
+		tmpPopover.classList.toggle('open', !!this._addFilterOpen);
+		if (this._addFilterOpen) { this._positionAddFilterPopover(tmpPopover); }
+	}
+
+	/**
+	 * Position the (fixed) add-filter popover against its trigger button, flipping above when there's
+	 * more room there. Fixed positioning means no ancestor overflow:hidden (the host's filter card, the
+	 * slide-out drawer) can clip it — the price is we set its top/left from the trigger's rect here.
+	 *
+	 * @param {HTMLElement} pPopover - the #PRSP_AddFilter_Popover element (already display:block).
+	 */
+	_positionAddFilterPopover(pPopover)
+	{
+		const tmpTrigger = document.getElementById('PRSP_Filter_Button_Add');
+		if (!tmpTrigger) { return; }
+		const tmpPanel = /** @type {HTMLElement} */ (pPopover.querySelector('.prsp-addfilter-panel'));
+		const tmpRect = tmpTrigger.getBoundingClientRect();
+		const tmpGap = 6;
+		const tmpMargin = 8;
+		const tmpVH = window.innerHeight;
+		const tmpVW = window.innerWidth;
+		const tmpWidth = pPopover.offsetWidth || 300;
+		pPopover.style.left = `${Math.round(Math.max(tmpMargin, Math.min(tmpRect.left, tmpVW - tmpWidth - tmpMargin)))}px`;
+		pPopover.style.right = 'auto';
+		const tmpSpaceBelow = tmpVH - tmpRect.bottom - tmpGap - tmpMargin;
+		const tmpSpaceAbove = tmpRect.top - tmpGap - tmpMargin;
+		// Prefer the natural downward direction; only flip above when the room below is genuinely cramped.
+		if (tmpSpaceBelow >= 220 || tmpSpaceBelow >= tmpSpaceAbove)
+		{
+			pPopover.style.top = `${Math.round(tmpRect.bottom + tmpGap)}px`;
+			pPopover.style.bottom = 'auto';
+			if (tmpPanel) { tmpPanel.style.maxHeight = `${Math.max(160, Math.min(tmpSpaceBelow, 460))}px`; }
+		}
+		else
+		{
+			pPopover.style.top = 'auto';
+			pPopover.style.bottom = `${Math.round(tmpVH - tmpRect.top + tmpGap)}px`;
+			if (tmpPanel) { tmpPanel.style.maxHeight = `${Math.max(160, Math.min(tmpSpaceAbove, 460))}px`; }
+		}
 	}
 
 	/**
@@ -539,40 +1058,59 @@ class ViewRecordSetSUBSETFilters extends libPictView
 	}
 
 	/**
+	 * Lifecycle hook that triggers before the view is rendered. The consolidated filter
+	 * control's markup is owned by this module now, so re-assert its templates here — this
+	 * neutralizes any host/server template override that previously replaced the filter UI,
+	 * letting apps brand the control via CSS (theme tokens) rather than by swapping markup.
+	 *
+	 * @param {import('pict-view').Renderable} pRenderable - The renderable about to be rendered.
+	 */
+	onBeforeRender(pRenderable)
+	{
+		// Re-assert ONLY the consolidated-control chrome (the wrapper, search row, filter toggle +
+		// Search button, the Filter Experiences container, and Clear/Reset/Apply) so the module owns
+		// that markup. Deliberately NOT the add-filter dropdown or per-clause templates: host apps
+		// (e.g. Headlight) layer their own styled add-filter popover and clause UI on top, and
+		// re-asserting those clobbers them — re-exposing bare native <select> dropdowns and a dead
+		// remove button. Those host overrides register at init and must survive each re-render.
+		const tmpChromeTemplateHashes =
+		[
+			'PRSP-SUBSET-Filters-Template',
+			'PRSP-SUBSET-Filters-Template-Input-Fieldset',
+			'PRSP-SUBSET-Filters-Template-Button-Fieldset',
+			'PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset',
+			'PRSP-SUBSET-Filters-Template-DrawerActions-Fieldset'
+		];
+		if (this.pict.TemplateProvider && Array.isArray(_DEFAULT_CONFIGURATION_SUBSET_Filter.Templates))
+		{
+			for (const tmpTemplateHash of tmpChromeTemplateHashes)
+			{
+				const tmpTemplate = _DEFAULT_CONFIGURATION_SUBSET_Filter.Templates.find((pTemplate) => pTemplate.Hash === tmpTemplateHash);
+				if (tmpTemplate)
+				{
+					this.pict.TemplateProvider.addTemplate(tmpTemplate.Hash, tmpTemplate.Template);
+				}
+			}
+		}
+		return super.onBeforeRender(pRenderable);
+	}
+
+	/**
 	 * Lifecycle hook that triggers after the view is rendered.
 	 * @param {import('pict-view').Renderable} pRenderable - The renderable that was rendered.
 	 */
 	onAfterRender(pRenderable)
 	{
 		const res = super.onAfterRender(pRenderable);
-		if (pRenderable?.RenderableHash === 'PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown')
+		// Add-filter popover sub-renders (the panel + its list) only repaint that widget — skip the
+		// heavy post-render pass below and just keep the open/closed class in sync.
+		if (pRenderable?.RenderableHash === 'PRSP_AddFilter_Popover' || pRenderable?.RenderableHash === 'PRSP_AddFilter_List')
 		{
-			return;
+			this._paintAddFilterOpenState();
+			return res;
 		}
-		const tmpRecord = { };
-		const tmpSelect = document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select');
-		if (tmpSelect)
-		{
-			const tmpActiveOption = document.getElementById('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-Select')?.querySelector('option:checked');
-			const tmpRecordSet = tmpActiveOption?.getAttribute('data-i-recordset');
-			const tmpFilterKey = tmpActiveOption?.getAttribute('data-i-filter-key');
-			const tmpViewContext = tmpSelect?.getAttribute('data-i-view-context');
-			if (tmpRecordSet && tmpFilterKey)
-			{
-				const tmpProvider = this.pict.providers[`RSP-Provider-${tmpRecordSet}`];
-				if (tmpProvider)
-				{
-					tmpRecord.RecordSet = tmpRecordSet;
-					tmpRecord.FilterKey = tmpFilterKey;
-					tmpRecord.ViewContext = tmpViewContext;
-					tmpRecord.AvailableClauses = tmpProvider.getFilterClauseSchemaForKey(tmpFilterKey).AvailableClauses;
-					if (Array.isArray(tmpRecord.AvailableClauses))
-					{
-						this.render('PRSP-SUBSET-Filters-Template-AddFilter-Dropdown-AddFilterClauseDropdown', undefined, tmpRecord, pRenderable);
-					}
-				}
-			}
-		}
+		// Any full re-render rebuilds the add-filter slot, so the popover is closed — reset its state.
+		this._addFilterOpen = false;
 		this.onMarshalToView();
 
 		// NOTE: This is where we ensure the filter experience is applied after a render.
@@ -582,6 +1120,33 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		if (tmpRecordSet && tmpViewContext)
 		{
 			this.pict.providers.FilterDataProvider.applyExpectedFilterExperience(tmpRecordSet, tmpViewContext);
+		}
+
+		// Consolidated filter control: whenever the search row is in the DOM, refresh the
+		// search box, the filters icon/count + drawer state, and surface the saved Filter
+		// Experiences dropdown in the drawer. (Guarded on the DOM element rather than the
+		// renderable hash because the list embeds this view via {~FV:~}.)
+		if (document.getElementById('PRSP_Filter_Icon'))
+		{
+			let tmpFilterRecordSet = tmpRecordSet;
+			let tmpFilterViewContext = tmpViewContext || 'List';
+			if (!tmpFilterRecordSet && this.pict.Bundle && this.pict.Bundle._ActiveFilterState)
+			{
+				tmpFilterRecordSet = Object.keys(this.pict.Bundle._ActiveFilterState)[0];
+			}
+			if (tmpFilterRecordSet)
+			{
+				this._paintFilterControls(tmpFilterRecordSet);
+					this._renderQuickFilters(tmpFilterRecordSet, tmpFilterViewContext);
+				// (Re)render the experiences dropdown only when its container is empty — i.e. on
+				// a fresh filter render — not on every sub-render (add-filter dropdown, etc.).
+				const tmpExpContainer = document.getElementById('FilterPersistenceView-Container');
+				if (this.pict.views.FilterPersistenceView && tmpExpContainer && !tmpExpContainer.querySelector('#FilterPersistenceView-Content'))
+				{
+					this.pict.views.FilterPersistenceView.initializeFilterPersistenceViewUI(tmpFilterRecordSet, tmpFilterViewContext);
+				}
+			}
+			if (this.pict.CSSMap && typeof this.pict.CSSMap.injectCSS === 'function') { this.pict.CSSMap.injectCSS(); }
 		}
 
 		return res;
@@ -729,6 +1294,11 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		return arraybuffer;
 	};
 }
+
+// Funnel icons for the filters toggle — outline when no filters are set, filled when set.
+// currentColor so they follow the (themeable) toggle text color.
+ViewRecordSetSUBSETFilters.FilterIconOutline = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5.5h17l-6.6 7.8v4.7l-3.8 2v-6.7z"/></svg>';
+ViewRecordSetSUBSETFilters.FilterIconFilled = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.5 5.5h17l-6.6 7.8v4.7l-3.8 2v-6.7z"/></svg>';
 
 module.exports = ViewRecordSetSUBSETFilters;
 

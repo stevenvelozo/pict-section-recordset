@@ -74,6 +74,10 @@ class PictTemplateFilterInstanceViewInstruction extends libPictTemplate
 
 	_getViewForFilterClause(pClause)
 	{
+		// Quick-filter clauses are surfaced in the Quick Filters bar (RecordSet-Filters._renderQuickFilters),
+		// not the drawer's clause list — skip them here so they aren't rendered twice. Both the sync and
+		// async render loops treat a null view as "skip this clause".
+		if (pClause && pClause.QuickFilter) { return null; }
 		let tmpViewHash = `PRSP-FilterType-${pClause.Type}`;
 		const tmpCustomViewHash = `${tmpViewHash}-${pClause.CustomFilterViewHash}`;
 		if (tmpCustomViewHash in this.pict.views)

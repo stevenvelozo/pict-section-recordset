@@ -61,11 +61,11 @@ const _DEFAULT_CONFIGURATION_List_RecordListHeader = (
 				},
 				{
 					Hash: 'PRSP-List-RecordListActions-Template-Header',
+					// Unlabeled, shrink-to-fit actions column: width:1% + nowrap collapses it to the width of the
+					// row's action control (the hover "⋯" trigger), and the other columns absorb the slack.
 					Template: /*html*/`
 	<!-- DefaultPackage pict view template: [PRSP-List-RecordListActions-Template-Header] -->
-	<th style="border-bottom: 1px solid var(--theme-color-border-default, #ccc); padding: 5px; background-color: var(--theme-color-background-tertiary, #f2f2f2); color: var(--theme-color-text-primary, #333);">
-		Actions
-	</th>
+	<th style="border-bottom: 1px solid var(--theme-color-border-default, #ccc); padding: 5px; width: 1%; white-space: nowrap; background-color: var(--theme-color-background-tertiary, #f2f2f2);"></th>
 	<!-- DefaultPackage end view template:  [PRSP-List-RecordListActions-Template-Header] -->
 	`
 				},
