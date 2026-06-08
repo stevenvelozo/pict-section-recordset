@@ -41,6 +41,8 @@ A curated, one-interaction filter bar at the top of the filter drawer — the ha
 
 The control type is inferred from the field's clause (text for a string match, a from/to pair for a date range, a [pict-section-picker](https://github.com/fable-retold/pict-section-picker) for an entity reference). A quick clause lives in the same filter state as every other clause (tagged so the full clause list doesn't show it twice), and is removed when its value is cleared.
 
+**Turning it off.** A single record set opts out with `QuickFilters: false`. To make quick filters **opt-in** across a whole app — only record sets with an explicit `QuickFilters` array show the bar — set the filter view's flag once: `pict.views['PRSP-Filters'].quickFiltersAutoDefault = false`.
+
 ## Related Packages
 
 - [pict](https://github.com/fable-retold/pict) - MVC application framework

@@ -376,16 +376,23 @@ class RecordSetProviderBase extends libPictProvider
 	// so it serializes / applies / clears like any other clause — the drawer's clause list just skips it.
 
 	/**
-	 * Resolve the quick-filter definitions for this record set: the host's `QuickFilters` config if
-	 * present, else clever defaults derived from the schema. Each definition is resolved to a concrete
-	 * clause descriptor (selected from the field's `AvailableClauses`) so quick filters never invent a
-	 * parallel clause path.
+	 * Resolve the quick-filter definitions for this record set. Precedence: a `QuickFilters` array config
+	 * (curated) → those; `QuickFilters: false` → none (explicit per-record-set opt-out); otherwise clever
+	 * defaults derived from the schema — UNLESS `pAllowCleverDefaults` is false (the host put quick filters
+	 * in opt-in-only mode, so a record set shows the bar only when it sets an explicit `QuickFilters`
+	 * array). Each definition resolves to a concrete clause descriptor from the field's `AvailableClauses`.
 	 *
+	 * @param {boolean} [pAllowCleverDefaults] - false → no clever defaults (opt-in only). Default true.
 	 * @return {Array<{Field:string, Label:string, Control:string, ClauseKey:string}>}
 	 */
-	getQuickFilterDefinitions()
+	getQuickFilterDefinitions(pAllowCleverDefaults)
 	{
-		const tmpEntries = Array.isArray(this.options.QuickFilters) ? this.options.QuickFilters : this._deriveDefaultQuickFilters();
+		const tmpConfig = this.options.QuickFilters;
+		if (tmpConfig === false) { return []; }
+		let tmpEntries;
+		if (Array.isArray(tmpConfig)) { tmpEntries = tmpConfig; }
+		else if (pAllowCleverDefaults === false) { tmpEntries = []; }
+		else { tmpEntries = this._deriveDefaultQuickFilters(); }
 		const tmpDefinitions = [];
 		for (let i = 0; i < tmpEntries.length; i++)
 		{

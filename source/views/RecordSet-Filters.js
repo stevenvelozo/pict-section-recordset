@@ -619,8 +619,10 @@ class ViewRecordSetSUBSETFilters extends libPictView
 			return;
 		}
 		// Build one item per definition, populating exactly one control slot (text / date / entity).
+		// `quickFiltersAutoDefault` (host-settable, default on) gates the clever schema defaults: a host
+		// can set it false to make quick filters opt-in (only record sets with an explicit config show).
 		const tmpEntityMounts = [];
-		const tmpItems = tmpProvider.getQuickFilterDefinitions().map((pDefinition) =>
+		const tmpItems = tmpProvider.getQuickFilterDefinitions(this.quickFiltersAutoDefault).map((pDefinition) =>
 		{
 			const tmpBase = { Field: pDefinition.Field, ClauseKey: pDefinition.ClauseKey, Label: pDefinition.Label, RecordSet: pRecordSet, ViewContext: pViewContext };
 			const tmpItem = { Label: pDefinition.Label, TextSlot: [], DateSlot: [], EntitySlot: [] };
