@@ -31,7 +31,12 @@ const _DEFAULT_CONFIGURATION__List = (
 		AutoSolveWithApp: false,
 		AutoSolveOrdinal: 0,
 
-		CSS: false,
+		CSS: /*css*/`
+	.prsp-list-loading { display: flex; align-items: center; justify-content: center; min-height: 240px; width: 100%; }
+	.prsp-list-loading-inner { display: inline-flex; align-items: center; gap: 0.6em; color: var(--theme-color-text-muted, #64748b); font-size: 1.05rem; }
+	.prsp-list-spinner { display: inline-flex; animation: prsp-list-spin 0.9s linear infinite; }
+	@keyframes prsp-list-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+	`,
 		CSSPriority: 500,
 
 		Templates:
@@ -57,6 +62,17 @@ const _DEFAULT_CONFIGURATION__List = (
 					Hash: 'PRSP-List-Template-Record',
 					Template: /*html*/`
 	<!-- DefaultPackage end view template:  [PRSP-List-Template] -->
+	`
+				},
+				{
+					Hash: 'PRSP-List-LoadingShell',
+					Template: /*html*/`
+	<section id="PRSP_List_Loading" class="prsp-list-loading">
+		<div class="prsp-list-loading-inner">
+			<span class="prsp-list-spinner" aria-hidden="true">{~I:Refresh~}</span>
+			<span class="prsp-list-loading-label">Loading…</span>
+		</div>
+	</section>
 	`
 				}
 			],
@@ -136,6 +152,36 @@ class viewRecordSetList extends libPictRecordSetRecordView
 	onBeforeRenderList(pRecordListData)
 	{
 		return pRecordListData;
+	}
+
+	/**
+	 * Paint a loading shell into the list destination synchronously, before the data
+	 * fetch, so the previous page doesn't sit silently while a slow query runs. The
+	 * real list render (RenderMethod 'replace' into the same destination) overwrites
+	 * it when data arrives. Opt out with RecordSetListShowLoadingShell:false.
+	 * @param {Record<string, any>} pRecordListData
+	 */
+	_projectLoadingShell(pRecordListData)
+	{
+		try
+		{
+			const tmpConfig = pRecordListData && pRecordListData.RecordSetConfiguration;
+			if (tmpConfig && tmpConfig.RecordSetListShowLoadingShell === false)
+			{
+				return;
+			}
+			if (!pRecordListData || !pRecordListData.RenderDestination)
+			{
+				return;
+			}
+			this.pict.CSSMap.injectCSS();
+			this.pict.ContentAssignment.assignContent(pRecordListData.RenderDestination, this.pict.parseTemplateByHash('PRSP-List-LoadingShell', pRecordListData));
+		}
+		catch (pError)
+		{
+			// The loading shell is purely cosmetic; never let it break the list render.
+			this.log.warn(`RecordSetList: loading shell render failed: ${ pError && pError.message }`);
+		}
 	}
 
 	dynamicallyGenerateColumns(pRecordListData)
@@ -240,6 +286,9 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		};
 
 		// TODO: There are still problems with the way these have nested data.  Discuss how we might move that around
+		// Paint a loading shell before the (potentially slow) fetch so the prior page
+		// doesn't sit silently; the real list render replaces it when data arrives.
+		this._projectLoadingShell(tmpRecordListData);
 		// Fetch the records
 		const [ tmpRecords, tmpTotalRecordCount, tmpRecordSchema ] = await Promise.all([
 			this.pict.providers[pProviderHash].getRecords(tmpRecordListData),
@@ -504,6 +553,9 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		};
 
 		// TODO: There are still problems with the way these have nested data.  Discuss how we might move that around
+		// Paint a loading shell before the (potentially slow) fetch so the prior page
+		// doesn't sit silently; the real list render replaces it when data arrives.
+		this._projectLoadingShell(tmpRecordListData);
 		// Fetch the records
 		tmpRecordListData.Records = await this.pict.providers[pProviderHash].getDecoratedRecords(tmpRecordListData);
 		// Get the total record count
