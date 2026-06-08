@@ -186,6 +186,12 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 			return false;
 		}
 
+		// Normalize the whole-row-click opt-in to a STRICT boolean. The action-cell and column-header
+		// templates branch on it with TIfAbs's TRUE/FALSE operators, which test `=== true` / `=== false`.
+		// An absent (undefined) or loose ('true') value would satisfy neither branch, leaving the actions
+		// column empty — so coerce it to a real true/false here, once, for every render path.
+		pRecordSetConfiguration.RowClickOpensRecord = (pRecordSetConfiguration.RowClickOpensRecord === true || pRecordSetConfiguration.RowClickOpensRecord === 'true');
+
 		let tmpExtraColumnHeaderTemplateHash = `RecordSet-List-ExtraColumnHeader-${pRecordSetConfiguration.RecordSet}`;
 		pRecordSetConfiguration.RecordSetListExtraColumnsHeaderTemplateHash = tmpExtraColumnHeaderTemplateHash;
 		let tmpExtraColumnRowTemplateHash = `RecordSet-List-ExtraColumnRow-${pRecordSetConfiguration.RecordSet}`;

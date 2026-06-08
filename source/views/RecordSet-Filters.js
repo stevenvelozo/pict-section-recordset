@@ -52,11 +52,15 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 	border: 1px solid var(--theme-color-border-default, #d7dce3); background: transparent; color: var(--theme-color-text-secondary, #45505f); }
 .prsp-filters-btn-text:hover { background: var(--theme-color-background-tertiary, #eceef2); }
 
-/* Slide-out drawer (CSS grid trick: 0fr -> 1fr animates height). */
+/* Slide-out drawer (CSS grid trick: 0fr -> 1fr animates height). The inner is a *pure* clip box; all the
+   visible card chrome lives on .prsp-filters-drawer-card inside it. That way, on collapse the chrome shrinks
+   *with* the animating height instead of vanishing instantly — the old rule gated padding/border/background
+   on .drawer-open, so closing the drawer stripped the card in one frame while the height still animated for
+   0.18s, making the quick-filters bar look like it popped out of the panel before disappearing. */
 .prsp-filters-drawer { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.18s ease; }
 .prsp-filters.drawer-open .prsp-filters-drawer { grid-template-rows: 1fr; }
 .prsp-filters-drawer-inner { overflow: hidden; min-height: 0; }
-.prsp-filters.drawer-open .prsp-filters-drawer-inner { margin-top: 0.6rem; padding: 0.95rem 1.1rem;
+.prsp-filters-drawer-card { margin-top: 0.6rem; padding: 0.95rem 1.1rem;
 	border: 1px solid var(--theme-color-border-light, #e8ebf0); border-radius: 10px; background: var(--theme-color-background-panel, #fff); }
 .prsp-filters-add { position: relative; margin: 0.4rem 0 0.2rem; }
 .prsp-addfilter-trigger { display: inline-flex; align-items: center; gap: 0.35rem; }
@@ -133,16 +137,20 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 		</form>
 		<div class="prsp-filters-drawer" id="PRSP_Filter_Drawer">
 			<div class="prsp-filters-drawer-inner">
-				<!-- Quick Filters: a curated, one-interaction bar painted post-render into this host
-				     (empty when the record set has no quick filters → CSS :empty hides it). -->
-				<div class="prsp-quickfilters" id="PRSP_QuickFilters"></div>
-				<div id="PRSP_Filter_Instances" class="prsp-filters-clauses" onkeydown="if (event.key === 'Enter' &amp;&amp; !event.target.closest('.pps')) { event.preventDefault(); _Pict.views['PRSP-Filters'].handleSearch(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}'); }">
-					{~FIV:Record~}
-				</div>
-				{~T:PRSP-SUBSET-Filters-Template-AddFilter-Fieldset~}
-				<div class="prsp-filters-footer">
-					{~T:PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset~}
-					{~T:PRSP-SUBSET-Filters-Template-DrawerActions-Fieldset~}
+				<!-- The card carries all the panel chrome and lives *inside* the clip box, so it collapses
+				     together with the animating height (see .prsp-filters-drawer-card in CSS). -->
+				<div class="prsp-filters-drawer-card">
+					<!-- Quick Filters: a curated, one-interaction bar painted post-render into this host
+					     (empty when the record set has no quick filters → CSS :empty hides it). -->
+					<div class="prsp-quickfilters" id="PRSP_QuickFilters"></div>
+					<div id="PRSP_Filter_Instances" class="prsp-filters-clauses" onkeydown="if (event.key === 'Enter' &amp;&amp; !event.target.closest('.pps')) { event.preventDefault(); _Pict.views['PRSP-Filters'].handleSearch(event, '{~D:Record.RecordSet~}', '{~D:Record.ViewContext~}'); }">
+						{~FIV:Record~}
+					</div>
+					{~T:PRSP-SUBSET-Filters-Template-AddFilter-Fieldset~}
+					<div class="prsp-filters-footer">
+						{~T:PRSP-SUBSET-Filters-Template-ManageFilters-Fieldset~}
+						{~T:PRSP-SUBSET-Filters-Template-DrawerActions-Fieldset~}
+					</div>
 				</div>
 			</div>
 		</div>

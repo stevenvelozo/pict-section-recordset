@@ -519,6 +519,9 @@ module.exports.default_configuration.pict_configuration = (
 				// (Title/Genre), date range (CreateDate), and entity picker (CreatingIDUser → User).
 				"QuickFilters": [ "Title", "Genre", { "Field": "CreateDate", "Label": "Added" }, { "Field": "CreatingIDUser", "Label": "Added by" } ],
 
+				// Row interaction: clicking a row opens its default (View) link; actions move into a ⋯ hover menu.
+				"RowClickOpensRecord": true,
+
 				"RecordSetListColumns": [
 					{
 						"Key": "Title",
@@ -580,6 +583,7 @@ module.exports.default_configuration.pict_configuration = (
 
 				"RecordSetType": "MeadowEndpoint",
 				"RecordSetMeadowEntity": "Author",
+				"RowClickOpensRecord": true,
 
 				"RecordSetURLPrefix": "/1.0/",
 
@@ -594,6 +598,7 @@ module.exports.default_configuration.pict_configuration = (
 
 				"RecordSetType": "MeadowEndpoint",
 				"RecordSetMeadowEntity": "BookStore",
+				"RowClickOpensRecord": true,
 
 				"RecordSetURLPrefix": "/1.0/",
 
