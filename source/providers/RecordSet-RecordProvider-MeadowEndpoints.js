@@ -193,6 +193,63 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 	}
 
 	/**
+	 * Derive the Lite `ExtraColumns` for a list fetch from the manifest's displayed
+	 * columns. Lite already returns the ID-prefixed, GUID-prefixed, CreatingIDUser and
+	 * UpdateDate fields plus a computed Value, so we only request the remaining scalar
+	 * display columns — and only ones that are real, non-blob schema columns. Returns
+	 * [] (caller then does a safe full fetch) if the manifest columns or schema are
+	 * unavailable.
+	 * @param {string} pEntity - The entity being listed.
+	 * @param {Record<string, any>} pOptions - The list options (carries RecordSetConfiguration).
+	 * @return {Array<string>} The ExtraColumns to request.
+	 */
+	_deriveLiteExtraColumns(pEntity, pOptions)
+	{
+		const tmpConfig = pOptions && pOptions.RecordSetConfiguration;
+		let tmpDescriptors = null;
+		if (tmpConfig && this.pict.PictSectionRecordSet && this.pict.PictSectionRecordSet.manifestDefinitions)
+		{
+			const tmpManifestHash = tmpConfig.RecordSetListDefaultManifest || (Array.isArray(tmpConfig.RecordSetListManifests) ? tmpConfig.RecordSetListManifests[0] : null);
+			const tmpManifest = tmpManifestHash ? this.pict.PictSectionRecordSet.manifestDefinitions[tmpManifestHash] : null;
+			tmpDescriptors = (tmpManifest && tmpManifest.Descriptors) || null;
+		}
+		const tmpSchemaColumns = (this._Schema && this._Schema.MeadowSchema && Array.isArray(this._Schema.MeadowSchema.Schema)) ? this._Schema.MeadowSchema.Schema : [];
+		if (!tmpDescriptors || tmpSchemaColumns.length < 1)
+		{
+			return [];
+		}
+		const tmpColumnType = {};
+		for (const tmpColumn of tmpSchemaColumns)
+		{
+			if (tmpColumn && tmpColumn.Column)
+			{
+				tmpColumnType[tmpColumn.Column] = tmpColumn.Type;
+			}
+		}
+		const tmpBlobTypes = { 'Text': true, 'JSON': true };
+		const tmpColumns = [];
+		for (const tmpKey of Object.keys(tmpDescriptors))
+		{
+			// ID*/GUID*/owner/update come back in every Lite record for free.
+			if (tmpKey.startsWith('ID') || tmpKey.startsWith('GUID') || tmpKey === 'CreatingIDUser' || tmpKey === 'UpdateDate')
+			{
+				continue;
+			}
+			// Only request real, non-blob columns (a computed/templated manifest column
+			// that is not a DB column would otherwise error the query).
+			if (!(tmpKey in tmpColumnType) || tmpBlobTypes[tmpColumnType[tmpKey]])
+			{
+				continue;
+			}
+			if (!tmpColumns.includes(tmpKey))
+			{
+				tmpColumns.push(tmpKey);
+			}
+		}
+		return tmpColumns;
+	}
+
+	/**
 	 * Read records from the provider.
 	 *
 	 * @param {RecordSetFilter} pOptions - Options for the read operation.
@@ -205,6 +262,30 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 			throw new Error('Entity is not defined in the provider options.');
 		}
 		const tmpEntity = pOptions.Entity || this.options.Entity;
+
+		// Lite projection (opt-in via RecordSetListLiteFetch): request only the columns
+		// the manifest displays so the list stops pulling blob columns (FormData, etc.).
+		// Lite (partial) records are NOT written to the entity cache (see getEntitySetPage) —
+		// the list renders them straight from state — so they can never poison the global
+		// cache that full-record consumers (row-click View, {~E:~}) rely on. The list's
+		// reference entities (Project/User) are full records and stay in the global cache,
+		// batched reliably by the connected-entity prefetch + the stale-read prune fix.
+		const tmpLiteFetch = (this.options.RecordSetListLiteFetch === true) || !!(pOptions && pOptions.RecordSetConfiguration && pOptions.RecordSetConfiguration.RecordSetListLiteFetch);
+		let tmpProjection = null;
+		if (tmpLiteFetch)
+		{
+			// Ensure the entity schema is loaded so we only request real, non-blob columns.
+			if (!this._Schema)
+			{
+				await this.getRecordSchema();
+			}
+			const tmpExtraColumns = this._deriveLiteExtraColumns(tmpEntity, pOptions);
+			if (tmpExtraColumns.length > 0)
+			{
+				tmpProjection = { Mode: 'LiteExtended', ExtraColumns: tmpExtraColumns };
+			}
+		}
+
 		if (this.pict.LogNoisiness > 1)
 		{
 			this.pict.log.info(`Reading ${tmpEntity} records`, { Options: pOptions });
@@ -212,6 +293,10 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 		return new Promise((resolve, reject) =>
 		{
 			const [ tmpClauses, tmpExperience ] = this._prepareFilterState(tmpEntity, pOptions);
+			if (tmpProjection)
+			{
+				tmpExperience.Projection = tmpProjection;
+			}
 			if (this.options.FilterEndpointOverride)
 			{
 				// Call the filtering endpoint with the clauses and experience.
@@ -237,7 +322,7 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 							}
 						}
 					}
-					this.pict.EntityProvider.cacheConnectedEntityRecordsWithoutCount(recordsReturn, IDFields, ['User', 'User'], false, () => 
+					this.pict.EntityProvider.cacheConnectedEntityRecordsWithoutCount(recordsReturn, IDFields, ['User', 'User'], false, () =>
 					{
 						resolve({ Records: recordsReturn, Facets: { } });
 					});
@@ -262,7 +347,12 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 						}
 					}
 				}
-				this.pict.EntityProvider.cacheConnectedEntityRecords(recordsReturn, IDFields, ['User', 'User'], false, () =>
+				// Use the NoCount (lazy-page) batch: counts are very costly in this MySQL,
+				// and the count-based variant serializes one slow COUNT per reference entity,
+				// stalling the queue so later entities (e.g. Project) never batch and fall
+				// back to per-row fetches. NoCount fetches each batch in one paged request
+				// with real concurrency (maxOperations).
+				this.pict.EntityProvider.cacheConnectedEntityRecordsWithoutCount(recordsReturn, IDFields, ['User', 'User'], false, () =>
 				{
 					resolve({ Records: recordsReturn, Facets: { } });
 				});
@@ -371,6 +461,11 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 				}
 				// A new record changes the total; drop the cached count so the next render re-counts.
 				this._RecordSetCountCache = null;
+				// Drop this list's scoped cache too, so the next render re-fetches fresh.
+				if (typeof this.pict.EntityProvider.clearScope === 'function')
+				{
+					this.pict.EntityProvider.clearScope(`RSList::${ this.options.RecordSet || this.options.Entity }`);
+				}
 				resolve(result);
 			});
 		});
@@ -400,6 +495,11 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 				}
 				// An edit can move a record in or out of the active filter; drop the cached count to be safe.
 				this._RecordSetCountCache = null;
+				// Drop this list's scoped cache too, so the next render re-fetches fresh.
+				if (typeof this.pict.EntityProvider.clearScope === 'function')
+				{
+					this.pict.EntityProvider.clearScope(`RSList::${ this.options.RecordSet || this.options.Entity }`);
+				}
 				resolve(result);
 			});
 		});
@@ -429,6 +529,11 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 				}
 				// A delete changes the total; drop the cached count so the next render re-counts.
 				this._RecordSetCountCache = null;
+				// Drop this list's scoped cache too, so the next render re-fetches fresh.
+				if (typeof this.pict.EntityProvider.clearScope === 'function')
+				{
+					this.pict.EntityProvider.clearScope(`RSList::${ this.options.RecordSet || this.options.Entity }`);
+				}
 				resolve(result);
 			});
 		});
