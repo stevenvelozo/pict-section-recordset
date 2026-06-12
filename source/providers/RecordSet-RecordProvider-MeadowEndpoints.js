@@ -68,35 +68,50 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 
 	/**
 	 * Fetch (and cache) the DISTINCT values of a column present in this recordset's data, via
-	 * Meadow's `<Entity>s/Distinct/<Column>` endpoint. Drives the `ScopeToRecordSet` filter knob:
-	 * an entity picker can be limited to `FBL~<Column>~INN~<these values>` so it only lists the
-	 * entities the data actually references, not the whole remote table. Cached per column.
+	 * Meadow's `<Entity>s/Distinct/<Column>` endpoint. Drives the `ScopeToRecordSet` filter knob
+	 * (an entity picker limited to `FBL~<Column>~INN~<these values>`) and the
+	 * `DistinctSelectedValueList` filter type (a dropdown whose options ARE these values).
+	 * Cached per column; the cache is cleared on create/update/delete through this provider.
 	 *
-	 * @param {string} pColumn @param {(pError: Error|null, pValues: Array<any>) => void} fCallback
+	 * @param {string} pColumn
+	 * @param {{ Filter?: string } | ((pError: Error|null, pValues: Array<any>) => void)} [pOptions] - Optional; `Filter` is a FoxHound stanza appended as `/FilteredTo/<Filter>` on the distinct query.
+	 * @param {(pError: Error|null, pValues: Array<any>) => void} [fCallback]
 	 */
-	getRecordSetColumnDistinct(pColumn, fCallback)
+	getRecordSetColumnDistinct(pColumn, pOptions, fCallback)
 	{
-		this._scopeDistinctCache = this._scopeDistinctCache || {};
-		if (Array.isArray(this._scopeDistinctCache[pColumn]))
+		// Back-compat: (pColumn, fCallback)
+		let tmpOptions = pOptions;
+		let tmpCallback = fCallback;
+		if (typeof tmpOptions === 'function')
 		{
-			return fCallback(null, this._scopeDistinctCache[pColumn]);
+			tmpCallback = tmpOptions;
+			tmpOptions = {};
+		}
+		tmpOptions = tmpOptions || {};
+		// Unfiltered fetches keep the bare-column key (synchronous peeks elsewhere read it);
+		// filtered fetches get their own key so the two never cross-pollinate.
+		const tmpCacheKey = tmpOptions.Filter ? `${pColumn}::${tmpOptions.Filter}` : pColumn;
+		this._scopeDistinctCache = this._scopeDistinctCache || {};
+		if (Array.isArray(this._scopeDistinctCache[tmpCacheKey]))
+		{
+			return tmpCallback(null, this._scopeDistinctCache[tmpCacheKey]);
 		}
 		if (!this.options.Entity || !this.entityProvider || !this.entityProvider.restClient)
 		{
-			return fCallback(new Error('RecordSet provider cannot resolve a distinct request (missing Entity or rest client).'), []);
+			return tmpCallback(new Error('RecordSet provider cannot resolve a distinct request (missing Entity or rest client).'), []);
 		}
-		const tmpURL = `${this.options.URLPrefix || ''}${this.options.Entity}s/Distinct/${pColumn}`;
+		const tmpURL = `${this.options.URLPrefix || ''}${this.options.Entity}s/Distinct/${pColumn}${tmpOptions.Filter ? `/FilteredTo/${tmpOptions.Filter}` : ''}`;
 		this.entityProvider.restClient.getJSON(tmpURL, (pError, pResponse, pBody) =>
 		{
 			if (pError || (pResponse && pResponse.statusCode > 299) || !Array.isArray(pBody))
 			{
 				this.pict.log.warn(`RecordSet [${this.options.RecordSet || this.options.Entity}] distinct fetch for [${pColumn}] failed; the scoped filter falls back to unscoped.`, { Error: pError && pError.message, URL: tmpURL });
-				this._scopeDistinctCache[pColumn] = [];
-				return fCallback(pError || new Error('distinct fetch returned a non-array'), []);
+				this._scopeDistinctCache[tmpCacheKey] = [];
+				return tmpCallback(pError || new Error('distinct fetch returned a non-array'), []);
 			}
 			const tmpValues = [ ...new Set(pBody.map((pRecord) => pRecord && pRecord[pColumn]).filter((pValue) => pValue != null)) ];
-			this._scopeDistinctCache[pColumn] = tmpValues;
-			return fCallback(null, tmpValues);
+			this._scopeDistinctCache[tmpCacheKey] = tmpValues;
+			return tmpCallback(null, tmpValues);
 		});
 	}
 
@@ -547,6 +562,9 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 				}
 				// A new record changes the total; drop the cached count so the next render re-counts.
 				this._RecordSetCountCache = null;
+				// Mutations can introduce/retire column values; drop the distinct cache so
+				// ScopeToRecordSet scoping and DistinctSelectedValueList dropdowns refresh.
+				this._scopeDistinctCache = null;
 				// Drop this list's scoped cache too, so the next render re-fetches fresh.
 				if (typeof this.pict.EntityProvider.clearScope === 'function')
 				{
@@ -581,6 +599,9 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 				}
 				// An edit can move a record in or out of the active filter; drop the cached count to be safe.
 				this._RecordSetCountCache = null;
+				// Mutations can introduce/retire column values; drop the distinct cache so
+				// ScopeToRecordSet scoping and DistinctSelectedValueList dropdowns refresh.
+				this._scopeDistinctCache = null;
 				// Drop this list's scoped cache too, so the next render re-fetches fresh.
 				if (typeof this.pict.EntityProvider.clearScope === 'function')
 				{
@@ -615,6 +636,9 @@ class MeadowEndpointsRecordSetProvider extends libRecordSetProviderBase
 				}
 				// A delete changes the total; drop the cached count so the next render re-counts.
 				this._RecordSetCountCache = null;
+				// Mutations can introduce/retire column values; drop the distinct cache so
+				// ScopeToRecordSet scoping and DistinctSelectedValueList dropdowns refresh.
+				this._scopeDistinctCache = null;
 				// Drop this list's scoped cache too, so the next render re-fetches fresh.
 				if (typeof this.pict.EntityProvider.clearScope === 'function')
 				{

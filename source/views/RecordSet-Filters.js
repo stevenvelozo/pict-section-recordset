@@ -293,6 +293,7 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			{~TS:PRSP-QuickFilter-Text:Record.TextSlot~}
 			{~TS:PRSP-QuickFilter-Date:Record.DateSlot~}
 			{~TS:PRSP-QuickFilter-Entity:Record.EntitySlot~}
+			{~TS:PRSP-QuickFilter-Distinct:Record.DistinctSlot~}
 		</div>
 `
 		},
@@ -323,6 +324,14 @@ const _DEFAULT_CONFIGURATION_SUBSET_Filter =
 			// Entity control — a pict-section-picker mounts into this host (post-render, in
 			// _mountQuickFilterEntity), so the quick filter reuses the real entity picker.
 			Hash: 'PRSP-QuickFilter-Entity',
+			Template: /*html*/`
+		<span class="prsp-quickfilter-entityhost" id="{~D:Record.HostID~}"></span>
+`
+		},
+		{
+			// Distinct-values control — a multi-select pict-section-picker mounts into this host
+			// (post-render, in _mountQuickFilterDistinct), its options the column's distinct values.
+			Hash: 'PRSP-QuickFilter-Distinct',
 			Template: /*html*/`
 		<span class="prsp-quickfilter-entityhost" id="{~D:Record.HostID~}"></span>
 `
@@ -637,10 +646,11 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		// `quickFiltersAutoDefault` (host-settable, default on) gates the clever schema defaults: a host
 		// can set it false to make quick filters opt-in (only record sets with an explicit config show).
 		const tmpEntityMounts = [];
+		const tmpDistinctMounts = [];
 		const tmpItems = tmpProvider.getQuickFilterDefinitions(this.quickFiltersAutoDefault).map((pDefinition) =>
 		{
 			const tmpBase = { Field: pDefinition.Field, ClauseKey: pDefinition.ClauseKey, Label: pDefinition.Label, RecordSet: pRecordSet, ViewContext: pViewContext };
-			const tmpItem = { Label: pDefinition.Label, TextSlot: [], DateSlot: [], EntitySlot: [] };
+			const tmpItem = { Label: pDefinition.Label, TextSlot: [], DateSlot: [], EntitySlot: [], DistinctSlot: [] };
 			if (pDefinition.Control === 'text')
 			{
 				tmpItem.TextSlot = [ Object.assign({}, tmpBase, { Value: tmpProvider.getQuickFilterClauseValue(pDefinition.Field), Placeholder: `Search ${pDefinition.Label}…` }) ];
@@ -656,12 +666,19 @@ class ViewRecordSetSUBSETFilters extends libPictView
 				tmpItem.EntitySlot = [ Object.assign({}, tmpBase, { HostID: tmpHostID }) ];
 				tmpEntityMounts.push(Object.assign({}, tmpBase, { HostID: tmpHostID }));
 			}
+			else if (pDefinition.Control === 'distinct')
+			{
+				const tmpHostID = `PRSP_QuickDistinct_${pRecordSet}_${pDefinition.Field}`;
+				tmpItem.DistinctSlot = [ Object.assign({}, tmpBase, { HostID: tmpHostID }) ];
+				tmpDistinctMounts.push(Object.assign({}, tmpBase, { HostID: tmpHostID }));
+			}
 			return tmpItem;
 		});
 		const tmpHTML = (tmpItems.length > 0) ? this.pict.parseTemplateByHash('PRSP-QuickFilters-Bar', { Filters: tmpItems }) : '';
 		this.pict.ContentAssignment.assignContent('#PRSP_QuickFilters', tmpHTML);
-		// Entity controls: mount (or re-mount) a picker into each host after the wholesale re-render.
+		// Entity / distinct controls: mount (or re-mount) a picker into each host after the wholesale re-render.
 		tmpEntityMounts.forEach((pMount) => this._mountQuickFilterEntity(pRecordSet, pViewContext, pMount));
+		tmpDistinctMounts.forEach((pMount) => this._mountQuickFilterDistinct(pRecordSet, pViewContext, pMount));
 	}
 
 	/**
@@ -718,6 +735,56 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		tmpView.render();
 		const tmpCurrent = (typeof tmpProvider.getQuickFilterEntityValue === 'function') ? tmpProvider.getQuickFilterEntityValue(pMount.Field) : [];
 		tmpView.setValue((Array.isArray(tmpCurrent) && tmpCurrent.length > 0) ? tmpCurrent[0] : '');
+	}
+
+	/**
+	 * Mount (idempotently) a multi-select pict-section-picker into a quick-filter distinct host,
+	 * its options the clause's static `Options` or the column's distinct values (fetched + cached
+	 * on the recordset provider; re-mounted once the fetch resolves so the options fill in). The
+	 * picker substring-filters static options client-side, so search works without a server trip.
+	 * On change it STAGES the clause (Values array) — Apply / Search commits. No-op if the picker
+	 * module isn't registered.
+	 *
+	 * @param {string} pRecordSet @param {string} pViewContext @param {Record<string, any>} pMount
+	 */
+	_mountQuickFilterDistinct(pRecordSet, pViewContext, pMount)
+	{
+		if (!document.getElementById(pMount.HostID)) { return; }
+		const tmpPickerProvider = this.pict.providers['Pict-Section-Picker'];
+		const tmpProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
+		if (!tmpPickerProvider || typeof tmpPickerProvider.createPicker !== 'function' || !tmpProvider) { return; }
+		const tmpDescriptor = tmpProvider.getFilterClauseSchemaForKey(pMount.Field)?.AvailableClauses?.find?.((pClause) => pClause.ClauseKey === pMount.ClauseKey);
+		if (!tmpDescriptor || !tmpDescriptor.FilterByColumn) { return; }
+		let tmpValues;
+		if (Array.isArray(tmpDescriptor.Options) && tmpDescriptor.Options.length > 0)
+		{
+			tmpValues = tmpDescriptor.Options;
+		}
+		else
+		{
+			const tmpCacheKey = tmpDescriptor.DistinctFilter ? `${tmpDescriptor.FilterByColumn}::${tmpDescriptor.DistinctFilter}` : tmpDescriptor.FilterByColumn;
+			tmpValues = (tmpProvider._scopeDistinctCache || {})[tmpCacheKey];
+			if (!Array.isArray(tmpValues) && typeof tmpProvider.getRecordSetColumnDistinct === 'function')
+			{
+				tmpProvider.getRecordSetColumnDistinct(tmpDescriptor.FilterByColumn, { Filter: tmpDescriptor.DistinctFilter },
+					() => this._mountQuickFilterDistinct(pRecordSet, pViewContext, pMount));
+				tmpValues = [];
+			}
+		}
+		const tmpOptions = (Array.isArray(tmpValues) ? tmpValues : []).map((pValue) => ({ Value: pValue, Text: String(pValue) }));
+		const tmpView = tmpPickerProvider.createPicker(`Quick-Distinct-${pRecordSet}-${pMount.Field}`,
+		{
+			DestinationAddress: `#${pMount.HostID}`,
+			// Multi-select: "any of the checked values" is the natural distinct-filter semantic.
+			Mode: 'multi',
+			Options: tmpOptions,
+			Placeholder: `Select ${pMount.Label}…`,
+			OnChange: (pValuesArray) => this.applyQuickFilterDistinct(pRecordSet, pViewContext, pMount.Field, pMount.ClauseKey, pValuesArray),
+		});
+		if (!tmpView) { return; }
+		tmpView.render();
+		const tmpCurrent = (typeof tmpProvider.getQuickFilterEntityValue === 'function') ? tmpProvider.getQuickFilterEntityValue(pMount.Field) : [];
+		tmpView.setValue(Array.isArray(tmpCurrent) ? tmpCurrent : []);
 	}
 
 	/**
@@ -817,6 +884,23 @@ class ViewRecordSetSUBSETFilters extends libPictView
 		if (tmpProvider && typeof tmpProvider.upsertQuickFilterEntity === 'function')
 		{
 			tmpProvider.upsertQuickFilterEntity(pField, pClauseKey, pValue);
+		}
+	}
+
+	/**
+	 * Stage a field's distinct quick-filter selection (the Values array of its
+	 * DistinctSelectedValueList clause). Doesn't fire the search — commit happens
+	 * on Apply / Search.
+	 *
+	 * @param {string} pRecordSet @param {string} pViewContext @param {string} pField @param {string} pClauseKey @param {Array<any>} pValues
+	 */
+	applyQuickFilterDistinct(pRecordSet, pViewContext, pField, pClauseKey, pValues)
+	{
+		this.bumpRenderEpoch();
+		const tmpProvider = this.pict.providers['RSP-Provider-' + pRecordSet];
+		if (tmpProvider && typeof tmpProvider.upsertQuickFilterEntity === 'function')
+		{
+			tmpProvider.upsertQuickFilterEntity(pField, pClauseKey, pValues);
 		}
 	}
 

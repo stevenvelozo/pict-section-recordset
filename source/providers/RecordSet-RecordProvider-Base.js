@@ -316,6 +316,12 @@ class RecordSetProviderBase extends libPictProvider
 		tmpClause = JSON.parse(JSON.stringify(tmpClause));
 		tmpClause.Hash = `${pFilterKey}-${pClauseKey}-${this.pict.getUUID()}`;
 		tmpClause.Label = tmpClause.Label || tmpClause.DisplayName;
+		// Stamp the owning recordset so per-clause re-renders (which rebuild the render record
+		// from the live clause alone) can still resolve their provider and remove control.
+		if (!tmpClause.RecordSet && this.options.RecordSet)
+		{
+			tmpClause.RecordSet = this.options.RecordSet;
+		}
 		const tmpClauses = this.getFilterClauses();
 		tmpClauses.push(tmpClause);
 	}
@@ -467,7 +473,8 @@ class RecordSetProviderBase extends libPictProvider
 	 */
 	_pickQuickClause(pAvailableClauses)
 	{
-		return pAvailableClauses.find((pClause) => pClause.Type === 'InternalJoinSelectedValue' || pClause.Type === 'InternalJoinSelectedValueList')
+		return pAvailableClauses.find((pClause) => pClause.Type === 'DistinctSelectedValueList')
+			|| pAvailableClauses.find((pClause) => pClause.Type === 'InternalJoinSelectedValue' || pClause.Type === 'InternalJoinSelectedValueList')
 			|| pAvailableClauses.find((pClause) => pClause.Type === 'StringMatch' && pClause.ExactMatch === false)
 			|| pAvailableClauses.find((pClause) => pClause.Type === 'DateRange')
 			|| pAvailableClauses.find((pClause) => pClause.Type === 'NumericRange')
@@ -484,6 +491,7 @@ class RecordSetProviderBase extends libPictProvider
 		{
 			case 'StringMatch': return 'text';
 			case 'DateRange': return 'daterange';
+			case 'DistinctSelectedValueList': return 'distinct';
 			case 'InternalJoinSelectedValue':
 			case 'InternalJoinSelectedValueList': return 'entity';
 			default: return null;
@@ -668,6 +676,10 @@ class RecordSetProviderBase extends libPictProvider
 		tmpClause.Label = tmpClause.Label || tmpClause.DisplayName;
 		tmpClause.QuickFilter = true;
 		tmpClause.QuickFilterKey = pQuickFilterKey;
+		if (!tmpClause.RecordSet && this.options.RecordSet)
+		{
+			tmpClause.RecordSet = this.options.RecordSet;
+		}
 		return tmpClause;
 	}
 

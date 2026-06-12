@@ -535,9 +535,40 @@ module.exports.default_configuration.pict_configuration = (
 				"RecordSetIgnoreFilterFields": [ "Deleted", "DeletingIDUser", "DeleteDate", "UpdateDate" ],
 
 				// Quick Filters — a curated, one-click bar above the full "Add filter" list. (Without this
-				// the bar is clever-derived from the schema.) Showcases all three control types: text
-				// (Title/Genre), date range (CreateDate), and entity picker (CreatingIDUser → User).
+				// the bar is clever-derived from the schema.) Showcases all four control types: text
+				// (Title), distinct-values dropdown (Genre, via RecordSetFieldFilterClauses below),
+				// date range (CreateDate), and entity picker (CreatingIDUser → User).
 				"QuickFilters": [ "Title", "Genre", { "Field": "CreateDate", "Label": "Added" }, { "Field": "CreatingIDUser", "Label": "Added by" } ],
+
+				// Per-column clause overrides — Genre offers a distinct-values dropdown ("any of the
+				// checked genres", options fetched from /1.0/Books/Distinct/Genre) first, with the
+				// fuzzy text match still available from the Add Filter popover. The override replaces
+				// the auto-generated clauses for the column, so list both.
+				"RecordSetFieldFilterClauses":
+				{
+					"Genre":
+					[
+						{
+							"FilterKey": "Genre",
+							"ClauseKey": "Genre_Distinct",
+							"Label": "Genre",
+							"DisplayName": "Any of selected Genres",
+							"Type": "DistinctSelectedValueList",
+							"FilterByColumn": "Genre",
+							"Ordinal": 1
+						},
+						{
+							"FilterKey": "Genre",
+							"ClauseKey": "Genre_Match_Fuzzy",
+							"Label": "Genre Partial Match",
+							"DisplayName": "Partial Match",
+							"Type": "StringMatch",
+							"FilterByColumn": "Genre",
+							"ExactMatch": false,
+							"Ordinal": 2
+						}
+					]
+				},
 
 				// Row interaction: clicking a row opens its default (View) link; actions move into a ⋯ hover menu.
 				"RowClickOpensRecord": true,
@@ -684,8 +715,8 @@ module.exports.default_configuration.pict_configuration = (
 			// single dashboard render so the parallel filter fan-out added in
 			// Pict-Template-FilterInstanceViews is observable in practice. It
 			// also exercises a mix of filter types (ExternalJoinSelectedValueList,
-			// StringMatch, NumericRange, DateRange) so each filter family is
-			// touched at least once in the render path.
+			// DistinctSelectedValueList, StringMatch, NumericRange, DateRange) so
+			// each filter family is touched at least once in the render path.
 			"FilterRecordsetAdvancedSearch":
 			[
 				{
@@ -698,7 +729,7 @@ module.exports.default_configuration.pict_configuration = (
 					"Label": "Title"
 				},
 				{
-					"Type": "StringMatch",
+					"Type": "DistinctSelectedValueList",
 					"FilterByColumn": "Genre",
 					"Label": "Genre"
 				},
