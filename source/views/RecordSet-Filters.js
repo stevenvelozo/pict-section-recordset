@@ -728,6 +728,10 @@ class ViewRecordSetSUBSETFilters extends libPictView
 			// TextField when the entity has no list-entry template.
 			TextTemplate: tmpDescriptor.EntityListEntryTemplate || undefined,
 			Placeholder: `Select ${pMount.Label}…`,
+			// A filter's natural zero state is "Any" — the pinned clear row / inline × empty the
+			// selection, OnChange(null) flows through the upsert, and the clause is removed.
+			AllowClear: true,
+			ClearLabel: 'Any',
 			OnChange: (pValue) => this.applyQuickFilterEntity(pRecordSet, pViewContext, pMount.Field, pMount.ClauseKey, pValue),
 			BaseFilter: tmpScopeBaseFilter,
 		});
