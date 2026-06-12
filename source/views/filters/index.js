@@ -10,6 +10,8 @@ module.exports =
 	StringMatch: require('./RecordSet-Filter-StringMatch.js'),
 	StringRange: require('./RecordSet-Filter-StringRange.js'),
 
+	DistinctSelectedValueList: require('./RecordSet-Filter-DistinctSelectedValueList.js'),
+
 	InternalJoinDateMatch: require('./RecordSet-Filter-InternalJoinDateMatch.js'),
 	InternalJoinDateRange: require('./RecordSet-Filter-InternalJoinDateRange.js'),
 	InternalJoinNumericMatch: require('./RecordSet-Filter-InternalJoinNumericMatch.js'),
