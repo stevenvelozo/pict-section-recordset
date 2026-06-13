@@ -151,3 +151,4 @@ debug/testenv
 
 # Quackage takes care of these for me!
 *.quackage.bak
+.claude/

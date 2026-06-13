@@ -81,12 +81,25 @@ Meadow soft-deletes: lists normally return only `Deleted = 0` rows. Set `RecordS
 
 Deleted rows render at reduced opacity (`prsp-row-deleted`), and their default **View** link routes to `/PSRS/:RecordSet/ViewDeleted/:GUID` — a read route whose lookup explicitly includes soft-deleted records (a plain View would find nothing) and which renders a "This record has been deleted" banner above the record. Pair with the audit tier's *Deleted / Deleted on / Deleted by* columns in the column chooser.
 
+## Associations (joined-entity management)
+
+First-class, opt-in UI for managing many-to-many **joins** (the `XxxYyyJoin` convention — a join row with its own `ID<Join>` plus an `ID<X>` and `ID<Y>`). Three interfaces, all driven by light configuration:
+
+- **Association Editor** — a small embeddable widget added as a **read-view tab**: a searchable picker of the other entity (already-joined rows culled out) + an explicit **Add** button, over a list of the current associations, each removable. Opt Book→Authors and Author→Books in *independently*; `PickerMode` (`single`/`multi`) is per-tab.
+- **Bulk Associate screen** — a single-anchor page (`/PSRS/:RecordSet/Associate/:Association`): pick one anchor record, multi-select many other-side records, create all the joins at once.
+- **Matrix (cross-link) screen** — a dual-**table** page (`/PSRS/AssociateMatrix/:Association`) for linking complex records: each side is a record table with **configurable columns** (`TableColumns`, plus a per-table **Columns** chooser the user toggles — saved in localStorage), checkbox rows, and per-table search. Multi-select on both sides; a live stats header counts the **cross-product** (every left × every right); "Link selected" creates them all, skipping existing pairs.
+- **Bulk Unlink screen** — the removal counterpart (`/PSRS/AssociateUnlink/:Association/:AnchorRecordSet`): pick a specific book *or* store, see all its current links in a selectable table (same columns/chooser/search + select-all), check rows, and "Unlink selected" deletes those joins together.
+
+Define each join **once**, symmetrically, in a top-level `Associations` registry; then opt in per record set via a `RecordSetReadTabs` entry of `"Type": "Association"` (with `"ReadLayout": "Tab"` or `"Split"`) and/or a `RecordSetBulkAssociations` entry. With `Split`, the record stays in a resizable left pane and the association tabs sit top-right, opening to the record alone until you pick a tab. The picker comes from [pict-section-picker](https://github.com/fable-retold/pict-section-picker) and remove-confirmation from [pict-section-modal](https://github.com/fable-retold/pict-section-modal) (both soft dependencies, reached by provider hash). See the bookstore example for the full wiring (`Book`↔`Author` tabs both sides; `Book`↔`BookStore` catalog tabs + the "Assign Books to Store" bulk screen + the "Bulk Link" matrix screen), and `CLAUDE-pict-section-recordset.md` for the config reference and the `RecordSetAssociationManager` API.
+
 ## Related Packages
 
 - [pict](https://github.com/fable-retold/pict) - MVC application framework
 - [pict-view](https://github.com/fable-retold/pict-view) - View base class
 - [pict-provider](https://github.com/fable-retold/pict-provider) - Data provider base class
 - [pict-section-form](https://github.com/fable-retold/pict-section-form) - Form section component
+- [pict-section-picker](https://github.com/fable-retold/pict-section-picker) - Searchable entity picker (the association add control)
+- [pict-section-modal](https://github.com/fable-retold/pict-section-modal) - Modal/confirm dialogs (association remove confirmation)
 
 ## License
 

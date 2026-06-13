@@ -12,6 +12,7 @@
 	"devDependencies": {
 		"pict-router": "^1.0.8",
 		"pict-section-login": "^0.0.1",
+		"pict-section-modal": "^1.1.4",
 		"pict-template-preprocessor": "^0.0.2"
 	},
 	"copyFilesSettings": {

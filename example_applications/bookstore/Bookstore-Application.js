@@ -4,6 +4,8 @@ const libPictRecordSet = require('../../source/Pict-Section-RecordSet.js');
 // built-in table UI.
 const libPictSectionPicker = require('../../../pict-section-picker');
 const libPictPickerForm = require('../../../pict-section-picker/form');
+// pict-section-modal — the host modal the association editors use for remove confirmations + toasts.
+const libPictSectionModal = require('pict-section-modal');
 const libPictRouter = require('pict-router');
 const libPictTemplatePreprocessor = require('pict-template-preprocessor');
 
@@ -179,6 +181,13 @@ class BookstoreApplication extends libPictRecordSet.PictRecordSetApplication
 			this.pict.addProvider('Pict-Section-Picker', libPictSectionPicker.default_configuration, libPictSectionPicker);
 		}
 		libPictPickerForm.registerPickerInputType(this.pict);
+
+		// Register the host modal so association remove buttons get a real confirm dialog (and toasts),
+		// per the pict convention of never using native confirm()/alert().
+		if (!this.pict.views['Pict-Section-Modal'])
+		{
+			this.pict.addView('Pict-Section-Modal', libPictSectionModal.default_configuration, libPictSectionModal);
+		}
 		[ 'InternalJoinSelectedValue', 'InternalJoinSelectedValueList', 'ExternalJoinSelectedValue', 'ExternalJoinSelectedValueList' ].forEach((pType) =>
 		{
 			const tmpView = this.pict.views['PRSP-FilterType-' + pType];
@@ -324,6 +333,64 @@ class BookstoreApplication extends libPictRecordSet.PictRecordSetApplication
 	showBookList() { return this.showRecordSet('Book', 'List'); }
 	showAuthorList() { return this.showRecordSet('Author', 'List'); }
 	showBookStoreList() { return this.showRecordSet('BookStore', 'List'); }
+
+	/**
+	 * Show the bulk association screen for an anchor recordset + association — mounts the recordset
+	 * container, then navigates to the PSRS Associate route.
+	 *
+	 * @param {string} pRecordSet - The anchor recordset (e.g. 'BookStore')
+	 * @param {string} pAssociation - The association hash (e.g. 'BookStoreCatalog')
+	 */
+	showBulkAssociate(pRecordSet, pAssociation)
+	{
+		let tmpContentElements = this.pict.ContentAssignment.getElement('#Bookstore-Content-Container');
+		if (tmpContentElements && tmpContentElements.length > 0)
+		{
+			tmpContentElements[0].innerHTML = '<div id="PRSP_Container"></div>';
+		}
+		this.pict.providers.RecordSetRouter.navigate('/PSRS/' + pRecordSet + '/Associate/' + pAssociation);
+	}
+
+	// No-arg wrapper for the router template (see note above on backtick-delimited multi-args).
+	showBookStoreCatalogBulk() { return this.showBulkAssociate('BookStore', 'BookStoreCatalog'); }
+
+	/**
+	 * Show the dual-column matrix (cross-link) screen for an association.
+	 *
+	 * @param {string} pAssociation - The association hash (e.g. 'BookStoreCatalog')
+	 * @param {string} pLeftRecordSet - Which side goes on the left (e.g. 'Book')
+	 */
+	showMatrixAssociate(pAssociation, pLeftRecordSet)
+	{
+		let tmpContentElements = this.pict.ContentAssignment.getElement('#Bookstore-Content-Container');
+		if (tmpContentElements && tmpContentElements.length > 0)
+		{
+			tmpContentElements[0].innerHTML = '<div id="PRSP_Container"></div>';
+		}
+		this.pict.providers.RecordSetRouter.navigate('/PSRS/AssociateMatrix/' + pAssociation + '/' + pLeftRecordSet);
+	}
+
+	// No-arg wrapper for the router template — Books (left) × Stores (right).
+	showBooksStoresMatrix() { return this.showMatrixAssociate('BookStoreCatalog', 'Book'); }
+
+	/**
+	 * Show the bulk-unlink screen for an association anchored on one side.
+	 *
+	 * @param {string} pAssociation - The association hash (e.g. 'BookStoreCatalog')
+	 * @param {string} pAnchorRecordSet - The anchor side (e.g. 'BookStore' to unlink books from a store)
+	 */
+	showUnlinkAssociate(pAssociation, pAnchorRecordSet)
+	{
+		let tmpContentElements = this.pict.ContentAssignment.getElement('#Bookstore-Content-Container');
+		if (tmpContentElements && tmpContentElements.length > 0)
+		{
+			tmpContentElements[0].innerHTML = '<div id="PRSP_Container"></div>';
+		}
+		this.pict.providers.RecordSetRouter.navigate('/PSRS/AssociateUnlink/' + pAssociation + '/' + pAnchorRecordSet);
+	}
+
+	// No-arg wrapper for the router template — unlink books from a chosen store.
+	showStoreBooksUnlink() { return this.showUnlinkAssociate('BookStoreCatalog', 'BookStore'); }
 
 	/**
 	 * Navigate to a route using pict-router.
@@ -524,6 +591,40 @@ module.exports.default_configuration.pict_configuration = (
 			}
 		},
 
+		// Joined-entity associations, defined ONCE and symmetrically. Each recordset opts in per side
+		// via a RecordSetReadTabs { "Type": "Association" } entry (the embeddable editor tab) and/or a
+		// RecordSetBulkAssociations entry (the bulk "Assign …" screen). Side defaults are light:
+		// Entity<-RecordSet, IDField<-ID<Entity>, DisplayField<-Name, SearchFields<-[DisplayField].
+		"Associations":
+		{
+			// Book <-> Author over the existing BookAuthorJoin. Opted in from BOTH sides (Book→Authors
+			// tab and Author→Books tab) to demonstrate the per-side, independent opt-in.
+			// Each side's "Title" names THAT side's records, so it reads naturally when that side is the
+			// "other side" being managed (Book's tab shows "Authors"; Author's tab shows "Books").
+			"BookAuthor":
+			{
+				"JoinEntity": "BookAuthorJoin",
+				// ChipFields show extra data as disambiguation chips in the picker + the list — e.g. the
+				// ISBN tells apart three books with the same Title. (ISBN is also searchable.)
+				"SideA": { "RecordSet": "Book",   "IDField": "IDBook",   "DisplayField": "Title", "SearchFields": [ "Title", "ISBN" ], "ChipFields": [ "ISBN", { "Field": "PublicationYear", "Label": "Year" } ], "Title": "Books" },
+				"SideB": { "RecordSet": "Author", "IDField": "IDAuthor", "DisplayField": "Name",  "SearchFields": [ "Name" ],  "Title": "Authors" }
+			},
+			// Book <-> BookStore over the clean BookStoreCatalogJoin (which books a store carries).
+			// Drives the BookStore "Catalog" tab, the Book "Stores" tab, and the bulk screen.
+			"BookStoreCatalog":
+			{
+				"JoinEntity": "BookStoreCatalogJoin",
+				// TableColumns drive the Bulk Link matrix's record tables — pick complex records by several
+				// columns (the chips elsewhere are for the quick add controls). Each is a field name or
+				// { Key, DisplayName, Template? }.
+				"SideA": { "RecordSet": "BookStore", "IDField": "IDBookStore", "DisplayField": "Name",  "SearchFields": [ "Name", "City" ], "ChipFields": [ "City", "State" ],
+					"TableColumns": [ "Name", "City", "State", "Country", { "Key": "Postal", "DisplayName": "Postal", "DefaultHidden": true } ], "Title": "Stores" },
+				"SideB": { "RecordSet": "Book",      "IDField": "IDBook",      "DisplayField": "Title", "SearchFields": [ "Title", "ISBN" ], "ChipFields": [ "ISBN", { "Field": "PublicationYear", "Label": "Year" } ],
+					"TableColumns": [ "Title", "ISBN", { "Key": "PublicationYear", "DisplayName": "Year" }, "Genre",
+						{ "Key": "Type", "DisplayName": "Type", "DefaultHidden": true }, { "Key": "Language", "DisplayName": "Language", "DefaultHidden": true } ], "Title": "Books" }
+			}
+		},
+
 		"DefaultRecordSetConfigurations":
 		[
 			{
@@ -625,13 +726,26 @@ module.exports.default_configuration.pict_configuration = (
 				"RecordSetReadDefaultManifestView": "Book-View",
 				"RecordSetReadManifestsView": [ "Book-View" ],
 
+				// Split read view: the record details stay in a resizable LEFT pane while the
+				// association editors (Authors, Stores) are tabs in the RIGHT pane — so the record is
+				// always visible next to the association interface. (Use "Tab" instead to make the
+				// record its own tab.) Each Association tab is a light opt-in referencing an entry in
+				// the top-level Associations registry; the manager resolves "this side" (Book) from the
+				// rendering recordset.
+				"ReadLayout": "Split",
+				"RecordSetReadSplitLeftWidth": "40%",
+				"RecordSetReadTabTitle": "Book",
 				"RecordSetReadTabs":
 				[
 					{
-						"Type": "AttachedRecord",
-						"RecordSet": "Author",
-						"Title": "Authors",
-						"JoiningRecordSet": "BookAuthorJoin"
+						"Type": "Association",
+						"Association": "BookAuthor",
+						"Title": "Authors"
+					},
+					{
+						"Type": "Association",
+						"Association": "BookStoreCatalog",
+						"Title": "Stores"
 					}
 				],
 
@@ -659,6 +773,21 @@ module.exports.default_configuration.pict_configuration = (
 				"RecordSetReadManifestOnly": true,
 				"RecordSetReadManifestsView": [ "Author-View" ],
 
+				// The OTHER side of the same Book<->Author join — opted in independently here, so the
+				// Author read view gets a "Books" tab managing the same BookAuthorJoin from its side.
+				// Split layout: the author record stays in the left pane beside the "Books" association.
+				"ReadLayout": "Split",
+				"RecordSetReadSplitLeftWidth": "40%",
+				"RecordSetReadTabTitle": "Author",
+				"RecordSetReadTabs":
+				[
+					{
+						"Type": "Association",
+						"Association": "BookAuthor",
+						"Title": "Books"
+					}
+				],
+
 				"SearchFields": [ "Name" ]
 			},
 			{
@@ -670,6 +799,32 @@ module.exports.default_configuration.pict_configuration = (
 				"RowClickOpensRecord": true,
 
 				"RecordSetURLPrefix": "/1.0/",
+
+				// Split read view: the store record stays in the left pane beside the "Catalog"
+				// association tab (the books THIS store carries). Plus the bulk-association opt-in that
+				// surfaces the "Assign Books to Store" screen.
+				"ReadLayout": "Split",
+				"RecordSetReadSplitLeftWidth": "40%",
+				"RecordSetReadTabTitle": "Store",
+				"RecordSetReadTabs":
+				[
+					{
+						"Type": "Association",
+						"Association": "BookStoreCatalog",
+						"Title": "Catalog",
+						// Multi-select add: tick several books as chips, then one "Add selected" links them
+						// all. (The Book/Author tabs use the default single-pick + Add.) PickerMode is the
+						// light config knob that decides the add control.
+						"PickerMode": "multi"
+					}
+				],
+				"RecordSetBulkAssociations":
+				[
+					{
+						"Association": "BookStoreCatalog",
+						"Title": "Assign Books to Store"
+					}
+				],
 
 				"RecordSetListColumns": [
 					{

@@ -11,3 +11,10 @@ module.exports.PictRecordSetApplication = require('./application/Pict-Applicatio
 module.exports.RecordSetProviderBase = require('./providers/RecordSet-RecordProvider-Base.js');
 module.exports.RecordSetProviderMeadowEndpoints = require('./providers/RecordSet-RecordProvider-MeadowEndpoints.js');
 module.exports.ColumnDataProvider = require('./providers/Column-Data-Provider.js');
+module.exports.AssociationManager = require('./providers/RecordSet-AssociationManager.js');
+
+// Joined-entity association views (embeddable read-tab editor + bulk associate screen)
+module.exports.AssociationEditorView = require('./views/associate/RecordSet-AssociationEditor.js');
+module.exports.AssociateBulkView = require('./views/associate/RecordSet-AssociateBulk.js');
+module.exports.AssociateMatrixView = require('./views/associate/RecordSet-AssociateMatrix.js');
+module.exports.AssociateUnlinkView = require('./views/associate/RecordSet-AssociateUnlink.js');
