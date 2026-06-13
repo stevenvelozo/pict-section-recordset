@@ -1,4 +1,5 @@
 const libPictRecordSetRecordView = require('../RecordSet-RecordBaseView.js');
+const libViewAssociationEditor = require('../associate/RecordSet-AssociationEditor.js');
 
 // Identity + audit field names stamped on (virtually) every Meadow entity. These are
 // surfaced through the record audit header (the first-class activity line + the Details
@@ -136,75 +137,34 @@ const _DEFAULT_CONFIGURATION__Read = (
 					Hash: 'PRSP-Read-Split-Template',
 					Template: /*html*/`
 						<!-- DefaultPackage pict view template: [PRSP-Read-Split-Template] -->
-						<h1>{~D:Record.RecordSet~} {~D:Record.GUIDAddress~} [{~D:Record.RecordConfiguration.GUIDRecord~}]</h1>
-						<!--
-						{~DJ:Record~}
-						-->
 						<style>
-							.psrs-split-view
-							{
-								display: flex;
-								height: 100%;
-							}
-							.psrs-left-panel
-							{
-								overflow: scroll;
-							}
-							.psrs-right-panel
-							{
-								overflow: scroll;
-							}
-							#psrs-resize
-							{
-								width: 1px; 
-								padding-left: 10px;
-								padding-right: 10px;
-								cursor: col-resize;
-							}
-							#psrs-resize > div
-							{
-								width: 1px;
-								height: 100%;
-								background-color: rgba(0,0,0,0.5);
-							}
-							#PRSP-Read-Tab-Nav
-							{
-								display: flex;
-								border-bottom: 1px solid rgba(0,0,0,0.5);
-								margin-bottom: 20px;
-								width: 100%;
-							}
-							.psrs-tab.is-active
-							{
-								border: 1px solid rgba(0,0,0,0.5);
-							}
-							.psrs-tab
-							{
-								border-right: 1px solid rgba(0,0,0,0.5);
-								border-left: 1px solid rgba(0,0,0,0.5);
-								padding: 10px;
-							}
-							.psrs-tab-body
-							{
-								display: none;
-							}
-							.psrs-tab-body.is-active
-							{
-								display: inherit;
-							}
+							.psrs-split-tabnav { display: flex; justify-content: flex-end; gap: 0.4rem; margin: 0.4rem 0 0.2rem; }
+							#PRSP-Read-Tab-Nav { display: inline-flex; gap: 0.35rem; flex-wrap: wrap; }
+							.psrs-tab { padding: 0.4rem 0.85rem; border: 1px solid var(--theme-color-border-default, #d7dce3); border-radius: 8px; cursor: pointer; font-size: 0.88rem; color: var(--theme-color-text-secondary, #45505f); background: var(--theme-color-background-panel, #fff); user-select: none; }
+							.psrs-tab:hover { background: var(--theme-color-background-tertiary, #eceef2); color: var(--theme-color-text-primary, #1f2733); }
+							.psrs-tab.is-active { border-color: var(--theme-color-brand-primary, #156dd1); background: var(--theme-color-background-selected, #e3edfb); color: var(--theme-color-brand-primary, #156dd1); font-weight: 600; }
+							.psrs-split-view { display: flex; height: 100%; }
+							.psrs-left-panel { overflow: auto; }
+							.psrs-right-panel { overflow: auto; flex: 1 1 auto; }
+							#psrs-resize { flex: 0 0 auto; padding-left: 10px; padding-right: 10px; cursor: col-resize; }
+							#psrs-resize > div { width: 1px; height: 100%; background-color: var(--theme-color-border-default, rgba(0,0,0,0.2)); }
+							.psrs-tab-body { display: none; }
+							.psrs-tab-body.is-active { display: block; }
+							/* Collapsed (default): no association is open, so the record takes the full width and the
+							   association pane + resizer are hidden until a tab is chosen. */
+							.psrs-split-view.psrs-collapsed .psrs-right-panel,
+							.psrs-split-view.psrs-collapsed #psrs-resize { display: none; }
+							.psrs-split-view.psrs-collapsed .psrs-left-panel { min-width: 100% !important; width: 100%; }
 						</style>
-						<div class="psrs-split-view">
-							<div class="psrs-left-panel" style="min-width: 50%;">
+						<h1>{~D:Record.RecordSet~} {~D:Record.GUIDAddress~} [{~D:Record.RecordConfiguration.GUIDRecord~}]</h1>
+						<div class="psrs-split-tabnav">{~T:PRSP-Read-RecordTabNav-Template~}</div>
+						<div class="psrs-split-view psrs-collapsed">
+							<div class="psrs-left-panel" style="min-width: {~D:Record.SplitLeftWidth~};">
 								{~T:PRSP-Read-RecordRead-Template~}
 							</div>
-							<div id="psrs-resize">
-								<div></div>
-							</div>
-							<div class="psrs-right-panel" style="width: 100%;">
-								<div id="PRSP-Read-Tabs-Container">
-									{~T:PRSP-Read-RecordTabNav-Template~}
-									{~T:PRSP-Read-RecordTab-Template~}
-								</div>
+							<div id="psrs-resize"><div></div></div>
+							<div class="psrs-right-panel">
+								{~T:PRSP-Read-RecordTab-Template~}
 							</div>
 						</div>
 						<!-- DefaultPackage end view template:  [PRSP-Read-Split-Template] -->
@@ -787,6 +747,10 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 			"RenderDestination": this.options.DefaultDestinationAddress,
 
 			"Record": false,
+
+			// Split layout: the starting width of the record (left) pane; the rest goes to the tabs
+			// (right) pane. Any CSS width ('40%', '360px', …); default 50%. The divider stays draggable.
+			"SplitLeftWidth": pRecordConfiguration.RecordSetReadSplitLeftWidth || '50%',
 		};
 
 		this.GUID = pRecordGUID;
@@ -912,24 +876,38 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 					document.getElementById('PRSP-Read-SaveButton').classList.add('record-button-bar-hidden');
 					document.getElementById('PRSP-Read-CancelButton').classList.add('record-button-bar-hidden');
 				}
-				this.setTab(this.activeTab || this.tabs?.[0]?.Hash);
+				// Split opens to the record alone via the Full Record tab; other tabbed layouts default to the first tab.
+				this.setTab(this.activeTab || (this.layoutType === 'Split' ? 'FullRecord' : this.tabs?.[0]?.Hash));
 				return true;
 			}.bind(this));
 	}
 
 	async setTab(t)
 	{
-		if (this.activeTab !== t)
+		// Split layout opens to the record alone via the "Full Record" tab. Choosing an association tab
+		// expands its editor beside the record; choosing "Full Record" (or re-choosing the active tab)
+		// collapses back to the record-only view. Other layouts always activate the target.
+		const tmpSplit = (this.layoutType === 'Split');
+		const tmpNewActive = (tmpSplit && (!t || t === 'FullRecord' || t === this.activeTab)) ? 'FullRecord' : t;
+		if (this.activeTab !== tmpNewActive)
 		{
 			await this.onBeforeTabChange();
 		}
-		this.activeTab = t;
+		this.activeTab = tmpNewActive;
+		if (tmpSplit)
+		{
+			const tmpSplitView = document.querySelector('.psrs-split-view');
+			if (tmpSplitView)
+			{
+				tmpSplitView.classList.toggle('psrs-collapsed', (tmpNewActive === 'FullRecord'));
+			}
+		}
 		const tabSet = document.querySelectorAll('.psrs-tab');
 		const tabBodySet = document.querySelectorAll('.psrs-tab-body');
 		for (const tb of tabSet)
 		{
 			tb.classList.remove('is-active');
-			if (tb.id == `PSRS-TabNav-${ t }`)
+			if (tmpNewActive && tb.id == `PSRS-TabNav-${ tmpNewActive }`)
 			{
 				tb.classList.add('is-active');
 			}
@@ -937,7 +915,7 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 		for (const tb of tabBodySet)
 		{
 			tb.classList.remove('is-active');
-			if (tb.id == `PSRS-Tab-${ t }`)
+			if (tmpNewActive && tb.id == `PSRS-Tab-${ tmpNewActive }`)
 			{
 				tb.classList.add('is-active');
 			}
@@ -1105,6 +1083,22 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 				`,
 				render: () => {}
 			}
+		] : config.ReadLayout == 'Split' ?
+		[
+			// Split layout: a leading "Full Record" tab that collapses the association pane back to the
+			// record-only view (the record itself lives in the left pane, so this body stays empty).
+			{
+				Type: 'FullRecord',
+				Hash: 'FullRecord',
+				Title: config.RecordSetReadFullRecordTabTitle || 'Full Record',
+				Template: /*html*/`
+					<div id="PSRS-Tab-FullRecord" class="psrs-tab-body"></div>
+				`,
+				TabTemplate: /*html*/`
+					<div class="psrs-tab" id="PSRS-TabNav-FullRecord" onclick="_Pict.views['RSP-RecordSet-Read'].setTab('FullRecord')">${ config.RecordSetReadFullRecordTabTitle || 'Full Record' }</div>
+				`,
+				render: () => {}
+			}
 		] : [];
 
 		for (const t of config.RecordSetReadTabs)
@@ -1264,6 +1258,56 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 				t.render = () =>
 				{
 					this.pict.views[`${ t.View }`].renderAsync();
+				};
+				validTabs.push(t);
+			}
+			else if (t.Type == 'Association')
+			{
+				// An embeddable join-management widget for one association, anchored on THIS record.
+				// Opt-in is light: a RecordSetReadTabs entry naming an Association registered in
+				// settings.Associations. The manager resolves which side is "this side" from the
+				// rendering recordset, so opting in Book->Authors and Author->Books are independent.
+				const tmpAssociationManager = this.pict.providers.RecordSetAssociationManager;
+				if (!tmpAssociationManager || !t.Association)
+				{
+					this.pict.log.info(`Skipping association tab because no association was included (or the manager is missing).`);
+					continue;
+				}
+				const tmpSides = tmpAssociationManager.resolveSides(t.Association, config.RecordSet);
+				if (!tmpSides)
+				{
+					this.pict.log.info(`Skipping association tab because association ${ t.Association } could not be resolved for ${ config.RecordSet }.`);
+					continue;
+				}
+				const tmpEditorHash = `RSP-AssocEditor-${ config.RecordSet }-${ t.Association }`;
+				if (!this.pict.views[tmpEditorHash])
+				{
+					this.pict.addView(tmpEditorHash, Object.assign({}, libViewAssociationEditor.default_configuration,
+						{
+							ViewIdentifier: tmpEditorHash,
+							AssociationHash: t.Association,
+							ThisRecordSet: config.RecordSet,
+							DefaultDestinationAddress: `#PSRS-Tab-${ t.Hash }`,
+							PickerMode: t.PickerMode || 'single',
+						}), libViewAssociationEditor);
+				}
+				const tmpEditorView = this.pict.views[tmpEditorHash];
+				tmpEditorView.options.AssociationHash = t.Association;
+				tmpEditorView.options.ThisRecordSet = config.RecordSet;
+				tmpEditorView.options.ThisID = record[tmpSides.thisSide.IDField];
+				tmpEditorView.options.DefaultDestinationAddress = `#PSRS-Tab-${ t.Hash }`;
+				tmpEditorView.options.PickerMode = t.PickerMode || 'single';
+				t.Template = /*html*/`
+					<div id="PSRS-Tab-${ t.Hash }" class="psrs-tab-body"></div>
+				`;
+				t.TabTemplate = /*html*/`
+					<div class="psrs-tab" id="PSRS-TabNav-${ t.Hash }" onclick="_Pict.views['RSP-RecordSet-Read'].setTab('${ t.Hash }')">${ t.Title }</div>
+				`;
+				t.renderAsync = async () =>
+				{
+					tmpEditorView.options.ThisID = record[tmpSides.thisSide.IDField];
+					tmpEditorView.options.DefaultDestinationAddress = `#PSRS-Tab-${ t.Hash }`;
+					await tmpEditorView.renderEditor();
 				};
 				validTabs.push(t);
 			}

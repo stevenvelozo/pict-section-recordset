@@ -5,12 +5,16 @@ const ViewRecordSetList = require('../views/list/RecordSet-List.js');
 const ViewRecordSetRead = require('../views/read/RecordSet-Read.js');
 const ViewRecordSetCreate = require('../views/create/RecordSet-Create.js');
 const ViewRecordSetDashboard = require('../views/dashboard/RecordSet-Dashboard.js');
+const ViewRecordSetAssociate = require('../views/associate/RecordSet-AssociateBulk.js');
+const ViewRecordSetAssociateMatrix = require('../views/associate/RecordSet-AssociateMatrix.js');
+const ViewRecordSetAssociateUnlink = require('../views/associate/RecordSet-AssociateUnlink.js');
 
 //_Pict.addProvider('BooksProvider', { Entity: 'Book', URLPrefix: 'http://www.datadebase.com:8086/1.0/' }, require('../source/providers/RecordSet-RecordProvider-MeadowEndpoints.js'));
 const ProviderBase = require('../providers/RecordSet-RecordProvider-Base.js');
 const ProviderMeadowEndpoints = require('../providers/RecordSet-RecordProvider-MeadowEndpoints.js');
 
 const ProviderLinkManager = require('../providers/RecordSet-Link-Manager.js');
+const ProviderAssociationManager = require('../providers/RecordSet-AssociationManager.js');
 const libProviderColumnData = require('../providers/Column-Data-Provider.js');
 
 const ProviderRouter = require('../providers/RecordSet-Router.js');
@@ -452,6 +456,10 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 
 		this.fable.addProvider('RecordSetLinkManager', {}, ProviderLinkManager);
 
+		// Joined-entity association manager — the registry + data layer behind the Association read-tab
+		// and the Bulk Associate screen. Associations are parsed from settings.Associations below.
+		this.fable.addProvider('RecordSetAssociationManager', {}, ProviderAssociationManager);
+
 		// Column visibility persistence — only register the built-in localStorage provider when the
 		// host hasn't supplied its own (the documented seam for server-side per-user persistence).
 		if (!('ColumnDataProvider' in this.fable.providers))
@@ -468,12 +476,18 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		this.childViews.read = this.fable.addView('RSP-RecordSet-Read', this.options, ViewRecordSetRead);
 		this.childViews.create = this.fable.addView('RSP-RecordSet-Create', this.options, ViewRecordSetCreate);
 		this.childViews.dashboard = this.fable.addView('RSP-RecordSet-Dashboard', this.options, ViewRecordSetDashboard);
+		this.childViews.associate = this.fable.addView('RSP-RecordSet-Associate', this.options, ViewRecordSetAssociate);
+		this.childViews.associateMatrix = this.fable.addView('RSP-RecordSet-AssociateMatrix', this.options, ViewRecordSetAssociateMatrix);
+		this.childViews.associateUnlink = this.fable.addView('RSP-RecordSet-AssociateUnlink', this.options, ViewRecordSetAssociateUnlink);
 
 		// Initialize the subviews
 		this.childViews.list.initialize();
 		this.childViews.read.initialize();
 		this.childViews.create.initialize();
 		this.childViews.dashboard.initialize();
+		this.childViews.associate.initialize();
+		this.childViews.associateMatrix.initialize();
+		this.childViews.associateUnlink.initialize();
 
 		// Now initialize the router
 
@@ -498,6 +512,14 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 			for (const tmpFilterCriterionKey of Object.keys(this.fable.settings.FilterCriteria))
 			{
 				this.pict.providers.FilterManager.addFilterCriteria(tmpFilterCriterionKey, this.fable.settings.FilterCriteria[tmpFilterCriterionKey]);
+			}
+		}
+
+		if (this.fable.settings.hasOwnProperty('Associations') && typeof this.fable.settings.Associations === 'object')
+		{
+			for (const tmpAssociationKey of Object.keys(this.fable.settings.Associations))
+			{
+				this.pict.providers.RecordSetAssociationManager.addAssociation(tmpAssociationKey, this.fable.settings.Associations[tmpAssociationKey]);
 			}
 		}
 

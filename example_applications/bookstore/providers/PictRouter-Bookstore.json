@@ -21,6 +21,18 @@
 			"template": "{~LV:Pict.PictApplication.showBookStoreList()~}"
 		},
 		{
+			"path": "/AssignBooks",
+			"template": "{~LV:Pict.PictApplication.showBookStoreCatalogBulk()~}"
+		},
+		{
+			"path": "/BulkLink",
+			"template": "{~LV:Pict.PictApplication.showBooksStoresMatrix()~}"
+		},
+		{
+			"path": "/BulkUnlink",
+			"template": "{~LV:Pict.PictApplication.showStoreBooksUnlink()~}"
+		},
+		{
 			"path": "/About",
 			"template": "{~LV:Pict.PictApplication.showView(`Bookstore-About-View`)~}"
 		},

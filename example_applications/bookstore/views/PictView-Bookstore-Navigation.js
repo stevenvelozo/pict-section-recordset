@@ -146,6 +146,9 @@ const _ViewConfiguration =
 	<li class="pure-menu-item menu-item-divided"><a href="#" onclick="{~P~}.PictApplication.navigateTo('/Books')" class="pure-menu-link">Books</a></li>
 	<li class="pure-menu-item"><a href="#" onclick="{~P~}.PictApplication.navigateTo('/Authors')" class="pure-menu-link">Authors</a></li>
 	<li class="pure-menu-item"><a href="#" onclick="{~P~}.PictApplication.navigateTo('/BookStores')" class="pure-menu-link">Stores</a></li>
+	<li class="pure-menu-item"><a href="#" onclick="{~P~}.PictApplication.navigateTo('/AssignBooks')" class="pure-menu-link">Assign Books</a></li>
+	<li class="pure-menu-item"><a href="#" onclick="{~P~}.PictApplication.navigateTo('/BulkLink')" class="pure-menu-link">Bulk Link</a></li>
+	<li class="pure-menu-item"><a href="#" onclick="{~P~}.PictApplication.navigateTo('/BulkUnlink')" class="pure-menu-link">Bulk Unlink</a></li>
 	<li class="pure-menu-item menu-item-divided"><a href="#" onclick="{~P~}.PictApplication.navigateTo('/About')" class="pure-menu-link">About</a></li>
 	<li class="pure-menu-item"><a href="#" onclick="{~P~}.PictApplication.navigateTo('/Legal')" class="pure-menu-link">Legal</a></li>
 </ul>
