@@ -38,6 +38,31 @@ class PictRecordSetAssociationManager extends libPictProvider
 
 		/** @type {Record<string, any>} - Lazily-created EntityProviders scoped to a non-default URL prefix. */
 		this._scopedEntityProviders = {};
+
+		/** @type {string} - EntityProvider cache scope for join-list reads; cleared on every join write so
+		 * the editor and pickers never show a stale (cached) association list after an add or remove. */
+		this._cacheScope = 'RecordSetAssociation';
+	}
+
+	/**
+	 * Invalidate the cached join-list reads after a write so the next list reflects it immediately
+	 * (pict's EntityProvider caches getEntitySet by filter for ~10s; clearScope no-ops on the default
+	 * empty scope, which is why join reads run under a dedicated scope).
+	 * @param {Record<string, any>} pEntityProvider - the (scoped) EntityProvider used for the join.
+	 */
+	_clearAssociationCache(pEntityProvider)
+	{
+		try
+		{
+			if (pEntityProvider && (typeof pEntityProvider.clearScope === 'function'))
+			{
+				pEntityProvider.clearScope(this._cacheScope);
+			}
+		}
+		catch (pError)
+		{
+			this.pict.log.warn(`AssociationManager: association cache clear failed: ${pError.message || pError}`);
+		}
 	}
 
 	/**
@@ -294,7 +319,7 @@ class PictRecordSetAssociationManager extends libPictProvider
 					return resolve([]);
 				}
 				return resolve(Array.isArray(pRecords) ? pRecords : []);
-			});
+			}, '', { Scope: this._cacheScope, NoCount: true });
 		});
 	}
 
@@ -326,7 +351,7 @@ class PictRecordSetAssociationManager extends libPictProvider
 					return resolve([]);
 				}
 				return resolve(Array.isArray(pRecords) ? pRecords : []);
-			});
+			}, '', { Scope: this._cacheScope, NoCount: true });
 		});
 	}
 
@@ -447,6 +472,7 @@ class PictRecordSetAssociationManager extends libPictProvider
 				{
 					return reject(pError);
 				}
+				this._clearAssociationCache(tmpEntityProvider);
 				return resolve(pBody);
 			});
 		});
@@ -476,6 +502,7 @@ class PictRecordSetAssociationManager extends libPictProvider
 				{
 					return reject(pError);
 				}
+				this._clearAssociationCache(tmpEntityProvider);
 				return resolve(pBody);
 			});
 		});

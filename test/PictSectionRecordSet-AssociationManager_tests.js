@@ -37,9 +37,9 @@ suite
 				calls: [],
 				JoinRows: [],
 				OtherRows: [],
-				getEntitySet: (pEntity, pFilter, fCallback) =>
+				getEntitySet: (pEntity, pFilter, fCallback, pPostfix, pOptions) =>
 				{
-					_Stub.calls.push([ 'getEntitySet', pEntity, pFilter ]);
+					_Stub.calls.push([ 'getEntitySet', pEntity, pFilter, pOptions ]);
 					if (pEntity === 'BookAuthorJoin' || pEntity === 'BookStoreCatalogJoin') { return fCallback(null, _Stub.JoinRows); }
 					return fCallback(null, _Stub.OtherRows);
 				},
@@ -52,6 +52,10 @@ suite
 				{
 					_Stub.calls.push([ 'deleteEntity', pEntity, pID ]);
 					return fCallback(null, {});
+				},
+				clearScope: (pScope) =>
+				{
+					_Stub.calls.push([ 'clearScope', pScope ]);
 				},
 			};
 			// Every prefix resolves to the stub for these tests.
@@ -198,6 +202,34 @@ suite
 					const tmpCall = _Stub.calls.find((pCall) => pCall[0] === 'deleteEntity');
 					Expect(tmpCall[1]).to.equal('BookAuthorJoin');
 					Expect(tmpCall[2]).to.equal(42, 'the ID<JoinEntity> drives the delete.');
+				});
+
+				test('listJoinRecords reads the join entity under the association cache scope with NoCount', async () =>
+				{
+					_Stub.JoinRows = [ { IDBookAuthorJoin: 11, IDBook: 1, IDAuthor: 7 } ];
+					await _Manager.listJoinRecords('BookAuthor', 'Book', 1);
+					const tmpCall = _Stub.calls.find((pCall) => pCall[0] === 'getEntitySet' && pCall[1] === 'BookAuthorJoin');
+					Expect(tmpCall[3]).to.be.an('object', 'join reads pass an options object.');
+					Expect(tmpCall[3].Scope).to.equal('RecordSetAssociation', 'join reads run under a dedicated cache scope so a write can clear them.');
+					Expect(tmpCall[3].NoCount).to.equal(true, 'NoCount avoids the separately-cached record count returning a stale zero after a write.');
+				});
+
+				test('createJoin clears the association cache scope after the write', async () =>
+				{
+					await _Manager.createJoin('BookAuthor', 'Book', 1, 7);
+					const tmpCreateIndex = _Stub.calls.findIndex((pCall) => pCall[0] === 'createEntity');
+					const tmpClearIndex = _Stub.calls.findIndex((pCall) => pCall[0] === 'clearScope' && pCall[1] === 'RecordSetAssociation');
+					Expect(tmpClearIndex).to.be.greaterThan(-1, 'the association cache scope is cleared after a create.');
+					Expect(tmpClearIndex).to.be.greaterThan(tmpCreateIndex, 'the cache is cleared AFTER the join is written, not before.');
+				});
+
+				test('removeJoin clears the association cache scope after the write', async () =>
+				{
+					await _Manager.removeJoin('BookAuthor', { IDBookAuthorJoin: 42, IDBook: 1, IDAuthor: 7 });
+					const tmpDeleteIndex = _Stub.calls.findIndex((pCall) => pCall[0] === 'deleteEntity');
+					const tmpClearIndex = _Stub.calls.findIndex((pCall) => pCall[0] === 'clearScope' && pCall[1] === 'RecordSetAssociation');
+					Expect(tmpClearIndex).to.be.greaterThan(-1, 'the association cache scope is cleared after a remove.');
+					Expect(tmpClearIndex).to.be.greaterThan(tmpDeleteIndex, 'the cache is cleared AFTER the join is deleted.');
 				});
 
 				test('listAssociatedRecords resolves and decorates each join row', async () =>
