@@ -53,6 +53,11 @@ suite
 					_Stub.calls.push([ 'deleteEntity', pEntity, pID ]);
 					return fCallback(null, {});
 				},
+				updateEntity: (pEntity, pRecord, fCallback) =>
+				{
+					_Stub.calls.push([ 'updateEntity', pEntity, pRecord ]);
+					return fCallback(null, pRecord);
+				},
 				clearScope: (pScope) =>
 				{
 					_Stub.calls.push([ 'clearScope', pScope ]);
@@ -266,6 +271,117 @@ suite
 					const tmpCall = _Stub.calls.find((pCall) => pCall[0] === 'getEntitySet' && pCall[1] === 'BookAuthorJoin');
 					Expect(tmpCall[2]).to.equal('FBL~IDBook~INN~1,2,3', 'the join entity is filtered by the this-side ids.');
 					Expect(await _Manager.listJoinRecordsForIDs('BookAuthor', 'Book', [])).to.deep.equal([], 'empty id list short-circuits to [].');
+				});
+			});
+
+		suite
+		(
+			'Name-keyed sides, rich joins, and defaults synthesis',
+			() =>
+			{
+				// Project ↔ ObservationManifest: the project side is keyed by IDProject, but the manifest
+				// side is keyed by its NAME on the join (ObservationManifestName), and the join carries
+				// per-association config (Journal/Ordinal).
+				const registerProjectManifest = (pOverrides) =>
+				{
+					_Manager.addAssociation('ProjectObservationManifest', Object.assign(
+						{
+							JoinEntity: 'ProjectObservationManifestJoin',
+							JoinEditableFields: [ { Field: 'Journal', Type: 'checkbox' }, { Field: 'Ordinal', Type: 'number' } ],
+							SideA: { RecordSet: 'Project', IDField: 'IDProject', DisplayField: 'Name' },
+							SideB: { RecordSet: 'ObservationManifest', IDField: 'Name', JoinField: 'ObservationManifestName', DisplayField: 'DisplayName' },
+						}, pOverrides || {}));
+				};
+
+				test('JoinField defaults to IDField, and a side can override it', () =>
+				{
+					registerProjectManifest();
+					const tmpAssoc = _Manager.getAssociation('ProjectObservationManifest');
+					Expect(tmpAssoc.SideA.JoinField).to.equal('IDProject', 'JoinField defaults to IDField.');
+					Expect(tmpAssoc.SideB.IDField).to.equal('Name', 'the manifest side is keyed by Name.');
+					Expect(tmpAssoc.SideB.JoinField).to.equal('ObservationManifestName', 'its join column is ObservationManifestName.');
+				});
+
+				test('listJoinRecords filters the join by the this-side JoinField (url-encoded for string keys)', async () =>
+				{
+					registerProjectManifest();
+					_Stub.getEntitySet = (pEntity, pFilter, fCallback) => { _Stub.calls.push([ 'getEntitySet', pEntity, pFilter ]); return fCallback(null, []); };
+					_Stub.calls = [];
+					await _Manager.listJoinRecords('ProjectObservationManifest', 'Project', 42);
+					Expect(_Stub.calls.find((pCall) => pCall[1] === 'ProjectObservationManifestJoin')[2]).to.equal('FBV~IDProject~EQ~42');
+					_Stub.calls = [];
+					await _Manager.listJoinRecords('ProjectObservationManifest', 'ObservationManifest', 'Legacy Personnel');
+					Expect(_Stub.calls.find((pCall) => pCall[1] === 'ProjectObservationManifestJoin')[2]).to.equal(`FBV~ObservationManifestName~EQ~${encodeURIComponent('Legacy Personnel')}`);
+				});
+
+				test('createJoin writes the JoinField columns + optional per-join values', async () =>
+				{
+					registerProjectManifest();
+					_Stub.calls = [];
+					await _Manager.createJoin('ProjectObservationManifest', 'Project', 42, 'Legacy Weather', { Journal: 1, Ordinal: 3 });
+					const tmpRecord = _Stub.calls.find((pCall) => pCall[0] === 'createEntity')[2];
+					Expect(tmpRecord.IDProject).to.equal(42, 'this side keyed by IDProject.');
+					Expect(tmpRecord.ObservationManifestName).to.equal('Legacy Weather', 'other side keyed by the name column.');
+					Expect(tmpRecord.Journal).to.equal(1, 'per-join value stamped.');
+					Expect(tmpRecord.Ordinal).to.equal(3);
+				});
+
+				test('updateJoin merges values, PUTs the join, and clears the cache', async () =>
+				{
+					registerProjectManifest();
+					_Stub.calls = [];
+					const tmpJoin = { IDProjectObservationManifestJoin: 7, IDProject: 42, ObservationManifestName: 'Legacy Weather', Journal: 0, Spreadsheet: 0 };
+					await _Manager.updateJoin('ProjectObservationManifest', tmpJoin, { Journal: 1, Spreadsheet: 1 });
+					const tmpUpdate = _Stub.calls.find((pCall) => pCall[0] === 'updateEntity');
+					Expect(tmpUpdate[1]).to.equal('ProjectObservationManifestJoin');
+					Expect(tmpUpdate[2].IDProjectObservationManifestJoin).to.equal(7, 'the join id is preserved for the PUT.');
+					Expect(tmpUpdate[2].Journal).to.equal(1);
+					Expect(tmpUpdate[2].Spreadsheet).to.equal(1);
+					Expect(_Stub.calls.some((pCall) => pCall[0] === 'clearScope')).to.equal(true, 'cache cleared after the write.');
+				});
+
+				test('getJoinEditableFields + hasDefaultSynthesizer reflect the config', () =>
+				{
+					registerProjectManifest({ SynthesizeDefaults: async () => [] });
+					Expect(_Manager.getJoinEditableFields('ProjectObservationManifest').length).to.equal(2);
+					Expect(_Manager.hasDefaultSynthesizer('ProjectObservationManifest')).to.equal(true);
+					registerProjectManifest();
+					Expect(_Manager.hasDefaultSynthesizer('ProjectObservationManifest')).to.equal(false, 're-registering without a hook clears it.');
+				});
+
+				test('synthesizeDefaults applies the host hook, dedup vs existing, with per-join config', async () =>
+				{
+					_Stub.getEntitySet = (pEntity, pFilter, fCallback) =>
+						fCallback(null, (pEntity === 'ProjectObservationManifestJoin') ? [ { IDProjectObservationManifestJoin: 1, IDProject: 42, ObservationManifestName: 'Legacy Weather' } ] : []);
+					registerProjectManifest(
+						{
+							SynthesizeDefaults: async (pContext) =>
+							{
+								Expect(pContext.thisID).to.equal(42);
+								Expect(pContext.otherSide.JoinField).to.equal('ObservationManifestName');
+								Expect(pContext.existingJoins.length).to.equal(1, 'the hook sees the current joins.');
+								return [
+									{ value: 'Legacy Weather', joinValues: { Journal: 1 } },
+									{ value: 'Legacy Personnel', joinValues: { Spreadsheet: 1, Ordinal: 0 } },
+									{ value: 'Legacy Temperature', joinValues: { Journal: 1, Ordinal: 1 } },
+								];
+							},
+						});
+					_Stub.calls = [];
+					const tmpResult = await _Manager.synthesizeDefaults('ProjectObservationManifest', 'Project', 42);
+					Expect(tmpResult.created).to.equal(2, 'two new defaults created.');
+					Expect(tmpResult.skipped).to.equal(1, 'the already-linked one is skipped.');
+					const tmpCreates = _Stub.calls.filter((pCall) => pCall[0] === 'createEntity');
+					Expect(tmpCreates.length).to.equal(2);
+					Expect(tmpCreates[0][2].ObservationManifestName).to.equal('Legacy Personnel');
+					Expect(tmpCreates[0][2].Spreadsheet).to.equal(1, 'per-join config from the hook is stamped.');
+					Expect(tmpCreates[1][2].ObservationManifestName).to.equal('Legacy Temperature');
+				});
+
+				test('synthesizeDefaults is a no-op with no hook', async () =>
+				{
+					registerProjectManifest();
+					Expect(await _Manager.synthesizeDefaults('ProjectObservationManifest', 'Project', 42)).to.deep.equal({ created: 0, skipped: 0 });
 				});
 			});
 	}
