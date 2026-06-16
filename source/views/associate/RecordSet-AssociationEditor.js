@@ -65,6 +65,16 @@ const _DEFAULT_CONFIGURATION_AssociationEditor = (
 		.prsp-assoc-remove:hover { color: var(--theme-color-status-error, #b62828); background: color-mix(in srgb, var(--theme-color-status-error, #b62828) 10%, transparent); }
 		.prsp-assoc-empty { padding: 0.7rem 0.2rem; color: var(--theme-color-text-muted, #6b7686); font-size: 0.88rem; font-style: italic; }
 		.prsp-assoc-note { color: var(--theme-color-status-error, #b62828); font-size: 0.86rem; }
+		.prsp-assoc-head-right { display: flex; align-items: center; gap: 0.6rem; }
+		.prsp-assoc-synth-btn { display: inline-flex; align-items: center; gap: 0.3rem; cursor: pointer; font: inherit; font-size: 0.76rem; font-weight: 600;
+			padding: 0.2rem 0.55rem; border-radius: 6px; border: 1px solid var(--theme-color-border-default, #d7dce3);
+			background: var(--theme-color-background-tertiary, #eceef2); color: var(--theme-color-text-secondary, #45596b); }
+		.prsp-assoc-synth-btn:hover { background: var(--theme-color-background-secondary, #e2e6ec); }
+		.prsp-assoc-row-cfg { flex: 0 0 auto; display: flex; align-items: center; gap: 0.65rem; }
+		.prsp-assoc-cfg { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.78rem; color: var(--theme-color-text-secondary, #45596b); white-space: nowrap; cursor: default; }
+		.prsp-assoc-cfg input[type="checkbox"] { cursor: pointer; }
+		.prsp-assoc-cfg-num { width: 3.4rem; font: inherit; font-size: 0.8rem; padding: 0.1rem 0.3rem; border: 1px solid var(--theme-color-border-light, #e8ebf0); border-radius: 5px; }
+		.prsp-assoc-cfg-sel { font: inherit; font-size: 0.8rem; padding: 0.05rem 0.2rem; border: 1px solid var(--theme-color-border-light, #e8ebf0); border-radius: 5px; }
 		`,
 		CSSPriority: 500,
 
@@ -86,7 +96,10 @@ const _DEFAULT_CONFIGURATION_AssociationEditor = (
 			<div class="prsp-assoc-list">
 				<div class="prsp-assoc-list-head">
 					<span class="prsp-assoc-list-title">{~D:Record.ListLabel~}</span>
-					<span class="prsp-assoc-count">{~D:Record.Count~}</span>
+					<span class="prsp-assoc-head-right">
+						<span class="prsp-assoc-count">{~D:Record.Count~}</span>
+						{~TS:PRSP-AssociationEditor-SynthBtn:Record.SynthesizeSlot~}
+					</span>
 				</div>
 				{~TS:PRSP-AssociationEditor-Row:Record.Items~}
 				{~TS:PRSP-AssociationEditor-Empty:Record.EmptySlot~}
@@ -105,6 +118,7 @@ const _DEFAULT_CONFIGURATION_AssociationEditor = (
 		<div class="prsp-assoc-row">
 			<span class="prsp-assoc-row-name">{~D:Record.Display~}</span>
 			<span class="prsp-assoc-row-chips">{~TS:PRSP-AssociationEditor-Chip:Record.Chips~}</span>
+			<span class="prsp-assoc-row-cfg">{~TS:PRSP-AssociationEditor-EditField:Record.EditFields~}</span>
 			<span class="prsp-assoc-row-id">#{~D:Record.OtherID~}</span>
 			<button type="button" class="prsp-assoc-remove" title="Remove association" onclick="_Pict.views['{~D:Record.ViewHash~}'].removeItem({~D:Record.JoinID~})">{~I:Trash~}</button>
 		</div>
@@ -113,6 +127,36 @@ const _DEFAULT_CONFIGURATION_AssociationEditor = (
 			{
 				Hash: 'PRSP-AssociationEditor-Chip',
 				Template: /*html*/`<span class="prsp-assoc-chip">{~D:Record.Text~}</span>`
+			},
+			{
+				Hash: 'PRSP-AssociationEditor-SynthBtn',
+				Template: /*html*/`<button type="button" class="prsp-assoc-synth-btn" title="Add the default associations" onclick="_Pict.views['{~D:Record.ViewHash~}'].synthesizeDefaults()">{~I:Download~} Add defaults</button>`
+			},
+			{
+				// One editable per-join config control (a "rich" join's settings, e.g. Journal / Spreadsheet
+				// / Ordinal). The kind flags pick the input; onchange writes through to the join row.
+				Hash: 'PRSP-AssociationEditor-EditField',
+				Template: /*html*/`{~TIfAbs:PRSP-AssociationEditor-EditCheckbox:Record:Record.IsCheckbox^TRUE^~}{~TIfAbs:PRSP-AssociationEditor-EditNumber:Record:Record.IsNumber^TRUE^~}{~TIfAbs:PRSP-AssociationEditor-EditSelect:Record:Record.IsSelect^TRUE^~}{~TIfAbs:PRSP-AssociationEditor-EditText:Record:Record.IsText^TRUE^~}`
+			},
+			{
+				Hash: 'PRSP-AssociationEditor-EditCheckbox',
+				Template: /*html*/`<label class="prsp-assoc-cfg"><input type="checkbox" {~D:Record.CheckedAttr~} onchange="_Pict.views['{~D:Record.ViewHash~}'].updateField({~D:Record.JoinID~},'{~D:Record.Field~}',this.checked)" />{~D:Record.Label~}</label>`
+			},
+			{
+				Hash: 'PRSP-AssociationEditor-EditNumber',
+				Template: /*html*/`<label class="prsp-assoc-cfg">{~D:Record.Label~}<input type="number" class="prsp-assoc-cfg-num" value="{~D:Record.Value~}" onchange="_Pict.views['{~D:Record.ViewHash~}'].updateField({~D:Record.JoinID~},'{~D:Record.Field~}',this.value)" /></label>`
+			},
+			{
+				Hash: 'PRSP-AssociationEditor-EditSelect',
+				Template: /*html*/`<label class="prsp-assoc-cfg">{~D:Record.Label~}<select class="prsp-assoc-cfg-sel" onchange="_Pict.views['{~D:Record.ViewHash~}'].updateField({~D:Record.JoinID~},'{~D:Record.Field~}',this.value)">{~TS:PRSP-AssociationEditor-EditOption:Record.Options~}</select></label>`
+			},
+			{
+				Hash: 'PRSP-AssociationEditor-EditText',
+				Template: /*html*/`<label class="prsp-assoc-cfg">{~D:Record.Label~}<input type="text" class="prsp-assoc-cfg-sel" value="{~D:Record.Value~}" onchange="_Pict.views['{~D:Record.ViewHash~}'].updateField({~D:Record.JoinID~},'{~D:Record.Field~}',this.value)" /></label>`
+			},
+			{
+				Hash: 'PRSP-AssociationEditor-EditOption',
+				Template: /*html*/`<option value="{~D:Record.Value~}" {~D:Record.SelectedAttr~}>{~D:Record.Label~}</option>`
 			}
 		],
 
@@ -141,8 +185,10 @@ class viewRecordSetAssociationEditor extends libPictView
 
 		// The other-side ids currently associated (the live cull set the picker reads via a closure).
 		this._otherIDs = [];
-		// The current list items (so removeItem can find the exact join record by JoinID).
+		// The current list items (so removeItem/updateField can find the exact join record by JoinID).
 		this._lastItems = [];
+		// Guard so AutoSynthesizeWhenEmpty runs at most once per anchor (no re-synthesize loop).
+		this._autoSynthesizedFor = null;
 	}
 
 	/** @return {any} The association manager provider. */
@@ -178,12 +224,28 @@ class viewRecordSetAssociationEditor extends libPictView
 		if (tmpThisID !== undefined && tmpThisID !== null && tmpThisID !== '')
 		{
 			tmpItems = await this.manager.listAssociatedRecords(this.options.AssociationHash, this.options.ThisRecordSet, tmpThisID);
+
+			// Opt-in: synthesize the default associations the first time an empty anchor is opened.
+			const tmpAssociation = this.manager.getAssociation(this.options.AssociationHash);
+			if (tmpAssociation && tmpAssociation.AutoSynthesizeWhenEmpty && (tmpItems.length === 0)
+				&& this.manager.hasDefaultSynthesizer(this.options.AssociationHash) && (this._autoSynthesizedFor !== `${tmpThisID}`))
+			{
+				this._autoSynthesizedFor = `${tmpThisID}`;
+				const tmpSynth = await this.manager.synthesizeDefaults(this.options.AssociationHash, this.options.ThisRecordSet, tmpThisID);
+				if (tmpSynth && (tmpSynth.created > 0))
+				{
+					tmpItems = await this.manager.listAssociatedRecords(this.options.AssociationHash, this.options.ThisRecordSet, tmpThisID);
+				}
+			}
 		}
 
-		// Stamp the view hash on each row so the row template's remove button can reach this instance.
+		// Per-join editable config controls (for "rich" joins) — empty array for a plain link.
+		const tmpEditableFields = this.manager.getJoinEditableFields(this.options.AssociationHash);
+		// Stamp the view hash + the editable controls on each row.
 		for (let i = 0; i < tmpItems.length; i++)
 		{
 			tmpItems[i].ViewHash = this.Hash;
+			tmpItems[i].EditFields = this._buildEditFields(tmpEditableFields, tmpItems[i]);
 		}
 		this._lastItems = tmpItems;
 		this._otherIDs = tmpItems.map((pItem) => pItem.OtherID);
@@ -203,6 +265,8 @@ class viewRecordSetAssociationEditor extends libPictView
 			// One-or-zero-element slot drives the empty-state line (TS parses inner tags; NE would not).
 			EmptySlot: (tmpItems.length === 0) ? [ { EmptyText: `No ${tmpOtherLabel} associated yet — use the search above to add some.` } ] : [],
 			PickerMissing: !tmpPickerPresent,
+			// The "Add defaults" button shows only when the host registered a defaults synthesizer.
+			SynthesizeSlot: this.manager.hasDefaultSynthesizer(this.options.AssociationHash) ? [ { ViewHash: this.Hash } ] : [],
 		};
 
 		return new Promise((resolve) =>
@@ -349,6 +413,98 @@ class viewRecordSetAssociationEditor extends libPictView
 			}
 		}
 		return fRemove();
+	}
+
+	/**
+	 * Shape an association's editable join-config fields into per-row render data (current value + the
+	 * kind flags the row template dispatches on).
+	 * @param {Array<Record<string, any>>} pFields - the association's JoinEditableFields.
+	 * @param {Record<string, any>} pItem - one decorated association row (carries its JoinRecord).
+	 * @return {Array<Record<string, any>>}
+	 */
+	_buildEditFields(pFields, pItem)
+	{
+		if (!Array.isArray(pFields) || pFields.length < 1)
+		{
+			return [];
+		}
+		const tmpJoin = pItem.JoinRecord || {};
+		return pFields.map((pField) =>
+		{
+			const tmpType = pField.Type || 'text';
+			const tmpRaw = tmpJoin[pField.Field];
+			return {
+				ViewHash: this.Hash,
+				JoinID: pItem.JoinID,
+				Field: pField.Field,
+				Label: pField.Label || pField.Field,
+				IsCheckbox: (tmpType === 'checkbox'),
+				IsNumber: (tmpType === 'number'),
+				IsSelect: (tmpType === 'select'),
+				IsText: (tmpType === 'text'),
+				CheckedAttr: ((tmpType === 'checkbox') && (tmpRaw === 1 || tmpRaw === true || tmpRaw === '1')) ? 'checked' : '',
+				Value: (tmpRaw === undefined || tmpRaw === null) ? '' : tmpRaw,
+				Options: (Array.isArray(pField.Options) ? pField.Options : []).map((pOption) =>
+				{
+					const tmpValue = (pOption && typeof pOption === 'object') ? pOption.Value : pOption;
+					return { Value: tmpValue, Label: (pOption && typeof pOption === 'object') ? (pOption.Label || pOption.Value) : pOption, SelectedAttr: (`${tmpRaw}` === `${tmpValue}`) ? 'selected' : '' };
+				}),
+			};
+		});
+	}
+
+	/**
+	 * Persist one per-join config change (a "rich" join's editable column). Writes through to the join
+	 * row in place so focus is kept; reverts to the server state on failure.
+	 * @param {string|number} pJoinID @param {string} pField @param {any} pValue
+	 * @return {Promise<void>}
+	 */
+	async updateField(pJoinID, pField, pValue)
+	{
+		const tmpItem = this._lastItems.find((pItem) => String(pItem.JoinID) === String(pJoinID));
+		if (!tmpItem || !tmpItem.JoinRecord)
+		{
+			return;
+		}
+		// Meadow booleans are 1/0.
+		const tmpValue = (pValue === true) ? 1 : ((pValue === false) ? 0 : pValue);
+		try
+		{
+			await this.manager.updateJoin(this.options.AssociationHash, tmpItem.JoinRecord, { [pField]: tmpValue });
+			tmpItem.JoinRecord[pField] = tmpValue;
+		}
+		catch (pError)
+		{
+			this.pict.log.error(`AssociationEditor [${this.Hash}]: failed to update join field ${pField}.`, pError);
+			this._toast('Could not save the change.', 'error');
+			await this.renderEditor();
+		}
+	}
+
+	/**
+	 * Seed the default associations for this anchor via the association's `SynthesizeDefaults` hook (the
+	 * "Add defaults" button). PSRS dedupes + creates; the host decides what the defaults are. Reloads after.
+	 * @return {Promise<void>}
+	 */
+	async synthesizeDefaults()
+	{
+		if (!this.manager.hasDefaultSynthesizer(this.options.AssociationHash))
+		{
+			return;
+		}
+		let tmpResult = { created: 0, skipped: 0 };
+		try
+		{
+			tmpResult = await this.manager.synthesizeDefaults(this.options.AssociationHash, this.options.ThisRecordSet, this.options.ThisID);
+		}
+		catch (pError)
+		{
+			this.pict.log.error(`AssociationEditor [${this.Hash}]: synthesize defaults failed.`, pError);
+			this._toast('Could not add the defaults.', 'error');
+			return;
+		}
+		this._toast((tmpResult.created > 0) ? `Added ${tmpResult.created} default${tmpResult.created === 1 ? '' : 's'}.` : 'No new defaults to add.', (tmpResult.created > 0) ? 'success' : 'info');
+		await this.renderEditor();
 	}
 
 	/**

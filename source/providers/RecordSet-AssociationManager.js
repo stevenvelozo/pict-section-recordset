@@ -558,7 +558,11 @@ class PictRecordSetAssociationManager extends libPictProvider
 		{
 			return Promise.reject(new Error(`AssociationManager: cannot update join for [${pAssociationHash}].`));
 		}
-		const tmpRecord = Object.assign({}, pJoinRecord, pValues || {});
+		// Minimal update — the join id + only the changed columns. The read-decorated join row can carry
+		// derived, non-column fields (e.g. a joined ModuleConfig) that the server rejects on write; Meadow
+		// updates only the fields provided, so a minimal record is both correct and safe.
+		const tmpJoinIDField = this.getJoinIDField(tmpAssociation);
+		const tmpRecord = Object.assign({ [tmpJoinIDField]: pJoinRecord[tmpJoinIDField] }, pValues || {});
 		const tmpEntityProvider = this._entityProvider(tmpAssociation.JoinURLPrefix);
 		return new Promise((resolve, reject) =>
 		{
@@ -567,6 +571,11 @@ class PictRecordSetAssociationManager extends libPictProvider
 				if (pError)
 				{
 					return reject(pError);
+				}
+				// Meadow returns a non-2xx error in the body (not the callback) — surface it as a failure.
+				if (pBody && pBody.ErrorCode)
+				{
+					return reject(new Error(`AssociationManager: join update rejected (ErrorCode ${pBody.ErrorCode}).`));
 				}
 				this._clearAssociationCache(tmpEntityProvider);
 				return resolve(pBody);
