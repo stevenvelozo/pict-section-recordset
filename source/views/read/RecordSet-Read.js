@@ -59,6 +59,18 @@ const _DEFAULT_CONFIGURATION__Read = (
 			.prsp-record-read input.input[readonly], .prsp-record-read input.input[disabled], .prsp-record-read textarea[readonly], .prsp-record-read textarea[disabled], .prsp-record-read select[disabled] { background: transparent !important; border-color: transparent !important; box-shadow: none !important; padding-left: 0 !important; padding-right: 0 !important; height: auto !important; min-height: 0 !important; opacity: 1 !important; cursor: default !important; color: var(--theme-color-text-primary, #1f2733) !important; -webkit-text-fill-color: var(--theme-color-text-primary, #1f2733) !important; font-weight: 600 !important; font-size: 1.1rem !important; }
 			.prsp-record-read .label { font-size: 0.68rem !important; font-weight: 600 !important; text-transform: uppercase !important; letter-spacing: 0.05em !important; color: var(--theme-color-text-muted, #6b7686) !important; margin-bottom: 0.05rem !important; }
 			.prsp-record-read .section-header { background: var(--theme-color-background-selected, #e3edfb) !important; color: var(--theme-color-brand-primary, #156dd1) !important; font-size: 0.74rem !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 0.06em !important; padding: 0.4rem 0.8rem !important; border-radius: 6px !important; border-bottom: 0 !important; margin: 1.1rem 0 0.7rem !important; }
+				/* Record header — a readable title (the record's own name, via a heuristic) with the entity
+				   type as an eyebrow, instead of a raw "RecordSet GUIDField [guid]" string. */
+			.prsp-read-head { margin: 0 0 1.1rem; }
+			.prsp-read-eyebrow { font-size: 0.72rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.06em; color: var(--theme-color-text-muted, #6b7686); }
+			.prsp-read-title { font-size: 1.5rem; font-weight: 700; line-height: 1.2; margin: 0.1rem 0 0; color: var(--theme-color-text-primary, #1f2733); }
+				/* Read-view association tabs — pill nav, shared by the Tab and Split layouts (single source;
+				   layouts style only their own nav container). */
+			.psrs-tab { padding: 0.4rem 0.85rem; border: 1px solid var(--theme-color-border-default, #d7dce3); border-radius: 8px; cursor: pointer; font-size: 0.88rem; color: var(--theme-color-text-secondary, #45505f); background: var(--theme-color-background-panel, #fff); user-select: none; transition: all 0.15s ease; }
+			.psrs-tab:hover { background: var(--theme-color-background-tertiary, #eceef2); color: var(--theme-color-text-primary, #1f2733); }
+			.psrs-tab.is-active { border-color: var(--theme-color-brand-primary, #156dd1); background: var(--theme-color-background-selected, #e3edfb); color: var(--theme-color-brand-primary, #156dd1); font-weight: 600; }
+			.psrs-tab-body { display: none; }
+			.psrs-tab-body.is-active { display: block; }
 		`,
 		CSSPriority: 500,
 
@@ -120,10 +132,21 @@ const _DEFAULT_CONFIGURATION__Read = (
 					Template: /*html*/`<!-- Placeholder for tabs, something has gone wrong if this comment is rendered. -->`
 				},
 				{
+					// Readable record header, shared by all three layouts: the record's display name (heuristic)
+					// over a small entity-type eyebrow, falling back to the GUID field + value when the record
+					// has no obvious name. DisplayTitle / TitleEyebrow are computed in renderRead().
+					Hash: 'PRSP-Read-Header-Template',
+					Template: /*html*/`
+						<div class="prsp-read-head">
+							<div class="prsp-read-eyebrow">{~D:Record.TitleEyebrow~}</div>
+							<h1 class="prsp-read-title">{~D:Record.DisplayTitle~}</h1>
+						</div>`
+				},
+				{
 					Hash: 'PRSP-Read-Basic-Template',
 					Template: /*html*/`
 						<!-- DefaultPackage pict view template: [PRSP-Read-Basic-Template] -->
-						<h1>{~D:Record.RecordSet~} {~D:Record.GUIDAddress~} [{~D:Record.RecordConfiguration.GUIDRecord~}]</h1>
+						{~T:PRSP-Read-Header-Template~}
 						<!--
 						{~DJ:Record~}
 						-->
@@ -156,7 +179,7 @@ const _DEFAULT_CONFIGURATION__Read = (
 							.psrs-split-view.psrs-collapsed #psrs-resize { display: none; }
 							.psrs-split-view.psrs-collapsed .psrs-left-panel { min-width: 100% !important; width: 100%; }
 						</style>
-						<h1>{~D:Record.RecordSet~} {~D:Record.GUIDAddress~} [{~D:Record.RecordConfiguration.GUIDRecord~}]</h1>
+						{~T:PRSP-Read-Header-Template~}
 						<div class="psrs-split-tabnav">{~T:PRSP-Read-RecordTabNav-Template~}</div>
 						<div class="psrs-split-view psrs-collapsed">
 							<div class="psrs-left-panel" style="min-width: {~D:Record.SplitLeftWidth~};">
@@ -174,36 +197,14 @@ const _DEFAULT_CONFIGURATION__Read = (
 					Hash: 'PRSP-Read-Tab-Template',
 					Template: /*html*/`
 						<!-- DefaultPackage pict view template: [PRSP-Read-Tab-Template] -->
-						<h1>{~D:Record.RecordSet~} {~D:Record.GUIDAddress~} [{~D:Record.RecordConfiguration.GUIDRecord~}]</h1>
+						{~T:PRSP-Read-Header-Template~}
 						<!--
 						{~DJ:Record~}
 						-->
 						<style>
-							#PRSP-Read-Tab-Nav
-							{
-								display: flex;
-								border-bottom: 1px solid rgba(0,0,0,0.5);
-								margin-bottom: 20px;
-								width: 100%;
-							}
-							.psrs-tab.is-active
-							{
-								border: 1px solid rgba(0,0,0,0.5);
-							}
-							.psrs-tab
-							{
-								padding: 10px;
-								border-right: 1px solid rgba(0,0,0,0.5);
-								border-left: 1px solid rgba(0,0,0,0.5);
-							}
-							.psrs-tab-body
-							{
-								display: none;
-							}
-							.psrs-tab-body.is-active
-							{
-								display: inherit;
-							}
+							/* Tab layout owns only its nav container; the pill styling for .psrs-tab /
+							   .psrs-tab-body is shared from the view's persistent CSS block. */
+							#PRSP-Read-Tab-Nav { display: flex; flex-wrap: wrap; gap: 0.35rem; width: 100%; margin: 0 0 1.25rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--theme-color-border-light, #e8ebf0); }
 						</style>
 						<div class="psrs-tab-view">
 							<div id="PRSP-Read-Tabs-Container">
@@ -820,6 +821,14 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 				<!-- DefaultPackage end view template:  [PRSP-Read-RecordTabNav-Template] -->
 			`);
 		}
+
+		// Readable record header: the record's own name (heuristic — Name / Title / DisplayName / …),
+		// with the entity type (camelCase split) as an eyebrow. Falls back to the GUID field + value
+		// when the record has no obvious display field. Computed before onBeforeRenderRead so apps can
+		// still override DisplayTitle / TitleEyebrow there.
+		const tmpReadableName = this._computeDisplayName(tmpRecordReadData.Record);
+		tmpRecordReadData.DisplayTitle = tmpReadableName || `${ tmpRecordReadData.GUIDAddress } [${ pRecordConfiguration.GUIDRecord }]`;
+		tmpRecordReadData.TitleEyebrow = String(pRecordConfiguration.RecordSet || '').replace(/([a-z0-9])([A-Z])/g, '$1 $2');
 
 		tmpRecordReadData = this.onBeforeRenderRead(tmpRecordReadData);
 
