@@ -263,6 +263,21 @@ suite
 					Expect(tmpItems[0].Display).to.equal('#7', 'a dangling reference still renders its id.');
 				});
 
+				test('listAssociatedRecords + listAssociatedIDs skip a sentinel row whose id-keyed other reference is 0', async () =>
+				{
+					// An IDAuthor=0 row is a sentinel (no author 0) — e.g. a host's "default set" marker
+					// parked in the join table — not a real association, so it never surfaces as a "#0" row.
+					_Stub.JoinRows = [ { IDBookAuthorJoin: 10, IDBook: 1, IDAuthor: 0 }, { IDBookAuthorJoin: 11, IDBook: 1, IDAuthor: 7 } ];
+					_Stub.OtherRows = [ { IDAuthor: 7, Name: 'Ursula' } ];
+					const tmpItems = await _Manager.listAssociatedRecords('BookAuthor', 'Book', 1);
+					Expect(tmpItems.length).to.equal(1, 'the IDAuthor=0 sentinel row is dropped.');
+					Expect(tmpItems[0]).to.include({ JoinID: 11, OtherID: 7, Display: 'Ursula' });
+					const tmpOtherFetch = _Stub.calls.find((pCall) => pCall[0] === 'getEntitySet' && pCall[1] === 'Author');
+					Expect(tmpOtherFetch[2]).to.equal('FBL~IDAuthor~INN~7', 'the 0 sentinel is excluded from the other-side fetch.');
+					const tmpIDs = await _Manager.listAssociatedIDs('BookAuthor', 'Book', 1);
+					Expect(tmpIDs).to.deep.equal([ 7 ], 'listAssociatedIDs drops it too.');
+				});
+
 				test('listJoinRecordsForIDs filters the join entity by an IN over the this-side ids (matrix dedup)', async () =>
 				{
 					_Stub.JoinRows = [ { IDBookAuthorJoin: 11, IDBook: 1, IDAuthor: 7 }, { IDBookAuthorJoin: 12, IDBook: 2, IDAuthor: 8 } ];
@@ -312,6 +327,23 @@ suite
 					_Stub.calls = [];
 					await _Manager.listJoinRecords('ProjectObservationManifest', 'ObservationManifest', 'Legacy Personnel');
 					Expect(_Stub.calls.find((pCall) => pCall[1] === 'ProjectObservationManifestJoin')[2]).to.equal(`FBV~ObservationManifestName~EQ~${encodeURIComponent('Legacy Personnel')}`);
+				});
+
+				test('a name-keyed other reference of "0" is NOT treated as a sentinel (only id-keyed 0 is)', async () =>
+				{
+					// The 0-guard applies only to id-keyed sides (where 0 is never a real auto-increment id).
+					// A name-keyed other side whose key happens to be the string "0" is a legitimate record.
+					registerProjectManifest();
+					const tmpJoins = [ { IDProjectObservationManifestJoin: 5, IDProject: 42, ObservationManifestName: '0' }, { IDProjectObservationManifestJoin: 6, IDProject: 42, ObservationManifestName: 'Legacy Weather' } ];
+					const tmpManifests = [ { Name: '0', DisplayName: 'Zero' }, { Name: 'Legacy Weather', DisplayName: 'Weather' } ];
+					_Stub.getEntitySet = (pEntity, pFilter, fCallback) =>
+					{
+						_Stub.calls.push([ 'getEntitySet', pEntity, pFilter ]);
+						return fCallback(null, (pEntity === 'ProjectObservationManifestJoin') ? tmpJoins : tmpManifests);
+					};
+					const tmpItems = await _Manager.listAssociatedRecords('ProjectObservationManifest', 'Project', 42);
+					Expect(tmpItems.length).to.equal(2, 'the manifest legitimately named "0" survives — name-keyed sides are never 0-guarded.');
+					Expect(tmpItems.map((pItem) => pItem.OtherID)).to.deep.equal([ '0', 'Legacy Weather' ]);
 				});
 
 				test('createJoin writes the JoinField columns + optional per-join values', async () =>

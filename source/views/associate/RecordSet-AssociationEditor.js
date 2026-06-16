@@ -31,6 +31,12 @@ const _DEFAULT_CONFIGURATION_AssociationEditor = (
 		DefaultDestinationAddress: '#PRSP_AssociationEditor_Container',
 		DefaultTemplateRecordAddress: false,
 
+		// Show the "Add defaults" affordance when the association has a defaults synthesizer. Set false
+		// on an instance where synthesis is directionally meaningless (e.g. anchored on the type side of
+		// a "seed a project with default types" synthesizer) — the synthesizer stays registered for the
+		// side it applies to; this just hides the button on the side it does not.
+		AllowSynthesize: true,
+
 		AutoInitialize: false,
 		AutoInitializeOrdinal: 0,
 		AutoRender: false,
@@ -265,8 +271,10 @@ class viewRecordSetAssociationEditor extends libPictView
 			// One-or-zero-element slot drives the empty-state line (TS parses inner tags; NE would not).
 			EmptySlot: (tmpItems.length === 0) ? [ { EmptyText: `No ${tmpOtherLabel} associated yet — use the search above to add some.` } ] : [],
 			PickerMissing: !tmpPickerPresent,
-			// The "Add defaults" button shows only when the host registered a defaults synthesizer.
-			SynthesizeSlot: this.manager.hasDefaultSynthesizer(this.options.AssociationHash) ? [ { ViewHash: this.Hash } ] : [],
+			// The "Add defaults" button shows only when the host registered a defaults synthesizer AND this
+			// instance opts in (AllowSynthesize, default true) — an embedding anchored on the side the
+			// synthesizer does not apply to sets AllowSynthesize:false to hide it.
+			SynthesizeSlot: ((this.options.AllowSynthesize !== false) && this.manager.hasDefaultSynthesizer(this.options.AssociationHash)) ? [ { ViewHash: this.Hash } ] : [],
 		};
 
 		return new Promise((resolve) =>

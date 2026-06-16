@@ -395,6 +395,32 @@ class PictRecordSetAssociationManager extends libPictProvider
 	 * @param {string|number} pThisID
 	 * @return {Promise<Array<any>>}
 	 */
+	/**
+	 * Does this join row reference a real other-side record? An unset key (undefined / null / '') is
+	 * not an association; nor is 0 / '0' on an id-keyed side, where 0 is never a real auto-increment id
+	 * (Meadow ids start at 1). Some hosts park sentinel rows in the join table — e.g. a "default set"
+	 * keyed by IDProject = 0 that a SynthesizeDefaults hook reads — and those must not surface as broken
+	 * "#0" rows in the editor. The 0-guard is gated to id-keyed sides (JoinField === IDField) so a
+	 * name-keyed side, where '0' could pathologically be a real key, is never affected.
+	 *
+	 * @param {Record<string, any>} pJoin - a join row.
+	 * @param {Record<string, any>} pOtherSide - the resolved other side.
+	 * @return {Boolean}
+	 */
+	_joinReferencesRealRecord(pJoin, pOtherSide)
+	{
+		const tmpValue = pJoin[pOtherSide.JoinField];
+		if ((tmpValue === undefined) || (tmpValue === null) || (tmpValue === ''))
+		{
+			return false;
+		}
+		if ((pOtherSide.JoinField === pOtherSide.IDField) && ((tmpValue === 0) || (tmpValue === '0')))
+		{
+			return false;
+		}
+		return true;
+	}
+
 	async listAssociatedIDs(pAssociationHash, pThisRecordSetName, pThisID)
 	{
 		const tmpSides = this.resolveSides(pAssociationHash, pThisRecordSetName);
@@ -404,8 +430,8 @@ class PictRecordSetAssociationManager extends libPictProvider
 		}
 		const tmpJoins = await this.listJoinRecords(pAssociationHash, pThisRecordSetName, pThisID);
 		return tmpJoins
-			.map((pJoin) => pJoin[tmpSides.otherSide.JoinField])
-			.filter((pValue) => (pValue !== undefined && pValue !== null && pValue !== ''));
+			.filter((pJoin) => this._joinReferencesRealRecord(pJoin, tmpSides.otherSide))
+			.map((pJoin) => pJoin[tmpSides.otherSide.JoinField]);
 	}
 
 	/**
@@ -428,9 +454,10 @@ class PictRecordSetAssociationManager extends libPictProvider
 		}
 		const tmpJoinIDField = this.getJoinIDField(tmpSides.association);
 		const tmpJoins = await this.listJoinRecords(pAssociationHash, pThisRecordSetName, pThisID);
-		const tmpOtherIDs = tmpJoins
-			.map((pJoin) => pJoin[tmpSides.otherSide.JoinField])
-			.filter((pValue) => (pValue !== undefined && pValue !== null && pValue !== ''));
+		// Drop sentinel / unset rows (e.g. a "default set" keyed by other-side id 0) so they don't
+		// surface as broken "#0" rows; everything downstream works off the real-association set.
+		const tmpRealJoins = tmpJoins.filter((pJoin) => this._joinReferencesRealRecord(pJoin, tmpSides.otherSide));
+		const tmpOtherIDs = tmpRealJoins.map((pJoin) => pJoin[tmpSides.otherSide.JoinField]);
 
 		let tmpByID = {};
 		if (tmpOtherIDs.length > 0)
@@ -455,8 +482,7 @@ class PictRecordSetAssociationManager extends libPictProvider
 			}
 		}
 
-		return tmpJoins
-			.filter((pJoin) => (pJoin[tmpSides.otherSide.JoinField] !== undefined && pJoin[tmpSides.otherSide.JoinField] !== null && pJoin[tmpSides.otherSide.JoinField] !== ''))
+		return tmpRealJoins
 			.map((pJoin) =>
 			{
 				const tmpOtherID = pJoin[tmpSides.otherSide.JoinField];
