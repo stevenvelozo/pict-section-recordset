@@ -210,14 +210,14 @@ class viewRecordSetCreate extends libPictRecordSetRecordView
 			let rowCounter = 1;
 			for (const p of Object.keys(tmpRecordCreateData.RecordSchema.properties))
 			{
-				const exclusionSet = [this.pict.providers[this.providerHash].getIDField(), this.pict.providers[this.providerHash].getGUIDField(), 'CreatingIDUser', 'UpdatingIDUser', 'DeletingIDUser', 'Deleted', 'CreateDate', 'UpdateDate', 'DeleteDate', 'Deleted'];
+				const exclusionSet = [this.pict.providers[this.providerHash].getIDField(), this.pict.providers[this.providerHash].getGUIDField(), 'CreatingIDUser', 'UpdatingIDUser', 'DeletingIDUser', 'Deleted', 'CreateDate', 'UpdateDate', 'DeleteDate', 'Deleted', 'IDCustomer', 'ExternalSyncDate', 'ExternalSyncGUID']; // IDCustomer: meadow-endpoints/retold tenancy discriminator — server-managed, never settable via the API
 				if (exclusionSet.includes(p))
 				{
 					continue;
 				}
 				const tmpDescriptor =
 				{
-					"Name": `${ this.pict.providers[pProviderHash].getHumanReadableFieldName?.() || p }`,
+					"Name": `${ this.pict.providers[pProviderHash].getHumanReadableFieldName?.(p) || p }`,
 					"Hash": `${ tmpRecordCreateData.RecordSet }-${ p }`,
 					"DataType": "String",
 					"PictForm": 
@@ -256,6 +256,17 @@ class viewRecordSetCreate extends libPictRecordSetRecordView
 						tmpDescriptor.DataType = 'String';
 				}
 
+				const tmpForeignEntity = this.pict.PictSectionRecordSet.resolveForeignEntity(p, pRecordConfiguration, this.pict.providers[this.providerHash].getIDField());
+				if (tmpForeignEntity && this.pict.providers['Pict-Section-Picker'])
+				{
+					// Foreign-key column → searchable entity Picker (edit) + resolved name (read).
+					tmpDescriptor.PictForm.InputType = 'Picker';
+					tmpDescriptor.PictForm.Entity = tmpForeignEntity;
+					const tmpForeignConfig = this.pict.PictSectionRecordSet.recordSetProviderConfigurations[tmpForeignEntity];
+					if (tmpForeignConfig && tmpForeignConfig.SearchFields) { tmpDescriptor.PictForm.SearchFields = tmpForeignConfig.SearchFields; }
+				}
+				// Per-record-set label override (e.g. Contract/Project IDOrganization → "Prime Contractor").
+				if (pRecordConfiguration.FieldLabels && pRecordConfiguration.FieldLabels[p]) { tmpDescriptor.Name = pRecordConfiguration.FieldLabels[p]; }
 				this.defaultManifest.Descriptors[`${ tmpRecordCreateData.RecordSet }Details.${ p }`] = tmpDescriptor;
 			}
 			this.pict.TemplateProvider.addTemplate(`PRSP-Create-RecordCreate-Template`, /*html*/`

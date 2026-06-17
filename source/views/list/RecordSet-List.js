@@ -189,6 +189,26 @@ class viewRecordSetList extends libPictRecordSetRecordView
 		return true;
 	}
 
+	/**
+	 * Navigate to the Create form for a record set. Backs the optional list title-bar "New" button
+	 * (opt in per record set via RecordSetConfiguration.RecordSetListShowCreateButton). Routes through
+	 * the section router so it works in both hash and memory router modes; falls back to the active
+	 * route's record set when called without an argument.
+	 * @param {string} [pRecordSet] - The record set to create a new record in.
+	 * @return {boolean} True when navigation was issued.
+	 */
+	createNew(pRecordSet)
+	{
+		const tmpRecordSet = pRecordSet || this.fable?.providers?.RecordSetRouter?.pictRouter?.router?.current?.[0]?.data?.RecordSet;
+		if (!tmpRecordSet)
+		{
+			this.log.warn(`RecordSetList: createNew called but no record set could be resolved.`);
+			return false;
+		}
+		this.fable.providers.RecordSetRouter.pictRouter.navigate(`/PSRS/${ tmpRecordSet }/Create`);
+		return true;
+	}
+
 	onBeforeRenderList(pRecordListData)
 	{
 		return pRecordListData;
@@ -269,6 +289,8 @@ class viewRecordSetList extends libPictRecordSetRecordView
 			'DeletingIDUser',
 			'UpdateDate',
 			'UpdatingIDUser',
+			'IDCustomer', // meadow-endpoints/retold tenancy discriminator — server-managed, hidden from every record view
+			'ExternalSyncDate', 'ExternalSyncGUID', // external-sync auditing stamps (Headlight integration sync)
 		];
 	}
 

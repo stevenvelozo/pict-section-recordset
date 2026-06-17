@@ -218,6 +218,8 @@ class viewRecordSetDashboard extends libPictRecordSetRecordView
 			'DeletingIDUser',
 			'UpdateDate',
 			'UpdatingIDUser',
+			'IDCustomer', // meadow-endpoints/retold tenancy discriminator — server-managed, hidden from every record view
+			'ExternalSyncDate', 'ExternalSyncGUID', // external-sync auditing stamps (Headlight integration sync)
 		];
 
 		const tmpSchema = pRecordListData.RecordSchema;

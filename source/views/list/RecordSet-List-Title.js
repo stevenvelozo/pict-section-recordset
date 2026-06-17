@@ -34,8 +34,16 @@ const _DEFAULT_CONFIGURATION_List_Title =
 	<header id="PRSP_Title_Container">
 		<h1 id="PRSP_Title">{~D:Record.Title~}</h1>
 		<h2 id="PRSP_Subtitle">{~D:Record.Subtitle~}</h2>
+		{~TIfAbs:PRSP-List-Title-CreateButton-Template:Record:Record.RecordSetConfiguration.RecordSetListShowCreateButton^TRUE^~}
 	</header>
 	<!-- DefaultPackage end view template:	[PRSP-List-Title-Template] -->
+`
+		},
+		{
+			Hash: 'PRSP-List-Title-CreateButton-Template',
+			Template: /*html*/`
+	<!-- Optional list "New" action; opt in per record set via RecordSetConfiguration.RecordSetListShowCreateButton. -->
+	<button type="button" class="prsp-list-title-create" title="Create a new record" onclick="_Pict.views['RSP-RecordSet-List'].createNew('{~D:Record.RecordSet~}')">{~I:Plus~} New</button>
 `
 		},
 	],

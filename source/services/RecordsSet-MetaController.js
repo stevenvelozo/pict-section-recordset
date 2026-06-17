@@ -187,6 +187,43 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 	}
 
 	/**
+	 * Resolve a column name to the record-set it references, so a form can mount an entity Picker and the
+	 * read view can resolve the name. Two sources, in order:
+	 *
+	 *   1. The record-set config's explicit `ForeignKeyEntities` map ({ ColumnName: EntityName }). This is
+	 *      how non-conventional references are declared — prefixed/suffixed columns (ParentIDSample,
+	 *      ItemIDTestSpecificationSet, LinkedIDUser, IDMaterialParent, …) and any override. Mapping a
+	 *      column to a falsy value explicitly opts it OUT (keeps it a plain input).
+	 *   2. The plain `ID<Entity>` convention — a column named exactly `ID` + an entity that is a
+	 *      registered record-set (IDOrganization → Organization). No prefix heuristics; anything that
+	 *      isn't a clean `ID<Entity>` must be declared in the map above.
+	 *
+	 * Returns false for the row's own id, IDCustomer, non-references, and references this app doesn't
+	 * manage as a record-set (which then stay plain inputs).
+	 *
+	 * @param {string} pFieldName - the schema column name.
+	 * @param {Record<string, any>} [pRecordSetConfiguration] - the owning record-set's configuration.
+	 * @param {string} [pOwnIDField] - the row's own id field, excluded (e.g. 'IDTestSpecification').
+	 * @return {string|false} the referenced record-set name, or false.
+	 */
+	resolveForeignEntity(pFieldName, pRecordSetConfiguration, pOwnIDField)
+	{
+		if (!pFieldName || (typeof pFieldName !== 'string')) { return false; }
+		// 1. Explicit per-record-set mapping wins (declares exceptions; a falsy value opts a column out).
+		const tmpMap = pRecordSetConfiguration && pRecordSetConfiguration.ForeignKeyEntities;
+		if (tmpMap && Object.prototype.hasOwnProperty.call(tmpMap, pFieldName))
+		{
+			return tmpMap[pFieldName] || false;
+		}
+		// 2. Plain ID<Entity> convention, validated against the registered record-sets.
+		if ((pFieldName === pOwnIDField) || (pFieldName === 'IDCustomer')) { return false; }
+		if (!pFieldName.startsWith('ID')) { return false; }
+		const tmpRemote = pFieldName.slice(2);
+		if (!tmpRemote) { return false; }
+		return this.recordSetProviderConfigurations[tmpRemote] ? tmpRemote : false;
+	}
+
+	/**
 	 * @param {Record<string, any>} pRecordSetConfiguration - The RecordSet configuration to load.
 	 */
 	loadRecordSetConfiguration(pRecordSetConfiguration)

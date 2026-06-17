@@ -5,7 +5,9 @@ const libViewAssociationEditor = require('../associate/RecordSet-AssociationEdit
 // surfaced through the record audit header (the first-class activity line + the Details
 // modal), not inline in the record body. The entity's own ID/GUID field names are added
 // at suppression time via the provider's getIDField()/getGUIDField().
-const _AUDIT_FIELD_NAMES = ['CreatingIDUser', 'UpdatingIDUser', 'DeletingIDUser', 'Deleted', 'CreateDate', 'UpdateDate', 'DeleteDate'];
+// Audit / sync-bookkeeping fields suppressed from the record body and surfaced in the Details modal.
+// ExternalSyncDate / ExternalSyncGUID are the external-sync auditing stamps (Headlight integration sync).
+const _AUDIT_FIELD_NAMES = ['CreatingIDUser', 'UpdatingIDUser', 'DeletingIDUser', 'Deleted', 'CreateDate', 'UpdateDate', 'DeleteDate', 'ExternalSyncDate', 'ExternalSyncGUID'];
 
 /** @type {Record<string, any>} */
 const _DEFAULT_CONFIGURATION__Read = (
@@ -43,9 +45,10 @@ const _DEFAULT_CONFIGURATION__Read = (
 			.prsp-audit-button:hover { border-color: var(--theme-color-brand-primary, #156dd1); color: var(--theme-color-brand-primary, #156dd1); }
 			.prsp-record-related:empty { display: none; }
 			.prsp-audit-anchor { position: relative; }
-			.prsp-audit-popover { position: absolute; top: calc(100% + 8px); right: 0; min-width: 320px; max-width: 90vw; background: var(--theme-color-background-panel, #fff); border: 1px solid var(--theme-color-border-default, #d7dce3); border-radius: 10px; box-shadow: 0 14px 36px rgba(15, 23, 42, 0.18); padding: 1rem 1.1rem; z-index: 40; display: none; }
+			.prsp-audit-popover { position: absolute; top: calc(100% + 8px); right: 0; min-width: 380px; width: max-content; max-width: 90vw; background: var(--theme-color-background-panel, #fff); border: 1px solid var(--theme-color-border-default, #d7dce3); border-radius: 10px; box-shadow: 0 14px 36px rgba(15, 23, 42, 0.18); padding: 1rem 1.1rem; z-index: 40; display: none; }
 			.prsp-audit-popover.is-open { display: block; }
-			.prsp-audit-dl { display: grid; grid-template-columns: auto 1fr; gap: 0.6rem 1rem; align-items: baseline; margin: 0; }
+			.prsp-audit-dl { display: grid; grid-template-columns: auto auto; gap: 0.6rem 1rem; align-items: baseline; margin: 0; }
+			.prsp-audit-dl dd { white-space: nowrap; }
 			.prsp-audit-dl dt { color: var(--theme-color-text-muted, #6b7686); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; }
 			.prsp-audit-dl dd { margin: 0; color: var(--theme-color-text-primary, #1f2733); font-size: 0.9rem; }
 			.prsp-audit-dl dd small { color: var(--theme-color-text-muted, #6b7686); }
@@ -242,6 +245,7 @@ const _DEFAULT_CONFIGURATION__Read = (
 										{~TS:PRSP-Read-RecordAudit-Created-Template:AppData.PRSP_RecordAudit.CreatedSlot~}
 										{~TS:PRSP-Read-RecordAudit-Updated-Template:AppData.PRSP_RecordAudit.UpdatedSlot~}
 										{~TS:PRSP-Read-RecordAudit-Deleted-Template:AppData.PRSP_RecordAudit.DeletedSlot~}
+										{~TS:PRSP-Read-RecordAudit-ExternalSync-Template:AppData.PRSP_RecordAudit.ExternalSyncSlot~}
 									</dl>
 								</div>
 							</div>
@@ -267,6 +271,14 @@ const _DEFAULT_CONFIGURATION__Read = (
 				{
 					Hash: 'PRSP-Read-RecordAudit-Deleted-Template',
 					Template: /*html*/`<dt>Deleted</dt><dd class="is-deleted">{~DateFormat:Record.Date^MMM D, YYYY - h:mm A~} <small>by {~E:User^Record.UserID^PRSP-Read-RecordAudit-UserName-Template~}</small></dd>`
+				},
+				{
+					Hash: 'PRSP-Read-RecordAudit-ExternalSync-Template',
+					Template: /*html*/`<dt>External sync</dt><dd>{~TIfAbs:PRSP-Read-RecordAudit-ExternalSyncDate-Template:Record:Record.HasDate^TRUE^~}{~NE:Record.NeverSynced^Never synced~}</dd>`
+				},
+				{
+					Hash: 'PRSP-Read-RecordAudit-ExternalSyncDate-Template',
+					Template: /*html*/`{~DateFormat:Record.Date^MMM D, YYYY - h:mm A~}`
 				},
 				{
 					// Soft-deleted record banner (the ViewDeleted route, or a record deleted out from
@@ -518,7 +530,9 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 			DeletedSlot: tmpDeleted ? [{ Date: pRecord.DeleteDate, UserID: pRecord.DeletingIDUser }] : [],
 			// The ViewDeleted route's banner: present whenever the record is soft-deleted (whether the
 			// user arrived via ViewDeleted or the record was deleted out from under a normal View).
-			DeletedBannerSlot: (!!pRecord.Deleted) ? [{ Date: pRecord.DeleteDate, UserID: pRecord.DeletingIDUser, HasDate: this._validAuditDate(pRecord.DeleteDate) }] : []
+			DeletedBannerSlot: (!!pRecord.Deleted) ? [{ Date: pRecord.DeleteDate, UserID: pRecord.DeletingIDUser, HasDate: this._validAuditDate(pRecord.DeleteDate) }] : [],
+			// External-sync auditing stamp — surfaced in the Details modal for entities that carry the field.
+			ExternalSyncSlot: ('ExternalSyncDate' in pRecord) ? [{ Date: pRecord.ExternalSyncDate, HasDate: this._validAuditDate(pRecord.ExternalSyncDate), NeverSynced: !this._validAuditDate(pRecord.ExternalSyncDate) }] : []
 		};
 	}
 
@@ -657,7 +671,7 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 			return;
 		}
 		const tmpProvider = this.pict.providers[this.providerHash];
-		const tmpSuppress = _AUDIT_FIELD_NAMES.slice();
+		const tmpSuppress = _AUDIT_FIELD_NAMES.concat('IDCustomer'); // IDCustomer: meadow-endpoints/retold tenancy discriminator — server-managed
 		if (tmpProvider)
 		{
 			tmpSuppress.push(tmpProvider.getIDField());
@@ -963,14 +977,14 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 		const schema = await this.pict.providers[providerHash].getRecordSchema();
 		for (const p of Object.keys(schema.properties))
 		{
-			const exclusionSet = [this.pict.providers[this.providerHash].getIDField(), this.pict.providers[this.providerHash].getGUIDField()].concat(_AUDIT_FIELD_NAMES);
+			const exclusionSet = [this.pict.providers[this.providerHash].getIDField(), this.pict.providers[this.providerHash].getGUIDField()].concat(_AUDIT_FIELD_NAMES, 'IDCustomer');
 			if (exclusionSet.includes(p))
 			{
 				continue;
 			}
 			const tmpDescriptor =
 			{
-				"Name": `${ this.pict.providers[providerHash].getHumanReadableFieldName?.() || p }`,
+				"Name": `${ this.pict.providers[providerHash].getHumanReadableFieldName?.(p) || p }`,
 				"Hash": `${ this.pict.providers[this.providerHash].options.Entity  }-${ p }`,
 				"DataType": "String",
 				"PictForm": 
@@ -1009,6 +1023,28 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 					tmpDescriptor.DataType = 'String';
 			}
 
+			const tmpForeignEntity = this.pict.PictSectionRecordSet.resolveForeignEntity(p, this.pict.PictSectionRecordSet.recordSetProviderConfigurations[recordSet], this.pict.providers[this.providerHash].getIDField());
+			if (tmpForeignEntity && this.pict.providers['Pict-Section-Picker'])
+			{
+				// Foreign-key column → searchable entity Picker (edit) + resolved name (read, see the view-mode override).
+				tmpDescriptor.PictForm.InputType = 'Picker';
+				tmpDescriptor.PictForm.Entity = tmpForeignEntity;
+				const tmpForeignConfig = this.pict.PictSectionRecordSet.recordSetProviderConfigurations[tmpForeignEntity];
+				if (tmpForeignConfig && tmpForeignConfig.SearchFields) { tmpDescriptor.PictForm.SearchFields = tmpForeignConfig.SearchFields; }
+			}
+			// Per-record-set label override (e.g. Contract/Project IDOrganization → "Prime Contractor").
+			const tmpReadRSConfig = this.pict.PictSectionRecordSet.recordSetProviderConfigurations[recordSet];
+			if (tmpReadRSConfig && tmpReadRSConfig.FieldLabels && tmpReadRSConfig.FieldLabels[p]) { tmpDescriptor.Name = tmpReadRSConfig.FieldLabels[p]; }
+			// JSON/object columns → embedded ObjectEditor (read-only tree in View, editable in Edit). Driven by the
+			// schema column type, with a per-record-set ObjectEditorFields list to opt in string-typed JSON blobs.
+			// Gated on the pict-section-form ObjectEditor input being registered (graceful on older form versions).
+			const tmpObjectEditorFields = (tmpReadRSConfig && Array.isArray(tmpReadRSConfig.ObjectEditorFields)) ? tmpReadRSConfig.ObjectEditorFields : [];
+			if (tmpDescriptor.PictForm.InputType !== 'Picker' && this.pict.providers['Pict-Input-ObjectEditor'] &&
+				(schema.properties[p].type === 'object' || schema.properties[p].type === 'json' || tmpObjectEditorFields.includes(p)))
+			{
+				tmpDescriptor.DataType = 'Object';
+				tmpDescriptor.PictForm.InputType = 'ObjectEditor';
+			}
 			defaultManifest.Descriptors[`${ recordSet }Details.${ p }`] = tmpDescriptor;
 		}
 		return defaultManifest;
@@ -1039,6 +1075,11 @@ class viewRecordSetRead extends libPictRecordSetRecordView
 				{
 					tmpManifest.Descriptors[x].PictForm = {};
 				}
+				// Entity-reference (Picker) fields stay a Picker but render read-only (the resolved entity
+				// name as plain text, no dropdown); everything else becomes plain read-only text.
+				if (tmpManifest.Descriptors[x].PictForm.InputType === 'Picker') { tmpManifest.Descriptors[x].PictForm.ReadOnly = true; continue; }
+				// ObjectEditor stays an ObjectEditor but renders its read-only tree (not a plain text field).
+				if (tmpManifest.Descriptors[x].PictForm.InputType === 'ObjectEditor') { tmpManifest.Descriptors[x].PictForm.ReadOnly = true; continue; }
 				tmpManifest.Descriptors[x].PictForm.InputType = 'ReadOnly';
 			}
 		}
