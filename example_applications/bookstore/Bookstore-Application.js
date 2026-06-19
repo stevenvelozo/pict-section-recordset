@@ -625,6 +625,41 @@ module.exports.default_configuration.pict_configuration = (
 			}
 		},
 
+		// Record preview cards — a small, meaningful card per entity, rendered in an anchored popover when
+		// a {~RecordCard:RecordSet^id^label~} trigger is clicked (in a list cell, a record view, an
+		// association row, a dashboard). Pure configuration: a Title/Subtitle + a list of labeled values
+		// (each a field name OR a {~...~} template), plus the record's most important Actions.
+		"RecordCards":
+		{
+			"Author":
+			{
+				"Title": "Name",
+				"Fields":
+				[
+					{ "Label": "Author ID", "Value": "IDAuthor" }
+				],
+				"Actions":
+				[
+					{ "Label": "View", "Icon": "User", "Route": "#/PSRS/Author/View/{~D:Record.GUIDAuthor~}" }
+				]
+			},
+			"Book":
+			{
+				"Title": "Title",
+				"Subtitle": "{~D:Record.Genre~}",
+				"Fields":
+				[
+					{ "Label": "ISBN", "Value": "ISBN" },
+					{ "Label": "Year", "Value": "PublicationYear" },
+					{ "Label": "Language", "Value": "Language" }
+				],
+				"Actions":
+				[
+					{ "Label": "View", "Icon": "Eye", "Route": "#/PSRS/Book/View/{~D:Record.GUIDBook~}" }
+				]
+			}
+		},
+
 		"DefaultRecordSetConfigurations":
 		[
 			{

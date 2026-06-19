@@ -15,6 +15,7 @@ const ProviderMeadowEndpoints = require('../providers/RecordSet-RecordProvider-M
 
 const ProviderLinkManager = require('../providers/RecordSet-Link-Manager.js');
 const ProviderAssociationManager = require('../providers/RecordSet-AssociationManager.js');
+const ProviderCardManager = require('../providers/RecordSet-CardManager.js');
 const libProviderColumnData = require('../providers/Column-Data-Provider.js');
 
 const ProviderRouter = require('../providers/RecordSet-Router.js');
@@ -93,6 +94,9 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 					return fCallback(null, '');
 				}
 				const remote = field.split('ID')[1];
+				// Capture the raw foreign-key id before `value` is overwritten with the resolved name —
+				// a registered preview card opens on the id, not the display string.
+				const tmpForeignID = value;
 				try
 				{
 					const entity = await new Promise((resolve, reject) =>
@@ -135,8 +139,19 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 					}
 					if (this.pict.PictSectionRecordSet.recordSetProviderConfigurations[remote])
 					{
-						const url = this.pict.parseTemplateByHash('PRSP-Read-Link-URL-Template', { Payload: { Payload: { RecordSet: remote, GUIDAddress: `GUID${ remote }` }, Data: entity }});
-						value = `<a href="${ url }">${ value }</a>`;
+						// A registered preview card supersedes the plain link: the trigger opens the anchored
+						// mini-card (which carries its own "view" action/route). Degrades to the link when no
+						// card is registered for the referenced record-set.
+						const tmpCardManager = this.pict.providers.RecordSetCardManager;
+						if (tmpCardManager && tmpCardManager.hasCard(remote))
+						{
+							value = tmpCardManager.triggerHTML(remote, tmpForeignID, value);
+						}
+						else
+						{
+							const url = this.pict.parseTemplateByHash('PRSP-Read-Link-URL-Template', { Payload: { Payload: { RecordSet: remote, GUIDAddress: `GUID${ remote }` }, Data: entity }});
+							value = `<a href="${ url }">${ value }</a>`;
+						}
 					}
 				}
 				catch (e)
@@ -497,6 +512,10 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		// and the Bulk Associate screen. Associations are parsed from settings.Associations below.
 		this.fable.addProvider('RecordSetAssociationManager', {}, ProviderAssociationManager);
 
+		// Record preview cards — a global registry of small, config-driven record cards (popover on a
+		// trigger). Layouts are parsed from settings.RecordCards below.
+		this.fable.addProvider('RecordSetCardManager', {}, ProviderCardManager);
+
 		// Column visibility persistence — only register the built-in localStorage provider when the
 		// host hasn't supplied its own (the documented seam for server-side per-user persistence).
 		if (!('ColumnDataProvider' in this.fable.providers))
@@ -507,6 +526,7 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 		// Add the subviews internally and externally
 		this.pict.addTemplate(require('../templates/Pict-Template-FilterView.js'));
 		this.pict.addTemplate(require('../templates/Pict-Template-FilterInstanceViews.js'));
+		this.pict.addTemplate(require('../templates/Pict-Template-RecordCard.js'));
 		this.pict.addTemplate(require('../views/filters').Base);
 		this.childViews.errorNotFound = this.fable.addView('RSP-RecordSet-Error-NotFound', ViewDefinitionRecordSetErrorNotFound);
 		this.childViews.list = this.fable.addView('RSP-RecordSet-List', this.options, ViewRecordSetList);
@@ -557,6 +577,14 @@ class RecordSetMetacontroller extends libFableServiceProviderBase
 			for (const tmpAssociationKey of Object.keys(this.fable.settings.Associations))
 			{
 				this.pict.providers.RecordSetAssociationManager.addAssociation(tmpAssociationKey, this.fable.settings.Associations[tmpAssociationKey]);
+			}
+		}
+
+		if (this.fable.settings.hasOwnProperty('RecordCards') && typeof this.fable.settings.RecordCards === 'object')
+		{
+			for (const tmpRecordCardKey of Object.keys(this.fable.settings.RecordCards))
+			{
+				this.pict.providers.RecordSetCardManager.registerCard(tmpRecordCardKey, this.fable.settings.RecordCards[tmpRecordCardKey]);
 			}
 		}
 

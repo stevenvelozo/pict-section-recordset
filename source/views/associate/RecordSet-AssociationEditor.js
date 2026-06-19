@@ -122,7 +122,7 @@ const _DEFAULT_CONFIGURATION_AssociationEditor = (
 				Hash: 'PRSP-AssociationEditor-Row',
 				Template: /*html*/`
 		<div class="prsp-assoc-row">
-			<span class="prsp-assoc-row-name">{~D:Record.Display~}</span>
+			<span class="prsp-assoc-row-name">{~RecordCard:Record.CardRecordSet^Record.OtherID^Record.Display~}</span>
 			<span class="prsp-assoc-row-chips">{~TS:PRSP-AssociationEditor-Chip:Record.Chips~}</span>
 			<span class="prsp-assoc-row-cfg">{~TS:PRSP-AssociationEditor-EditField:Record.EditFields~}</span>
 			<span class="prsp-assoc-row-id">#{~D:Record.OtherID~}</span>
@@ -247,11 +247,16 @@ class viewRecordSetAssociationEditor extends libPictView
 
 		// Per-join editable config controls (for "rich" joins) — empty array for a plain link.
 		const tmpEditableFields = this.manager.getJoinEditableFields(this.options.AssociationHash);
+		// Auto record-preview-card: when a card is registered for the other side, each row's name becomes a
+		// preview-card trigger (the {~RecordCard:~} tag degrades to the plain name when CardRecordSet is '').
+		const tmpCardManager = this.pict.providers.RecordSetCardManager;
+		const tmpCardRecordSet = (tmpCardManager && tmpCardManager.hasCard(tmpSides.otherSide.RecordSet)) ? tmpSides.otherSide.RecordSet : '';
 		// Stamp the view hash + the editable controls on each row.
 		for (let i = 0; i < tmpItems.length; i++)
 		{
 			tmpItems[i].ViewHash = this.Hash;
 			tmpItems[i].EditFields = this._buildEditFields(tmpEditableFields, tmpItems[i]);
+			tmpItems[i].CardRecordSet = tmpCardRecordSet;
 		}
 		this._lastItems = tmpItems;
 		this._otherIDs = tmpItems.map((pItem) => pItem.OtherID);

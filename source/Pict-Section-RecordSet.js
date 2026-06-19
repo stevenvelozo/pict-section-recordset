@@ -12,6 +12,7 @@ module.exports.RecordSetProviderBase = require('./providers/RecordSet-RecordProv
 module.exports.RecordSetProviderMeadowEndpoints = require('./providers/RecordSet-RecordProvider-MeadowEndpoints.js');
 module.exports.ColumnDataProvider = require('./providers/Column-Data-Provider.js');
 module.exports.AssociationManager = require('./providers/RecordSet-AssociationManager.js');
+module.exports.CardManager = require('./providers/RecordSet-CardManager.js');
 
 // Joined-entity association views (embeddable read-tab editor + bulk associate screen)
 module.exports.AssociationEditorView = require('./views/associate/RecordSet-AssociationEditor.js');
