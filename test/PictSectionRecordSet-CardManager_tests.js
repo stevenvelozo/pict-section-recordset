@@ -110,5 +110,75 @@ suite
 			Expect(tmpNoCard).to.not.contain('psrs-card-trigger');
 			Expect(tmpNoCard).to.contain('Ursula K. Le Guin');
 		});
+
+		test('a default card (entity with none registered) renders a rich body of all real columns', () =>
+		{
+			const tmpCard = _Manager._defaultCard('Widget', { EntityConfig: { Entity: 'Widget', IDField: 'IDWidget', Display: { Title: 'Name' } } });
+			const tmpRecord = { IDWidget: 5, GUIDWidget: 'g5', Name: 'Sprocket', MaterialCode: 'MC-9', Quantity: 12 };
+			const tmpHTML = _Manager._buildRichCardHTML(tmpCard, tmpRecord, { Rich: true });
+			Expect(tmpHTML).to.contain('Sprocket', 'derived/title field');
+			Expect(tmpHTML).to.contain('Material Code', 'MaterialCode humanized');
+			Expect(tmpHTML).to.contain('MC-9');
+			Expect(tmpHTML).to.contain('Quantity');
+			Expect(tmpHTML).to.not.contain('GUIDWidget', 'the GUID is a copy button, not a field row');
+		});
+
+		test('_humanizeLabel + _fmtDate format for the rich body / audit stripe', () =>
+		{
+			Expect(_Manager._humanizeLabel('MaterialCode')).to.equal('Material Code');
+			Expect(_Manager._humanizeLabel('mix_id')).to.equal('mix id');
+			Expect(_Manager._fmtDate('2026-06-26T21:30:45.000Z')).to.equal('Jun 26, 2026 21:30');
+			Expect(_Manager._fmtDate('2026-06-26')).to.equal('Jun 26, 2026');
+		});
+
+		test('_richFields hides null-only values + humanizes ISO timestamps', () =>
+		{
+			const tmpRecord = { IDX: 1, GUIDX: 'g', Name: 'X', Address: 'null null', SyncDate: '2026-06-21T05:47:01.000Z', City: 'Baton Rouge' };
+			const tmpByLabel = {};
+			_Manager._richFields(tmpRecord, 'Name').forEach((pField) => { tmpByLabel[pField.Label] = pField.Value; });
+			Expect(Object.keys(tmpByLabel)).to.not.include('Address', 'a "null null" value is dropped');
+			Expect(tmpByLabel['Sync Date']).to.equal('Jun 21, 2026 05:47', 'the ISO timestamp is humanized');
+			Expect(tmpByLabel['City']).to.equal('Baton Rouge');
+		});
+
+		test('the audit toggle persists + the stripe renders Created/Updated + ID/GUID copy buttons', () =>
+		{
+			_Manager.setAuditEnabled(false);
+			Expect(_Manager.getAuditEnabled()).to.equal(false);
+			_Manager.setAuditEnabled(true);
+			Expect(_Manager.getAuditEnabled()).to.equal(true);
+			const tmpCard = _Manager._defaultCard('Widget', { EntityConfig: { Entity: 'Widget', IDField: 'IDWidget' } });
+			const tmpRecord = { IDWidget: 5, GUIDWidget: 'g5', Name: 'Sprocket', CreateDate: '2026-01-02T03:04:00Z', UpdateDate: '2026-06-26T21:30:00Z', CreatingUserName: 'Ada L.' };
+			const tmpHTML = _Manager._buildRichCardHTML(tmpCard, tmpRecord, { Rich: true });
+			Expect(tmpHTML).to.contain('psrs-card-audit');
+			Expect(tmpHTML).to.contain('Created');
+			Expect(tmpHTML).to.contain('Ada L.', 'the resolved creating-user name');
+			Expect(tmpHTML).to.contain('data-copy="g5"', 'a GUID copy button');
+			Expect(tmpHTML).to.contain('data-copy="5"', 'an ID copy button');
+			_Manager.setAuditEnabled(false);   // leave the toggle clean for other tests
+		});
+
+		test('schema booleans render as a checkbox glyph (filled when on, empty when off), not raw 0/1', () =>
+		{
+			_Manager.setAuditEnabled(false);
+			_Manager._schemaBooleans = { Org: { Approved: true, Active: true } };   // simulate the cached schema
+			const tmpCard = _Manager._defaultCard('Org', { EntityConfig: { Entity: 'Org', IDField: 'IDOrg' } });
+			const tmpRecord = { IDOrg: 1, GUIDOrg: 'g', Name: 'Acme', Approved: 1, Active: 0, Quantity: 7 };
+			const tmpHTML = _Manager._buildRichCardHTML(tmpCard, tmpRecord, { Rich: true });
+			Expect(tmpHTML).to.contain('psrs-card-bool-on', 'Approved=1 → filled checkbox');
+			Expect(tmpHTML).to.contain('class="psrs-card-bool"', 'Active=0 → empty checkbox');
+			Expect(tmpHTML).to.contain('Quantity', 'a non-boolean numeric still renders normally');
+			Expect(tmpHTML).to.contain('>7<', 'the numeric value shows verbatim');
+		});
+
+		test('a registered card rendered rich keeps its Title + View action and adds the extra columns', () =>
+		{
+			_Manager.registerCard('Author', _AuthorCard);
+			_Manager.setAuditEnabled(false);
+			const tmpHTML = _Manager._buildRichCardHTML(_Manager._cards.Author, _AuthorRecord, { Rich: true });
+			Expect(tmpHTML).to.contain('Ursula K. Le Guin', 'the registered Title still resolves');
+			Expect(tmpHTML).to.contain('#/PSRS/Author/View/GUID-7', 'the registered View action still resolves');
+			Expect(tmpHTML).to.contain('Nationality', 'the rich body adds the record\'s other columns');
+		});
 	}
 );
